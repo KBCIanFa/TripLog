@@ -644,6 +644,7 @@ function toggleHistory(section) {
   <section aria-label="Trip selection" class="trip-bar">
     <span class="label-text" id="trip-select-label">Active Trip</span>
     <select id="tripSelect" aria-labelledby="trip-select-label" onchange="switchTrip()" style="flex:1;min-width:160px;max-width:400px"></select>
+    <button class="btn btn-outline btn-sm" onclick="editCurrentTrip()" aria-label="Edit current trip" id="editTripBtn">✏️ Edit</button>
     <button class="btn btn-danger btn-sm" onclick="deleteCurrentTrip()" aria-label="Delete current trip">Delete Trip</button>
   </section>
 
@@ -1187,6 +1188,10 @@ function toggleHistory(section) {
           <div class="help-a">Use the <strong>Active Trip</strong> dropdown below the header. All tabs — Fuel, Expenses, Summary — update instantly to show the selected trip's data.</div>
         </div>
         <div class="help-item">
+          <div class="help-q">How do I edit a trip?</div>
+          <div class="help-a">Select the trip from the dropdown, then tap the <strong>✏️ Edit</strong> button in the trip bar. The same dialog used to create trips opens, pre-filled with the current values. You can change the name, start date, end date, start odometer, and budget. Tap <strong>Save Changes</strong> to apply. Your existing fuel stops and expenses are not affected.</div>
+        </div>
+        <div class="help-item">
           <div class="help-q">How do I delete a trip?</div>
           <div class="help-a">Select the trip from the dropdown, then tap <strong>Delete Trip</strong>. A confirmation dialog will appear — tap <strong>Yes, Delete Trip</strong> to confirm. This permanently removes all fuel stops and expenses for that trip and cannot be undone.</div>
         </div>
@@ -1360,9 +1365,9 @@ function toggleHistory(section) {
 <footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">Trip Log by Ian Fraser &copy; 2026</footer>
 
 <!-- Modal: New Trip -->
-<div class="modal-overlay" id="newTripModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+<div class="modal-overlay" id="newTripModal" role="dialog" aria-modal="true" aria-labelledby="tripModalTitle">
   <div class="modal">
-    <h2 class="modal-title" id="modalTitle">Start a New Trip</h2>
+    <h2 class="modal-title" id="tripModalTitle">Start a New Trip</h2>
     <div class="form-group" style="margin-bottom:16px">
       <label for="newTripName">Trip name <span aria-hidden="true">*</span></label>
       <input type="text" id="newTripName" placeholder="e.g. Darwin to Adelaide 2026" autocomplete="off">
@@ -1386,8 +1391,8 @@ function toggleHistory(section) {
       </div>
     </div>
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('newTripModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="createTrip()">Create Trip</button>
+      <button class="btn btn-ghost" onclick="cancelTripModal()">Cancel</button>
+      <button class="btn btn-primary" id="tripModalSaveBtn" onclick="saveTripModal()">Create Trip</button>
     </div>
   </div>
 </div>
@@ -1504,24 +1509,72 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ── Trips ──────────────────────────────────────────────────────────────────── */
-function createTrip() {
+// Track whether modal is in create or edit mode
+let _tripModalEditId = null;
+
+function openModal(id) {
+  // When opening newTripModal fresh, always reset to create mode
+  if (id === 'newTripModal') {
+    _tripModalEditId = null;
+    document.getElementById('tripModalTitle').textContent  = 'Start a New Trip';
+    document.getElementById('tripModalSaveBtn').textContent = 'Create Trip';
+    document.getElementById('newTripName').value   = '';
+    document.getElementById('newTripStart').value  = new Date().toISOString().split('T')[0];
+    document.getElementById('newTripEnd').value    = '';
+    document.getElementById('newTripOdo').value    = '';
+    document.getElementById('newTripBudget').value = '';
+  }
+  const m = document.getElementById(id); m.classList.add('open');
+  const first = m.querySelector('input,button,select,textarea');
+  if (first) setTimeout(() => first.focus(), 50);
+}
+
+function editCurrentTrip() {
+  const t = trip(); if (!t) return;
+  _tripModalEditId = t.id;
+  document.getElementById('tripModalTitle').textContent   = 'Edit Trip';
+  document.getElementById('tripModalSaveBtn').textContent = 'Save Changes';
+  document.getElementById('newTripName').value   = t.name;
+  document.getElementById('newTripStart').value  = t.startDate  || '';
+  document.getElementById('newTripEnd').value    = t.endDate    || '';
+  document.getElementById('newTripOdo').value    = t.startOdo   || '';
+  document.getElementById('newTripBudget').value = t.budget != null ? t.budget : '';
+  const m = document.getElementById('newTripModal'); m.classList.add('open');
+  setTimeout(() => document.getElementById('newTripName').focus(), 50);
+}
+
+function saveTripModal() {
   const name = document.getElementById('newTripName').value.trim();
   if (!name) { showToast('Please enter a trip name.'); document.getElementById('newTripName').focus(); return; }
-  const budget = parseFloat(document.getElementById('newTripBudget').value) || null;
-  const t = { id:'trip_'+Date.now(), name,
-    startDate: document.getElementById('newTripStart').value,
-    endDate:   document.getElementById('newTripEnd').value   || null,
-    startOdo:  parseFloat(document.getElementById('newTripOdo').value)||0,
-    budget,
-    fuel:[], expenses:[] };
-  state.trips.push(t); state.currentTripId = t.id; save();
+  const startDate = document.getElementById('newTripStart').value;
+  const endDate   = document.getElementById('newTripEnd').value   || null;
+  const startOdo  = parseFloat(document.getElementById('newTripOdo').value)    || 0;
+  const budget    = parseFloat(document.getElementById('newTripBudget').value) || null;
+
+  if (_tripModalEditId) {
+    // Edit existing trip
+    const t = state.trips.find(x => x.id === _tripModalEditId);
+    if (t) {
+      t.name = name; t.startDate = startDate; t.endDate = endDate;
+      t.startOdo = startOdo; t.budget = budget;
+    }
+    save(); closeModal('newTripModal');
+    renderTripSelect(); renderAll();
+    showToast('Trip updated: ' + name);
+  } else {
+    // Create new trip
+    const t = { id:'trip_'+Date.now(), name, startDate, endDate, startOdo, budget, fuel:[], expenses:[] };
+    state.trips.push(t); state.currentTripId = t.id; save();
+    closeModal('newTripModal');
+    renderTripSelect(); renderAll();
+    showToast('Trip created: ' + name);
+  }
+  _tripModalEditId = null;
+}
+
+function cancelTripModal() {
+  _tripModalEditId = null;
   closeModal('newTripModal');
-  document.getElementById('newTripName').value   = '';
-  document.getElementById('newTripOdo').value    = '';
-  document.getElementById('newTripEnd').value    = '';
-  document.getElementById('newTripBudget').value = '';
-  renderTripSelect(); renderAll();
-  showToast('Trip created: ' + name);
 }
 
 function deleteCurrentTrip() {
@@ -1805,11 +1858,6 @@ function switchTab(name,btn) {
 }
 
 /* ── Modals ─────────────────────────────────────────────────────────────────── */
-function openModal(id) {
-  const m=document.getElementById(id); m.classList.add('open');
-  const first=m.querySelector('input,button,select,textarea');
-  if(first) setTimeout(()=>first.focus(),50);
-}
 function closeModal(id) { closeModalEl(document.getElementById(id)); }
 function closeModalEl(m) {
   m.classList.remove('open');
