@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trip Log — By Ian Fraser</title>
+<title>Trip Log by Ian Fraser © 2026</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
@@ -205,6 +205,53 @@ textarea { resize: vertical; min-height: 80px; }
   color:var(--ink-muted); background:var(--surface-alt); padding:3px 10px; border-radius:999px;
 }
 
+/* ── History toggle ─────────────────────────────────────────────────────────── */
+.toggle-history-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--ink-secondary);
+  background: var(--surface-alt);
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.toggle-history-btn:hover {
+  background: var(--brand-bg);
+  border-color: var(--brand-border);
+  color: var(--brand);
+}
+.toggle-history-btn:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 2px;
+}
+.toggle-history-btn .toggle-arrow {
+  display: inline-block;
+  transition: transform .2s ease;
+  font-style: normal;
+}
+.toggle-history-btn[aria-expanded="false"] .toggle-arrow {
+  transform: rotate(-90deg);
+}
+.history-panel {
+  overflow: hidden;
+  transition: max-height .25s ease, opacity .2s ease;
+  max-height: 9999px;
+  opacity: 1;
+}
+.history-panel.collapsed {
+  max-height: 0;
+  opacity: 0;
+}
+
 /* ── Log entries ────────────────────────────────────────────────────────────── */
 .log-list { display:flex; flex-direction:column; gap:10px; }
 .log-entry {
@@ -310,6 +357,24 @@ textarea { resize: vertical; min-height: 80px; }
 }
 @media (prefers-reduced-motion:reduce) {
   *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; }
+}
+
+/* ── History toggle ─────────────────────────────────────────────────────────── */
+function toggleHistory(section) {
+  const panel  = document.getElementById(section + 'HistoryPanel');
+  const btn    = document.getElementById(section + 'HistoryToggle');
+  const label  = document.getElementById(section + 'HistoryLabel');
+  const isOpen = btn.getAttribute('aria-expanded') === 'true';
+
+  if (isOpen) {
+    panel.classList.add('collapsed');
+    btn.setAttribute('aria-expanded', 'false');
+    label.textContent = 'Show';
+  } else {
+    panel.classList.remove('collapsed');
+    btn.setAttribute('aria-expanded', 'true');
+    label.textContent = 'Hide';
+  }
 }
 
 /* ── Export / Import ─────────────────────────────────────────────────────────── */
@@ -538,7 +603,7 @@ textarea { resize: vertical; min-height: 80px; }
 
   <header role="banner">
     <div class="logo-group">
-      <span class="logo-title">RoadLog</span>
+      <span class="logo-title">Trip Log</span>
       <span class="logo-sub" aria-hidden="true">Road Trip Journal</span>
     </div>
     <button class="btn btn-outline" onclick="openModal('newTripModal')" aria-haspopup="dialog">
@@ -628,8 +693,23 @@ textarea { resize: vertical; min-height: 80px; }
         <button class="btn btn-ghost"   onclick="clearFuelForm()">Clear form</button>
       </div>
     </div>
-    <h2 class="section-heading">Fuel History <span class="entry-count" id="fuelCount" aria-live="polite">0 stops</span></h2>
-    <div id="fuelLog" role="list" aria-label="Fuel history"></div>
+    <h2 class="section-heading">
+      <span style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        Fuel History <span class="entry-count" id="fuelCount" aria-live="polite">0 stops</span>
+      </span>
+      <button class="toggle-history-btn"
+              id="fuelHistoryToggle"
+              aria-expanded="true"
+              aria-controls="fuelHistoryPanel"
+              onclick="toggleHistory('fuel')"
+              title="Show or hide fuel history">
+        <i class="toggle-arrow" aria-hidden="true">▾</i>
+        <span id="fuelHistoryLabel">Hide</span>
+      </button>
+    </h2>
+    <div id="fuelHistoryPanel" class="history-panel">
+      <div id="fuelLog" role="list" aria-label="Fuel history"></div>
+    </div>
   </div>
 
   <!-- ── EXPENSES ──────────────────────────────────────────────────────────── -->
@@ -663,8 +743,23 @@ textarea { resize: vertical; min-height: 80px; }
         <button class="btn btn-ghost"   onclick="clearExpenseForm()">Clear form</button>
       </div>
     </div>
-    <h2 class="section-heading">Expense History <span class="entry-count" id="expCount" aria-live="polite">0 items</span></h2>
-    <div id="expenseLog" role="list" aria-label="Expense history"></div>
+    <h2 class="section-heading">
+      <span style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        Expense History <span class="entry-count" id="expCount" aria-live="polite">0 items</span>
+      </span>
+      <button class="toggle-history-btn"
+              id="expHistoryToggle"
+              aria-expanded="true"
+              aria-controls="expHistoryPanel"
+              onclick="toggleHistory('exp')"
+              title="Show or hide expense history">
+        <i class="toggle-arrow" aria-hidden="true">▾</i>
+        <span id="expHistoryLabel">Hide</span>
+      </button>
+    </h2>
+    <div id="expHistoryPanel" class="history-panel">
+      <div id="expenseLog" role="list" aria-label="Expense history"></div>
+    </div>
   </div>
 
   <!-- ── CATEGORIES ────────────────────────────────────────────────────────── -->
@@ -999,7 +1094,7 @@ textarea { resize: vertical; min-height: 80px; }
       <div class="import-drop-area"
            id="importDropArea"
            role="button"
-           aria-label="Drop a RoadLog JSON backup file here, or click to browse"
+           aria-label="Drop a Trip Log JSON backup file here, or click to browse"
            tabindex="0"
            ondragover="handleDragOver(event)"
            ondragleave="handleDragLeave(event)"
@@ -1008,7 +1103,7 @@ textarea { resize: vertical; min-height: 80px; }
         <input type="file"
                id="importFileInput"
                accept=".json"
-               aria-label="Choose a RoadLog JSON backup file"
+               aria-label="Choose a Trip Log JSON backup file"
                onchange="handleFileSelect(event)">
         <div class="import-drop-icon" aria-hidden="true">📂</div>
         <div class="import-drop-title">Drop your backup file here</div>
@@ -1034,6 +1129,8 @@ textarea { resize: vertical; min-height: 80px; }
   </div>
 
 </div><!-- /.app -->
+
+<footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">Trip Log by Ian Fraser &copy; 2026</footer>
 
 <!-- Modal: New Trip -->
 <div class="modal-overlay" id="newTripModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
@@ -1094,7 +1191,7 @@ const PALETTE = [
 let selectedColor = PALETTE[0].hex;
 
 /* ── State ──────────────────────────────────────────────────────────────────── */
-let state = JSON.parse(localStorage.getItem('roadlog_v2') || 'null') || {
+let state = JSON.parse(localStorage.getItem('triplog_v2') || 'null') || {
   trips: [], currentTripId: null,
   categories: [
     {id:'cat_food',name:'Food & Drink',   color:'#C75B00'},
@@ -1104,7 +1201,7 @@ let state = JSON.parse(localStorage.getItem('roadlog_v2') || 'null') || {
     {id:'cat_misc',name:'Miscellaneous',  color:'#5B2C8A'},
   ]
 };
-function save()  { localStorage.setItem('roadlog_v2', JSON.stringify(state)); }
+function save()  { localStorage.setItem('triplog_v2', JSON.stringify(state)); }
 function trip()  { return state.trips.find(t => t.id === state.currentTripId) || null; }
 function esc(s)  { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; }
 function empty(icon, title, text) {
@@ -1470,7 +1567,7 @@ const SETTING_FIELDS = ['vehMake','vehModel','vehYear','vehRego','vehColour','ve
   'towMake','towModel','towYear','towLength','towATM','towTBW','towRego','towNotes'];
 
 function loadSettings() {
-  const s = JSON.parse(localStorage.getItem('roadlog_settings') || '{}');
+  const s = JSON.parse(localStorage.getItem('triplog_settings') || '{}');
   SETTING_FIELDS.forEach(id => {
     const el = document.getElementById(id); if (!el) return;
     if (s[id] !== undefined) el.value = s[id];
@@ -1488,7 +1585,7 @@ function saveSettings() {
   SETTING_FIELDS.forEach(id => { const el=document.getElementById(id); if(el) s[id]=el.value; });
   const r = document.querySelector('input[name="setupType"]:checked');
   if (r) s.setupType = r.value;
-  localStorage.setItem('roadlog_settings', JSON.stringify(s));
+  localStorage.setItem('triplog_settings', JSON.stringify(s));
   updateVehiclePreview();
 }
 
@@ -1522,6 +1619,24 @@ function updateVehiclePreview() {
   }
 }
 
+/* ── History toggle ─────────────────────────────────────────────────────────── */
+function toggleHistory(section) {
+  const panel  = document.getElementById(section + 'HistoryPanel');
+  const btn    = document.getElementById(section + 'HistoryToggle');
+  const label  = document.getElementById(section + 'HistoryLabel');
+  const isOpen = btn.getAttribute('aria-expanded') === 'true';
+
+  if (isOpen) {
+    panel.classList.add('collapsed');
+    btn.setAttribute('aria-expanded', 'false');
+    label.textContent = 'Show';
+  } else {
+    panel.classList.remove('collapsed');
+    btn.setAttribute('aria-expanded', 'true');
+    label.textContent = 'Hide';
+  }
+}
+
 /* ── Export / Import ─────────────────────────────────────────────────────────── */
 
 let importMode    = 'merge';   // 'merge' | 'replace'
@@ -1539,10 +1654,10 @@ function setImportMode(mode) {
 
 // ── JSON export (full backup) ─────────────────────────────────────────────────
 function exportJSON() {
-  const settings = JSON.parse(localStorage.getItem('roadlog_settings') || '{}');
+  const settings = JSON.parse(localStorage.getItem('triplog_settings') || '{}');
   const backup = {
     _meta: {
-      app:       'RoadLog',
+      app:       'Trip Log',
       version:   '1.0',
       exported:  new Date().toISOString(),
       tripCount: state.trips.length
@@ -1550,7 +1665,7 @@ function exportJSON() {
     state,
     settings
   };
-  const filename = 'roadlog-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+  const filename = 'triplog-backup-' + new Date().toISOString().slice(0, 10) + '.json';
   downloadText(JSON.stringify(backup, null, 2), filename, 'application/json');
   showToast('Backup downloaded: ' + filename);
 }
@@ -1576,7 +1691,7 @@ function exportFuelCSV() {
     rows.push([e.date, e.location, e.odo, e.litres, e.ppl || '', e.cost, eff, e.notes || '']);
   });
 
-  const filename = 'roadlog-fuel-' + slugify(t.name) + '-' + new Date().toISOString().slice(0, 10) + '.csv';
+  const filename = 'triplog-fuel-' + slugify(t.name) + '-' + new Date().toISOString().slice(0, 10) + '.csv';
   downloadText(toCSV(rows), filename, 'text/csv');
   showToast('Fuel CSV downloaded.');
 }
@@ -1611,7 +1726,7 @@ function exportExpenseCSV() {
   const total = t.expenses.reduce((s,e) => s + e.amount, 0);
   rows.push(['TOTAL', '', '', total.toFixed(2), '']);
 
-  const filename = 'roadlog-expenses-' + slugify(t.name) + '-' + new Date().toISOString().slice(0, 10) + '.csv';
+  const filename = 'triplog-expenses-' + slugify(t.name) + '-' + new Date().toISOString().slice(0, 10) + '.csv';
   downloadText(toCSV(rows), filename, 'text/csv');
   showToast('Expense CSV downloaded.');
 }
@@ -1640,7 +1755,7 @@ function exportSummaryCSV() {
     ]);
   });
 
-  const filename = 'roadlog-summary-' + new Date().toISOString().slice(0, 10) + '.csv';
+  const filename = 'triplog-summary-' + new Date().toISOString().slice(0, 10) + '.csv';
   downloadText(toCSV(rows), filename, 'text/csv');
   showToast('Summary CSV downloaded.');
 }
@@ -1688,7 +1803,7 @@ function validateAndPreviewImport(data) {
   const importSettings = data.settings || null;
 
   if (!importState.trips || !Array.isArray(importState.trips)) {
-    showToast('This file does not look like a RoadLog backup.');
+    showToast('This file does not look like a Trip Log backup.');
     return;
   }
 
@@ -1723,7 +1838,7 @@ function confirmImport() {
     state.trips          = importState.trips          || [];
     state.currentTripId  = importState.currentTripId  || (state.trips.length ? state.trips[state.trips.length-1].id : null);
     state.categories     = importState.categories     || state.categories;
-    if (importSettings) localStorage.setItem('roadlog_settings', JSON.stringify(importSettings));
+    if (importSettings) localStorage.setItem('triplog_settings', JSON.stringify(importSettings));
   } else {
     // Merge: add trips that don't already exist (match by id)
     const existingIds = new Set(state.trips.map(t => t.id));
