@@ -592,6 +592,35 @@ function toggleHistory(section) {
 .info-banner .info-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
 
 .divider-line { border: none; border-top: 1px solid var(--border); margin: 8px 0 20px; }
+
+/* ── Help tab ────────────────────────────────────────────────────────────────── */
+.help-section { display: flex; flex-direction: column; gap: 0; }
+.help-item {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.help-item:last-child { border-bottom: none; padding-bottom: 0; }
+.help-item:first-child { padding-top: 4px; }
+.help-q {
+  font-weight: 700;
+  font-size: .9rem;
+  color: var(--ink);
+  margin-bottom: 5px;
+}
+.help-a {
+  font-size: .875rem;
+  color: var(--ink-secondary);
+  line-height: 1.65;
+}
+.help-a code {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: .82rem;
+  font-family: monospace;
+  color: var(--ink);
+}
 </style>
 </head>
 <body>
@@ -651,6 +680,7 @@ function toggleHistory(section) {
     <button role="tab" id="tab-categories-btn" aria-selected="false" aria-controls="panel-categories" onclick="switchTab('categories',this)" tabindex="-1"><span aria-hidden="true">🏷</span> Categories</button>
     <button role="tab" id="tab-summary-btn"    aria-selected="false" aria-controls="panel-summary"    onclick="switchTab('summary',this)"    tabindex="-1"><span aria-hidden="true">📊</span> Summary</button>
     <button role="tab" id="tab-settings-btn"   aria-selected="false" aria-controls="panel-settings"   onclick="switchTab('settings',this)"   tabindex="-1"><span aria-hidden="true">⚙️</span> Settings</button>
+    <button role="tab" id="tab-help-btn"      aria-selected="false" aria-controls="panel-help"      onclick="switchTab('help',this)"      tabindex="-1"><span aria-hidden="true">❓</span> Help</button>
   </div>
 
   <!-- ── FUEL ─────────────────────────────────────────────────────────────── -->
@@ -1128,6 +1158,203 @@ function toggleHistory(section) {
 
   </div>
 
+  <!-- ── HELP ─────────────────────────────────────────────────────────────── -->
+  <div role="tabpanel" id="panel-help" aria-labelledby="tab-help-btn">
+
+    <!-- Quick Start -->
+    <div class="card">
+      <div class="card-title"><span class="icon" aria-hidden="true">🚀</span> Getting Started</div>
+      <p style="margin:0 0 12px;color:var(--ink-secondary);font-size:.9rem;line-height:1.6">Trip Log stores all your data privately in your browser — no account, no cloud, no sign-up required.</p>
+      <ol style="margin:0;padding-left:20px;color:var(--ink-secondary);font-size:.9rem;line-height:1.8">
+        <li>Tap <strong>New Trip</strong> in the top-right corner and give your trip a name, start date, and odometer reading.</li>
+        <li>Each time you fill up, go to the <strong>Fuel</strong> tab and log the stop.</li>
+        <li>Log meals, accommodation, tolls, and other costs under <strong>Expenses</strong>.</li>
+        <li>Check your running totals and efficiency at a glance in the stats bar at the top.</li>
+        <li>Visit <strong>Summary</strong> at any time for charts and a full cost breakdown.</li>
+      </ol>
+    </div>
+
+    <!-- Trips -->
+    <div class="card">
+      <div class="card-title"><span class="icon" aria-hidden="true">🗺️</span> Managing Trips</div>
+      <div class="help-section">
+        <div class="help-item">
+          <div class="help-q">How do I create a trip?</div>
+          <div class="help-a">Tap <strong>New Trip</strong> in the header. Enter a name (required), start date, and your current odometer reading. The trip becomes active immediately.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">How do I switch between trips?</div>
+          <div class="help-a">Use the <strong>Active Trip</strong> dropdown below the header. All tabs — Fuel, Expenses, Summary — update instantly to show the selected trip's data.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">How do I delete a trip?</div>
+          <div class="help-a">Select the trip from the dropdown, then tap <strong>Delete Trip</strong>. A confirmation dialog will appear — tap <strong>Yes, Delete Trip</strong> to confirm. This permanently removes all fuel stops and expenses for that trip and cannot be undone.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">Can I have multiple trips at once?</div>
+          <div class="help-a">Yes — create as many trips as you like. Each is completely independent. Great for separating annual road trips, interstate runs, or tracking different vehicles.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">Can I set a budget for a trip?</div>
+          <div class="help-a">Yes — enter an optional <strong>Trip Budget ($)</strong> when creating a trip. Once set, a budget tracker appears at the top of the Trip Overview in the Summary tab. It shows a progress bar, the amount spent so far, the percentage used, and how much remains. The bar turns amber above 80% and red if you go over budget.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">Can I set an end date for a trip?</div>
+          <div class="help-a">Yes — the <strong>End date</strong> field in the New Trip dialog is optional. Once set, it appears in the Trip Overview table in the Summary tab alongside the start date.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fuel -->
+    <div class="card">
+      <div class="card-title"><span class="icon" aria-hidden="true">⛽</span> Logging Fuel</div>
+      <div class="help-section">
+        <div class="help-item">
+          <div class="help-q">What fields are required?</div>
+          <div class="help-a"><strong>Odometer</strong> and <strong>Litres</strong> are required. All other fields — date, station, price per litre, cost, notes — are optional but help produce better reports.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">How is fuel cost calculated?</div>
+          <div class="help-a">If you enter <strong>Litres</strong> and <strong>Price per Litre</strong>, the <strong>Total Cost</strong> field is calculated automatically. You can also type the total cost directly if you know it.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">What does the L/100km badge mean?</div>
+          <div class="help-a">Each fuel entry shows the efficiency for that segment — the distance since your last fill-up divided into the litres used. <span style="color:#1A6B38;font-weight:600">Green</span> = under 9 L/100km, <span style="color:#C75B00;font-weight:600">amber</span> = 9–12, <span style="color:#991A1A;font-weight:600">red</span> = over 12. You can set your own target in <strong>Settings</strong>.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">Can I hide the fuel list?</div>
+          <div class="help-a">Yes — tap the <strong>Hide / Show</strong> button next to the Fuel History heading to collapse or expand the list. Useful on a small screen when you just want to log a stop quickly.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Expenses -->
+    <div class="card">
+      <div class="card-title"><span class="icon" aria-hidden="true">💳</span> Logging Expenses</div>
+      <div class="help-section">
+        <div class="help-item">
+          <div class="help-q">What fields are required?</div>
+          <div class="help-a"><strong>Description</strong> and <strong>Amount</strong> are required. Category and date default to your last-used values so logging is fast on the road.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">What categories are available?</div>
+          <div class="help-a">The default categories are Food &amp; Drink, Accommodation, Tolls &amp; Fees, Activities, Miscellaneous, Camping Fees, and Maintenance. You can add your own in the <strong>Categories</strong> tab.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">Can I hide the expense list?</div>
+          <div class="help-a">Yes — tap the <strong>Hide / Show</strong> button next to Expense History to collapse or expand the list, just like with fuel history.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Categories -->
+    <div class="card">
+      <div class="card-title"><span class="icon" aria-hidden="true">🏷</span> Categories</div>
+      <div class="help-section">
+        <div class="help-item">
+          <div class="help-q">How do I add a custom category?</div>
+          <div class="help-a">Go to the <strong>Categories</strong> tab, type a name, pick a colour from the swatches, then tap <strong>Add Category</strong>. It will appear immediately in the expense category dropdown.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">What happens if I delete a category that has expenses?</div>
+          <div class="help-a">The expenses are not deleted — they remain in your trip but their category will show as <em>Uncategorised</em>. You can't currently re-categorise existing entries, so it's best to create categories before you start logging.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="card">
+      <div class="card-title"><span class="icon" aria-hidden="true">📊</span> Summary Tab</div>
+      <div class="help-section">
+        <div class="help-item">
+          <div class="help-q">What does the Summary tab show?</div>
+          <div class="help-a">Three sections: a <strong>Fuel Efficiency Chart</strong> showing L/100km for each segment between fill-ups; a <strong>Spend by Category</strong> table that includes fuel as the first row so you can see your true total travel cost; and a <strong>Trip Overview</strong> with key totals and — if you set a budget — a live budget tracker showing how much you have spent and how much remains.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">Why is fuel shown in the expense table?</div>
+          <div class="help-a">Fuel is typically the largest cost on a road trip. Including it in the breakdown lets you see what percentage of your total spend went to fuel versus accommodation, food, and activities.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">The efficiency chart says I need 2 fuel stops — why?</div>
+          <div class="help-a">Efficiency is calculated from the distance between consecutive fill-ups. With only one stop there is no segment to measure. Log a second fuel stop and the chart will appear.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Export & Import -->
+    <div class="card">
+      <div class="card-title"><span class="icon" aria-hidden="true">💾</span> Export &amp; Import</div>
+      <div class="help-section">
+        <div class="help-item">
+          <div class="help-q">What can I export?</div>
+          <div class="help-a">Four options are available in Settings: <strong>Full Backup (JSON)</strong> — a complete backup of all trips, expenses, and settings; <strong>Fuel Log (CSV)</strong> — the current trip's fuel stops for spreadsheet analysis; <strong>Expenses (CSV)</strong> — the current trip's expenses with category totals; <strong>Trip Summary (CSV)</strong> — one row per trip across all trips.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">How do I back up my data?</div>
+          <div class="help-a">Go to <strong>Settings → Export</strong> and tap <strong>Download Full Backup</strong>. Save the <code>.json</code> file somewhere safe — your Downloads folder, iCloud Drive, Google Drive, or email it to yourself. Do this regularly, especially before clearing your browser or switching devices.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">How do I restore or move to a new device?</div>
+          <div class="help-a">On the new device, open Trip Log, go to <strong>Settings → Import</strong>, select <strong>Replace</strong> mode, then drop in your backup <code>.json</code> file and tap <strong>Confirm Import</strong>. All your trips, expenses, and settings will be restored.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">What is the difference between Merge and Replace?</div>
+          <div class="help-a"><strong>Merge</strong> adds trips from the backup file alongside your existing data — useful for combining trips from two devices. Duplicate trip IDs are skipped automatically. <strong>Replace</strong> wipes all current data first and loads the backup fresh. Always export a backup before using Replace.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data & Privacy -->
+    <div class="card">
+      <div class="card-title"><span class="icon" aria-hidden="true">🔒</span> Data &amp; Privacy</div>
+      <div class="help-section">
+        <div class="help-item">
+          <div class="help-q">Where is my data stored?</div>
+          <div class="help-a">Entirely in your browser's <strong>localStorage</strong> — on your device, never on a server. Trip Log has no backend, no account system, and no internet connection is needed to use it once loaded.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">Will I lose my data if I clear my browser?</div>
+          <div class="help-a">Yes. Clearing site data, clearing browser history (with cookies and local storage), or uninstalling the browser will delete your Trip Log data. <strong>Export a JSON backup regularly</strong> to protect your records.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">Does data sync between my phone and computer?</div>
+          <div class="help-a">Not automatically — each browser and device has its own separate storage. To sync, export a backup on one device and import it on the other using Merge or Replace mode.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PWA / Install -->
+    <div class="card">
+      <div class="card-title"><span class="icon" aria-hidden="true">📱</span> Installing on Your Phone</div>
+      <div class="help-section">
+        <div class="help-item">
+          <div class="help-q">iPhone / iPad (Safari)</div>
+          <div class="help-a">Open Trip Log in Safari → tap the <strong>Share</strong> button (box with arrow) → tap <strong>Add to Home Screen</strong> → tap <strong>Add</strong>. The app will appear on your home screen and open full-screen without the browser bar.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">Android (Chrome)</div>
+          <div class="help-a">Open Trip Log in Chrome → tap the <strong>three-dot menu</strong> → tap <strong>Add to Home Screen</strong> or <strong>Install app</strong> → tap <strong>Add</strong>. Works like a native app from your home screen.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">Does it work offline?</div>
+          <div class="help-a">Yes — once the page has loaded, Trip Log works entirely offline. You can log fuel stops and expenses in the middle of the outback with no signal. Your data is saved instantly to your device.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- About -->
+    <div class="card" style="text-align:center;padding:28px 24px;">
+      <div style="font-size:2rem;margin-bottom:8px" aria-hidden="true">🚗</div>
+      <div style="font-family:var(--font-display);font-size:1.15rem;font-weight:700;color:var(--ink);margin-bottom:4px">Trip Log</div>
+      <div style="font-size:.85rem;color:var(--ink-muted);margin-bottom:16px">Road Trip Journal &nbsp;·&nbsp; By Ian Fraser &copy; 2026</div>
+      <div style="font-size:.82rem;color:var(--ink-muted);line-height:1.7;max-width:400px;margin:0 auto">
+        Built for Australian road trippers.<br>
+        All data stays on your device — private, offline-capable, and always yours.
+      </div>
+    </div>
+
+  </div>
+
 </div><!-- /.app -->
 
 <footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">Trip Log by Ian Fraser &copy; 2026</footer>
@@ -1146,8 +1373,16 @@ function toggleHistory(section) {
         <input type="date" id="newTripStart">
       </div>
       <div class="form-group">
+        <label for="newTripEnd">End date <span style="font-weight:400;color:var(--ink-muted)">(optional)</span></label>
+        <input type="date" id="newTripEnd">
+      </div>
+      <div class="form-group">
         <label for="newTripOdo">Start odometer (km)</label>
         <input type="number" id="newTripOdo" placeholder="e.g. 12000" min="0">
+      </div>
+      <div class="form-group">
+        <label for="newTripBudget">Trip budget ($) <span style="font-weight:400;color:var(--ink-muted)">(optional)</span></label>
+        <input type="number" id="newTripBudget" placeholder="e.g. 5000" min="0" step="0.01">
       </div>
     </div>
     <div class="modal-actions">
@@ -1272,14 +1507,19 @@ window.addEventListener('DOMContentLoaded', () => {
 function createTrip() {
   const name = document.getElementById('newTripName').value.trim();
   if (!name) { showToast('Please enter a trip name.'); document.getElementById('newTripName').focus(); return; }
+  const budget = parseFloat(document.getElementById('newTripBudget').value) || null;
   const t = { id:'trip_'+Date.now(), name,
     startDate: document.getElementById('newTripStart').value,
+    endDate:   document.getElementById('newTripEnd').value   || null,
     startOdo:  parseFloat(document.getElementById('newTripOdo').value)||0,
+    budget,
     fuel:[], expenses:[] };
   state.trips.push(t); state.currentTripId = t.id; save();
   closeModal('newTripModal');
-  document.getElementById('newTripName').value = '';
-  document.getElementById('newTripOdo').value  = '';
+  document.getElementById('newTripName').value   = '';
+  document.getElementById('newTripOdo').value    = '';
+  document.getElementById('newTripEnd').value    = '';
+  document.getElementById('newTripBudget').value = '';
   renderTripSelect(); renderAll();
   showToast('Trip created: ' + name);
 }
@@ -1511,18 +1751,48 @@ function renderSummary() {
   const ov=document.getElementById('tripOverview');
   if(!t){ov.innerHTML='<p style="color:var(--ink-muted)">No active trip.</p>';return;}
   const fc2=t.fuel.reduce((s,e)=>s+e.cost,0), ec2=t.expenses.reduce((s,e)=>s+e.amount,0);
+  const grandTotal2=fc2+ec2;
   const odos2=t.fuel.map(e=>e.odo); let dist2=0;
   if(odos2.length>=2)dist2=Math.max(...odos2)-Math.min(...odos2);
   else if(odos2.length&&t.startOdo)dist2=odos2[0]-t.startOdo;
-  ov.innerHTML=`<table class="data-table" aria-label="Trip overview"><tbody>
+
+  // Budget tracker block (only shown if budget set)
+  let budgetHtml='';
+  if(t.budget){
+    const remaining=t.budget-grandTotal2;
+    const pctUsed=Math.min((grandTotal2/t.budget)*100,100);
+    const over=remaining<0;
+    const barColor=over?'var(--accent-red)':pctUsed>80?'#C75B00':'var(--brand)';
+    const remainLabel=over
+      ? `<span style="color:var(--accent-red);font-weight:700">$${Math.abs(remaining).toFixed(2)} over budget</span>`
+      : `<span style="color:#1A6B38;font-weight:700">$${remaining.toFixed(2)} remaining</span>`;
+    budgetHtml=`
+      <div style="margin-bottom:20px;padding:16px;background:var(--surface-alt);border:1px solid var(--border);border-radius:var(--radius-lg)">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;gap:8px;flex-wrap:wrap">
+          <span style="font-weight:700;font-size:.95rem;color:var(--ink)">Budget Tracker</span>
+          ${remainLabel}
+        </div>
+        <div style="background:var(--border);border-radius:999px;height:10px;overflow:hidden;margin-bottom:8px" role="progressbar" aria-valuenow="${pctUsed.toFixed(0)}" aria-valuemin="0" aria-valuemax="100" aria-label="Budget used: ${pctUsed.toFixed(0)}%">
+          <div style="height:100%;width:${pctUsed.toFixed(1)}%;background:${barColor};border-radius:999px;transition:width .4s ease"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--ink-muted)">
+          <span>$${grandTotal2.toFixed(2)} spent</span>
+          <span>${pctUsed.toFixed(0)}% of $${t.budget.toFixed(2)}</span>
+        </div>
+      </div>`;
+  }
+
+  ov.innerHTML=budgetHtml+`<table class="data-table" aria-label="Trip overview"><tbody>
     <tr><td style="color:var(--ink-muted);width:50%">Trip name</td><td><strong>${esc(t.name)}</strong></td></tr>
     <tr><td style="color:var(--ink-muted)">Start date</td><td>${t.startDate||'—'}</td></tr>
+    ${t.endDate?`<tr><td style="color:var(--ink-muted)">End date</td><td>${t.endDate}</td></tr>`:''}
+    ${t.budget?`<tr><td style="color:var(--ink-muted)">Budget</td><td>$${t.budget.toFixed(2)}</td></tr>`:''}
     <tr><td style="color:var(--ink-muted)">Distance tracked</td><td>${dist2.toLocaleString()} km</td></tr>
     <tr><td style="color:var(--ink-muted)">Fuel stops</td><td>${t.fuel.length}</td></tr>
     <tr><td style="color:var(--ink-muted)">Fuel cost</td><td>$${fc2.toFixed(2)}</td></tr>
     <tr><td style="color:var(--ink-muted)">Expense items</td><td>${t.expenses.length}</td></tr>
     <tr><td style="color:var(--ink-muted)">Other expenses</td><td>$${ec2.toFixed(2)}</td></tr>
-  </tbody><tfoot><tr class="total-row"><td><strong>Grand total</strong></td><td><strong>$${(fc2+ec2).toFixed(2)}</strong></td></tr></tfoot></table>`;
+  </tbody><tfoot><tr class="total-row"><td><strong>Grand total</strong></td><td><strong>$${grandTotal2.toFixed(2)}</strong></td></tr></tfoot></table>`;
 }
 
 /* ── Tabs ───────────────────────────────────────────────────────────────────── */
