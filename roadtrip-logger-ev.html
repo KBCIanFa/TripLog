@@ -1,0 +1,3479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trip Log by Ian Fraser © 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+/* ── Design tokens ─────────────────────────────────────────────────────────── */
+:root {
+  --bg:           #F7F5F0;
+  --surface:      #FFFFFF;
+  --surface-alt:  #F0EDE5;
+  --border:       #C8C2B4;
+  --border-focus: #1A5276;
+
+  --ink:          #1C1C1C;
+  --ink-secondary:#4A4640;
+  --ink-muted:    #6B6560;
+
+  --brand:        #C75B00;
+  --brand-dark:   #9C4500;
+  --brand-bg:     #FDF0E3;
+  --brand-border: #F0A35C;
+
+  --accent-blue:  #1A5276;
+  --accent-green: #1A6B38;
+  --accent-red:   #991A1A;
+  --accent-grn-bg:#E8F5EE;
+  --accent-red-bg:#FDEDED;
+
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-body:    'DM Sans', system-ui, sans-serif;
+
+  --radius:   6px;
+  --radius-lg:10px;
+  --shadow:   0 1px 3px rgba(0,0,0,.10), 0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:0 4px 12px rgba(0,0,0,.10), 0 2px 4px rgba(0,0,0,.06);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+.skip-link {
+  position: absolute; top: -999px; left: 8px;
+  background: var(--accent-blue); color: #fff;
+  padding: 8px 16px; border-radius: var(--radius);
+  font-weight: 600; font-size: .9rem; z-index: 9999;
+  text-decoration: none;
+}
+.skip-link:focus { top: 8px; }
+
+:focus-visible {
+  outline: 3px solid var(--border-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+
+/* ── Layout ─────────────────────────────────────────────────────────────────── */
+.app { max-width: 960px; margin: 0 auto; padding: 0 16px 80px; }
+
+/* ── Header ─────────────────────────────────────────────────────────────────── */
+header {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+  padding: 24px 0 20px;
+  border-bottom: 3px solid var(--brand);
+  margin-bottom: 28px;
+}
+.logo-group { display: flex; align-items: baseline; gap: 10px; }
+.logo-title { font-family: var(--font-display); font-size: 2.2rem; color: var(--brand); line-height: 1; }
+.logo-sub   { font-size: 0.78rem; font-weight: 500; color: var(--ink-muted); letter-spacing:.08em; text-transform:uppercase; }
+
+/* ── Buttons ────────────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-body); font-size: .875rem; font-weight: 600; line-height: 1;
+  padding: 10px 18px; border-radius: var(--radius); border: 2px solid transparent;
+  cursor: pointer; text-decoration: none;
+  transition: background .15s, color .15s, border-color .15s;
+  white-space: nowrap;
+}
+.btn-primary { background: var(--brand); color: #fff; border-color: var(--brand); }
+.btn-primary:hover, .btn-primary:focus-visible { background: var(--brand-dark); border-color: var(--brand-dark); }
+.btn-outline { background: transparent; color: var(--brand); border-color: var(--brand); }
+.btn-outline:hover, .btn-outline:focus-visible { background: var(--brand-bg); }
+.btn-danger  { background: transparent; color: var(--accent-red); border-color: var(--accent-red); }
+.btn-danger:hover, .btn-danger:focus-visible { background: var(--accent-red-bg); }
+.btn-ghost   { background: transparent; color: var(--ink-secondary); border-color: var(--border); }
+.btn-ghost:hover, .btn-ghost:focus-visible { background: var(--surface-alt); color: var(--ink); }
+.btn-sm   { padding: 6px 12px; font-size: .8rem; }
+.btn-icon { padding: 8px; min-width: 36px; justify-content: center; }
+
+/* ── Trip bar ───────────────────────────────────────────────────────────────── */
+.trip-bar {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 16px 20px; margin-bottom: 24px;
+  display: flex; align-items: center; flex-wrap: wrap; gap: 12px;
+  box-shadow: var(--shadow);
+}
+.label-text { font-size: .8rem; font-weight: 600; color: var(--ink-muted); text-transform:uppercase; letter-spacing:.08em; white-space:nowrap; }
+
+/* ── Form controls ──────────────────────────────────────────────────────────── */
+label { display: block; font-size: .85rem; font-weight: 600; color: var(--ink-secondary); margin-bottom: 5px; }
+
+input[type="text"], input[type="number"], input[type="date"], select, textarea {
+  width: 100%; background: var(--surface); border: 2px solid var(--border);
+  color: var(--ink); font-family: var(--font-body); font-size: 1rem;
+  padding: 10px 12px; border-radius: var(--radius);
+  transition: border-color .15s, box-shadow .15s; appearance: none; -webkit-appearance:none;
+}
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+  border-color: var(--border-focus); outline: none;
+  box-shadow: 0 0 0 3px rgba(26,82,118,.2);
+}
+input::placeholder, textarea::placeholder { color: var(--ink-muted); }
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234A4640' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
+  padding-right: 36px; cursor: pointer;
+}
+textarea { resize: vertical; min-height: 80px; }
+.form-group { display: flex; flex-direction: column; }
+.field-hint { font-size: .78rem; color: var(--ink-muted); margin-top: 4px; }
+
+/* ── Stats ──────────────────────────────────────────────────────────────────── */
+.stats-strip { display: grid; grid-template-columns: repeat(auto-fit,minmax(140px,1fr)); gap: 14px; margin-bottom: 28px; }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 18px 18px 14px;
+  box-shadow: var(--shadow); position: relative; overflow: hidden;
+}
+.stat-card::after {
+  content: ''; position: absolute; top:0; left:0; right:0; height:4px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+.stat-card.c-amber::after { background: var(--brand); }
+.stat-card.c-blue::after  { background: var(--accent-blue); }
+.stat-card.c-green::after { background: var(--accent-green); }
+.stat-card.c-red::after   { background: var(--accent-red); }
+.stat-label { font-size:.75rem; font-weight:600; color:var(--ink-muted); text-transform:uppercase; letter-spacing:.08em; margin-bottom:8px; }
+.stat-value { font-family:var(--font-display); font-size:2rem; line-height:1; color:var(--ink); }
+.stat-unit  { font-size:.75rem; color:var(--ink-muted); margin-top:4px; }
+
+/* ── Tabs ───────────────────────────────────────────────────────────────────── */
+[role="tablist"] {
+  display:flex; border-bottom: 2px solid var(--border); margin-bottom:28px;
+  gap:2px; overflow-x:auto; scrollbar-width:none;
+}
+[role="tablist"]::-webkit-scrollbar { display:none; }
+[role="tab"] {
+  font-family:var(--font-body); font-size:.875rem; font-weight:600;
+  color:var(--ink-secondary); background:transparent; border:none;
+  border-bottom:3px solid transparent; padding:12px 20px; margin-bottom:-2px;
+  cursor:pointer; white-space:nowrap;
+  transition: color .15s, border-color .15s;
+  display:flex; align-items:center; gap:7px;
+}
+[role="tab"]:hover { color:var(--brand); }
+[role="tab"][aria-selected="true"] { color:var(--brand); border-bottom-color:var(--brand); }
+[role="tabpanel"]        { display:none; }
+[role="tabpanel"].active { display:block; }
+
+/* ── Cards ──────────────────────────────────────────────────────────────────── */
+.card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius-lg); padding:24px; box-shadow:var(--shadow); margin-bottom:24px;
+}
+.card-title {
+  font-size:1rem; font-weight:600; color:var(--ink);
+  margin-bottom:20px; padding-bottom:12px; border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:8px;
+}
+.card-title .icon {
+  width:32px; height:32px; background:var(--brand-bg); border-radius:var(--radius);
+  display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0;
+}
+.form-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; }
+.form-actions {
+  display:flex; gap:10px; margin-top:20px; padding-top:16px;
+  border-top:1px solid var(--surface-alt); flex-wrap:wrap;
+}
+.section-heading {
+  font-family:var(--font-display); font-size:1.25rem; color:var(--ink);
+  margin-bottom:16px; display:flex; align-items:center; justify-content:space-between; gap:12px;
+}
+.entry-count {
+  font-family:var(--font-body); font-size:.78rem; font-weight:600;
+  color:var(--ink-muted); background:var(--surface-alt); padding:3px 10px; border-radius:999px;
+}
+
+/* ── History toggle ─────────────────────────────────────────────────────────── */
+.toggle-history-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body);
+  font-size: .78rem;
+  font-weight: 600;
+  color: var(--ink-secondary);
+  background: var(--surface-alt);
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: background .15s, border-color .15s, color .15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.toggle-history-btn:hover {
+  background: var(--brand-bg);
+  border-color: var(--brand-border);
+  color: var(--brand);
+}
+.toggle-history-btn:focus-visible {
+  outline: 3px solid var(--brand);
+  outline-offset: 2px;
+}
+.toggle-history-btn .toggle-arrow {
+  display: inline-block;
+  transition: transform .2s ease;
+  font-style: normal;
+}
+.toggle-history-btn[aria-expanded="false"] .toggle-arrow {
+  transform: rotate(-90deg);
+}
+.history-panel {
+  overflow: hidden;
+  transition: max-height .25s ease, opacity .2s ease;
+  max-height: 9999px;
+  opacity: 1;
+}
+.history-panel.collapsed {
+  max-height: 0;
+  opacity: 0;
+}
+
+/* ── Log entries ────────────────────────────────────────────────────────────── */
+.log-list { display:flex; flex-direction:column; gap:10px; }
+.log-entry {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius-lg); padding:16px;
+  display:grid; grid-template-columns:auto 1fr auto;
+  gap:14px; align-items:start; box-shadow:var(--shadow);
+  transition:border-color .15s, box-shadow .15s;
+}
+.log-entry:hover { border-color:var(--brand-border); box-shadow:var(--shadow-md); }
+.entry-icon { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; margin-top:2px; }
+.entry-icon.fuel    { background:#FDF0E3; }
+.entry-icon.expense { background:#E8F1F8; }
+.entry-body { min-width:0; }
+.entry-title { font-size:1rem; font-weight:600; color:var(--ink); margin-bottom:4px; }
+.entry-meta  { font-size:.82rem; color:var(--ink-muted); display:flex; flex-wrap:wrap; gap:6px; align-items:center; line-height:1.4; }
+.meta-sep    { color:var(--border); }
+.entry-right { text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:8px; flex-shrink:0; }
+.entry-amount { font-family:var(--font-display); font-size:1.35rem; color:var(--ink); line-height:1; }
+
+/* ── Badges ─────────────────────────────────────────────────────────────────── */
+.badge {
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:.75rem; font-weight:600; padding:2px 9px;
+  border-radius:999px; border:1.5px solid; white-space:nowrap;
+}
+.badge-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.eff-pill  { display:inline-flex; align-items:center; font-size:.75rem; font-weight:700; padding:2px 8px; border-radius:4px; }
+.eff-good  { background:var(--accent-grn-bg); color:var(--accent-green); }
+.eff-mid   { background:#FDF0E3; color:var(--brand); }
+.eff-poor  { background:var(--accent-red-bg); color:var(--accent-red); }
+
+/* ── Categories ─────────────────────────────────────────────────────────────── */
+.cat-grid    { display:flex; flex-wrap:wrap; gap:8px; }
+.cat-chip    { display:inline-flex; align-items:center; gap:7px; background:var(--surface-alt); border:1.5px solid var(--border); border-radius:999px; padding:6px 14px 6px 10px; font-size:.85rem; font-weight:500; color:var(--ink); }
+.cat-chip .dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.cat-del     { background:none; border:none; cursor:pointer; font-size:1rem; color:var(--ink-muted); line-height:1; padding:0 0 0 4px; margin-left:2px; transition:color .15s; }
+.cat-del:hover, .cat-del:focus-visible { color:var(--accent-red); }
+.color-picker-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:6px; }
+.color-swatch { width:28px; height:28px; border-radius:50%; border:3px solid transparent; cursor:pointer; transition:transform .1s, border-color .1s; }
+.color-swatch:hover   { transform:scale(1.15); }
+.color-swatch:focus-visible { outline:3px solid var(--border-focus); outline-offset:2px; }
+.color-swatch.selected { border-color:var(--ink); }
+
+/* ── Charts / Summary ───────────────────────────────────────────────────────── */
+.chart-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:24px; margin-bottom:20px; box-shadow:var(--shadow); }
+.chart-heading { font-size:.85rem; font-weight:700; color:var(--ink-secondary); text-transform:uppercase; letter-spacing:.08em; margin-bottom:20px; }
+.bar-chart { display:flex; flex-direction:column; gap:10px; }
+.bar-row   { display:grid; grid-template-columns:90px 1fr 70px; align-items:center; gap:10px; }
+.bar-label { font-size:.78rem; color:var(--ink-muted); text-align:right; font-weight:500; }
+.bar-track { background:var(--surface-alt); border-radius:4px; height:20px; overflow:hidden; border:1px solid var(--border); }
+.bar-fill  { height:100%; border-radius:3px; transition:width .5s ease; }
+.bar-value { font-size:.8rem; font-weight:600; color:var(--ink); }
+
+/* ── Data table ─────────────────────────────────────────────────────────────── */
+.data-table-wrapper { overflow-x:auto; }
+.data-table { width:100%; border-collapse:collapse; font-size:.9rem; }
+.data-table th { font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-muted); text-align:left; padding:10px 14px; border-bottom:2px solid var(--border); white-space:nowrap; background:var(--surface-alt); }
+.data-table td { padding:12px 14px; border-bottom:1px solid var(--surface-alt); color:var(--ink); vertical-align:middle; }
+.data-table tr:last-child td { border-bottom:none; }
+.data-table tr:hover td { background:var(--bg); }
+
+
+
+/* ── Vehicle Type Selector ──────────────────────────────────────────────────── */
+.vtype-selector {
+  display: flex; gap: 8px; margin: 4px 0 8px;
+}
+.vtype-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  gap: 2px; padding: 10px 8px;
+  border: 2px solid var(--border); border-radius: var(--radius-lg);
+  background: var(--surface); cursor: pointer;
+  transition: all .15s; font-family: var(--font-body);
+}
+.vtype-btn:hover { border-color: var(--brand); background: var(--brand-bg); }
+.vtype-btn.active { border-color: var(--brand); background: var(--brand-bg); }
+.vtype-btn[data-vtype="phev"].active { border-color: #0E6B6B; background: #E6F4F4; }
+.vtype-btn[data-vtype="ev"].active   { border-color: var(--ev-brand); background: var(--ev-brand-bg); }
+.vtype-icon { font-size: 1.4rem; line-height: 1; }
+.vtype-label { font-size: .85rem; font-weight: 700; color: var(--ink); }
+.vtype-sub   { font-size: .7rem;  color: var(--ink-muted); }
+
+/* ── Vehicle Type Badge (trip bar) ──────────────────────────────────────────── */
+.vtype-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 999px;
+  font-size: .72rem; font-weight: 700; letter-spacing: .03em;
+  flex-shrink: 0;
+}
+.vtype-badge.badge-ice  { background: var(--brand-bg);   color: var(--brand);    border: 1px solid var(--brand-border); }
+.vtype-badge.badge-phev { background: #E6F4F4;            color: #0E6B6B;         border: 1px solid #0E6B6B; }
+.vtype-badge.badge-ev   { background: var(--ev-brand-bg); color: var(--ev-brand); border: 1px solid var(--ev-brand-border); }
+
+
+/* ── Fuel Type Selector ─────────────────────────────────────────────────────── */
+.ftype-selector {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;
+}
+.ftype-btn {
+  font-family: var(--font-body); font-size: .78rem; font-weight: 600;
+  padding: 5px 12px; border-radius: 999px;
+  border: 1.5px solid var(--border); background: var(--surface);
+  color: var(--ink-muted); cursor: pointer; transition: all .15s;
+  white-space: nowrap;
+}
+.ftype-btn:hover  { border-color: var(--brand); color: var(--brand); }
+.ftype-btn.active { border-color: var(--brand); background: var(--brand-bg); color: var(--brand); font-weight: 700; }
+
+/* ── Vtype filter strip (above trip dropdown) ───────────────────────────────── */
+.vtype-filter-strip {
+  display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+  margin-bottom: 8px;
+}
+.vtype-filter-btn {
+  font-family: var(--font-body); font-size: .75rem; font-weight: 700;
+  padding: 4px 12px; border-radius: 999px;
+  border: 1.5px solid var(--border); background: var(--surface);
+  color: var(--ink-muted); cursor: pointer; transition: all .15s;
+}
+.vtype-filter-btn:hover { border-color: var(--ink-muted); }
+.vtype-filter-btn.active-all  { border-color: var(--ink);       background: var(--surface-alt);   color: var(--ink); }
+.vtype-filter-btn.active-ice  { border-color: var(--brand);     background: var(--brand-bg);      color: var(--brand); }
+.vtype-filter-btn.active-phev { border-color: #0E6B6B;          background: #E6F4F4;              color: #0E6B6B; }
+.vtype-filter-btn.active-ev   { border-color: var(--ev-brand);  background: var(--ev-brand-bg);   color: var(--ev-brand); }
+
+/* ── PHEV banner ─────────────────────────────────────────────────────────────── */
+.phev-banner {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #FDF0E3 0%, #F5F0FF 100%);
+  border: 1.5px solid #D4A855;
+  border-radius: var(--radius);
+  font-size: .84rem;
+  color: var(--ink-secondary);
+  line-height: 1.4;
+}
+.phev-banner .phev-icon { font-size: 1.1rem; flex-shrink: 0; }
+.phev-banner strong { color: var(--ink); }
+.phev-banner a, .phev-banner button.phev-link {
+  background: none; border: none; padding: 0; cursor: pointer;
+  color: var(--ev-brand); font-weight: 600; font-size: inherit;
+  text-decoration: underline; text-underline-offset: 2px;
+}
+body.ev-mode .phev-banner {
+  background: linear-gradient(135deg, #F5F0FF 0%, #FDF0E3 100%);
+  border-color: var(--ev-brand-border);
+}
+
+/* ── EV / PHEV Module tokens ────────────────────────────────────────────────── */
+:root {
+  --ev-brand:      #6B21A8;
+  --ev-brand-dark: #4C1680;
+  --ev-brand-mid:  #8B3EC8;
+  --ev-brand-bg:   #F5F0FF;
+  --ev-brand-border:#A855D4;
+  --ev-accent:     #A855F7;
+}
+
+/* Mode toggle pill */
+.mode-toggle {
+  display: flex;
+  background: var(--surface-alt);
+  border: 1.5px solid var(--border);
+  border-radius: 999px;
+  padding: 3px;
+  gap: 2px;
+}
+.mode-btn {
+  font-family: var(--font-body);
+  font-size: .78rem; font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: none; cursor: pointer;
+  transition: all .2s;
+  background: transparent; color: var(--ink-muted);
+  letter-spacing: .03em;
+}
+.mode-btn.active-ice {
+  background: var(--brand); color: #fff;
+  box-shadow: 0 2px 6px rgba(199,91,0,.30);
+}
+.mode-btn.active-ev {
+  background: var(--ev-brand); color: #fff;
+  box-shadow: 0 2px 8px rgba(107,33,168,.35);
+}
+
+/* EV tint — applied to body when in EV mode */
+body.ev-mode .tab-bar { border-bottom-color: var(--ev-brand); }
+body.ev-mode .tab-btn.active { color: var(--ev-brand); border-bottom-color: var(--ev-brand); }
+body.ev-mode .btn-primary { background: var(--ev-brand); border-color: var(--ev-brand); }
+body.ev-mode .btn-primary:hover { background: var(--ev-brand-dark); border-color: var(--ev-brand-dark); }
+body.ev-mode .stat-card.c-amber::after { background: var(--ev-brand); }
+body.ev-mode header { border-bottom-color: var(--ev-brand-border); }
+body.ev-mode .card-title { color: var(--ev-brand); }
+body.ev-mode .section-title { color: var(--ev-brand-mid); }
+body.ev-mode .backup-banner { background: linear-gradient(135deg, var(--ev-brand-bg), #EDE0FF); border-color: var(--ev-brand-border); }
+body.ev-mode .info-banner { background: var(--ev-brand-bg); border-color: var(--ev-brand-border); color: var(--ev-brand-dark); }
+body.ev-mode .data-table .total-row td { color: var(--ev-brand); background: var(--ev-brand-bg); }
+body.ev-mode .logo-title { color: var(--ev-brand-mid); }
+body.ev-mode header { border-bottom-color: var(--ev-brand); }
+body.ev-mode :focus-visible { outline-color: var(--ev-brand); }
+body.ev-mode .btn-outline { color: var(--ev-brand); border-color: var(--ev-brand); }
+body.ev-mode .btn-outline:hover { background: var(--ev-brand-bg); }
+body.ev-mode #vehicleModeLabel { color: var(--ev-accent); }
+
+/* EV mode — hide ICE tab, show EV tab */
+body.ev-mode #tab-fuel-btn { display: none; }
+body:not(.ev-mode) #tab-charge-btn { display: none; }
+
+/* Charge form specific */
+.charge-efficiency-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: .72rem; font-weight: 700; padding: 2px 8px;
+  border-radius: 999px; margin-left: 8px;
+}
+.badge-ev-good   { background:#EDE0FF; color:var(--ev-brand); }
+.badge-ev-ok     { background:#F5F0FF; color:#7C3AED; }
+.badge-ev-poor   { background:#FFF0F0; color:#991A1A; }
+
+.data-table .total-row td { font-weight:700; color:var(--brand); border-top:2px solid var(--border); background:var(--brand-bg); }
+
+/* ── Empty state ────────────────────────────────────────────────────────────── */
+.empty-state { text-align:center; padding:52px 20px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); }
+.empty-icon  { font-size:2.5rem; margin-bottom:12px; opacity:.45; }
+.empty-title { font-size:1rem; font-weight:600; color:var(--ink-secondary); margin-bottom:6px; }
+.empty-text  { font-size:.875rem; color:var(--ink-muted); }
+
+/* ── Modal ──────────────────────────────────────────────────────────────────── */
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:900; align-items:center; justify-content:center; padding:16px; }
+.modal-overlay.open { display:flex; }
+.modal { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); padding:28px; width:100%; max-width:500px; animation:fadeUp .2s ease; }
+@keyframes fadeUp { from{transform:translateY(16px);opacity:0} to{transform:translateY(0);opacity:1} }
+.modal-title  { font-family:var(--font-display); font-size:1.5rem; color:var(--ink); margin-bottom:20px; }
+.modal-actions { display:flex; gap:10px; margin-top:24px; justify-content:flex-end; }
+
+/* ── Toast ──────────────────────────────────────────────────────────────────── */
+.toast {
+  position:fixed; bottom:24px; right:16px;
+  background:var(--ink); color:#fff;
+  font-size:.875rem; font-weight:500; padding:12px 20px;
+  border-radius:var(--radius); box-shadow:var(--shadow-md);
+  z-index:1000; max-width:320px;
+  transform:translateY(80px); opacity:0; pointer-events:none;
+  transition:transform .3s ease, opacity .3s ease;
+}
+.toast.show { transform:translateY(0); opacity:1; }
+
+/* ── Responsive ─────────────────────────────────────────────────────────────── */
+@media (max-width:640px) {
+  .logo-title  { font-size:1.8rem; }
+  .stats-strip { grid-template-columns:1fr 1fr; }
+  .stat-value  { font-size:1.6rem; }
+  .log-entry   { grid-template-columns:auto 1fr; }
+  .entry-right { grid-row:2; grid-column:2; flex-direction:row; align-items:center; justify-content:space-between; }
+  .bar-row     { grid-template-columns:70px 1fr 60px; }
+  [role="tab"] { padding:10px 14px; font-size:.8rem; }
+  .card        { padding:16px; }
+}
+@media (max-width:400px) {
+  .stats-strip { grid-template-columns:1fr; }
+}
+@media (prefers-reduced-motion:reduce) {
+  *, *::before, *::after { animation-duration:.01ms !important; transition-duration:.01ms !important; }
+}
+
+/* ── History toggle ─────────────────────────────────────────────────────────── */
+function toggleHistory(section) {
+  const panel  = document.getElementById(section + 'HistoryPanel');
+  const btn    = document.getElementById(section + 'HistoryToggle');
+  const label  = document.getElementById(section + 'HistoryLabel');
+  const isOpen = btn.getAttribute('aria-expanded') === 'true';
+
+  if (isOpen) {
+    panel.classList.add('collapsed');
+    btn.setAttribute('aria-expanded', 'false');
+    label.textContent = 'Show';
+  } else {
+    panel.classList.remove('collapsed');
+    btn.setAttribute('aria-expanded', 'true');
+    label.textContent = 'Hide';
+  }
+}
+
+/* ── Export / Import ─────────────────────────────────────────────────────────── */
+.export-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 0;
+}
+
+.export-option {
+  background: var(--surface-alt);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.export-option-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+.export-option-title {
+  font-size: .95rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.export-option-desc {
+  font-size: .8rem;
+  color: var(--ink-muted);
+  line-height: 1.5;
+  flex: 1;
+}
+
+.export-option .btn { width: 100%; justify-content: center; margin-top: 4px; }
+
+.import-drop-area {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+  background: var(--surface-alt);
+  position: relative;
+}
+.import-drop-area:hover,
+.import-drop-area.drag-over {
+  border-color: var(--brand);
+  background: var(--brand-bg);
+}
+.import-drop-area input[type="file"] {
+  position: absolute; inset: 0;
+  opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  border: none; padding: 0;
+}
+.import-drop-icon  { font-size: 2rem; margin-bottom: 8px; }
+.import-drop-title { font-size: .95rem; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+.import-drop-sub   { font-size: .8rem; color: var(--ink-muted); }
+
+.import-preview {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-top: 14px;
+  display: none;
+}
+.import-preview.visible { display: block; }
+.import-preview-title { font-size: .85rem; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
+.import-preview-list  { font-size: .8rem; color: var(--ink-muted); line-height: 1.8; }
+.import-preview-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+
+.import-mode-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.import-mode-btn {
+  flex: 1;
+  min-width: 140px;
+  padding: 10px 14px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink-secondary);
+  font-family: var(--font-body);
+  font-size: .82rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color .15s, background .15s, color .15s;
+}
+.import-mode-btn:hover { border-color: var(--brand-border); }
+.import-mode-btn.active { border-color: var(--brand); background: var(--brand-bg); color: var(--brand); }
+
+/* ── Settings ────────────────────────────────────────────────────────────────── */
+.settings-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; margin-bottom:24px; }
+
+.config-option {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.config-option input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  width: 0; height: 0;
+}
+.config-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+  user-select: none;
+}
+.config-label:hover { border-color: var(--brand-border); background: var(--brand-bg); }
+.config-option input[type="radio"]:checked + .config-label {
+  border-color: var(--brand);
+  background: var(--brand-bg);
+}
+.config-option input[type="radio"]:focus-visible + .config-label {
+  outline: 3px solid var(--border-focus);
+  outline-offset: 2px;
+}
+.config-icon {
+  font-size: 2rem;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.config-text { flex: 1; }
+.config-title {
+  font-size: .95rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 3px;
+}
+.config-desc {
+  font-size: .8rem;
+  color: var(--ink-muted);
+  line-height: 1.4;
+}
+.config-check {
+  width: 20px; height: 20px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 2px;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color .15s, background .15s;
+}
+.config-option input[type="radio"]:checked + .config-label .config-check {
+  border-color: var(--brand);
+  background: var(--brand);
+}
+.config-check::after {
+  content: '';
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: white;
+  opacity: 0;
+  transition: opacity .15s;
+}
+.config-option input[type="radio"]:checked + .config-label .config-check::after { opacity: 1; }
+
+.settings-section-title {
+  font-size: .75rem;
+  font-weight: 700;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin-bottom: 12px;
+  margin-top: 4px;
+}
+
+.vehicle-preview {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.vehicle-preview-icon { font-size: 2rem; }
+.vehicle-preview-text { flex: 1; }
+.vehicle-preview-name { font-size: 1rem; font-weight: 600; color: var(--ink); }
+.vehicle-preview-sub  { font-size: .8rem; color: var(--ink-muted); margin-top: 2px; }
+
+.info-banner {
+  background: #E8F1F8;
+  border: 1px solid #90BAD8;
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  font-size: .85rem;
+  color: var(--accent-blue);
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.info-banner .info-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
+
+.divider-line { border: none; border-top: 1px solid var(--border); margin: 8px 0 20px; }
+
+/* ── Help tab ────────────────────────────────────────────────────────────────── */
+.help-section { display: flex; flex-direction: column; gap: 0; }
+.help-item {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.help-item:last-child { border-bottom: none; padding-bottom: 0; }
+.help-item:first-child { padding-top: 4px; }
+.help-q {
+  font-weight: 700;
+  font-size: .9rem;
+  color: var(--ink);
+  margin-bottom: 5px;
+}
+.help-a {
+  font-size: .875rem;
+  color: var(--ink-secondary);
+  line-height: 1.65;
+}
+.backup-banner {
+  display: none;
+  align-items: flex-start;
+  gap: 14px;
+  background: linear-gradient(135deg, #FDF0E3 0%, #FEF9F4 100%);
+  border: 1.5px solid var(--brand-border);
+  border-radius: var(--radius-lg);
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+  animation: slideDown .3s ease;
+}
+.backup-banner.visible { display: flex; }
+.backup-banner-icon { font-size: 1.5rem; flex-shrink: 0; margin-top: 1px; }
+.backup-banner-body { flex: 1; min-width: 0; }
+.backup-banner-title { font-weight: 700; font-size: .9rem; color: var(--ink); margin-bottom: 3px; }
+.backup-banner-text  { font-size: .82rem; color: var(--ink-secondary); line-height: 1.5; }
+.backup-banner-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.backup-banner-close {
+  background: none; border: none; cursor: pointer; color: var(--ink-muted);
+  font-size: 1.1rem; line-height: 1; padding: 2px 4px; border-radius: 4px;
+  flex-shrink: 0; align-self: flex-start;
+}
+.backup-banner-close:hover { color: var(--ink); background: var(--surface-alt); }
+
+/* ── Buy Me a Coffee button ─────────────────────────────────────────────────── */
+.bmc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 15px 7px 12px;
+  background: #ffffff;
+  color: #003087;
+  border: 1.5px solid #c8c2b4;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: .82rem;
+  font-weight: 600;
+  text-decoration: none;
+  letter-spacing: .01em;
+  box-shadow: 0 1px 4px rgba(0,0,0,.10);
+  transition: border-color .15s, box-shadow .15s, transform .1s, background .15s;
+  white-space: nowrap;
+}
+.bmc-btn:hover {
+  background: #f0f4ff;
+  border-color: #009cde;
+  box-shadow: 0 3px 10px rgba(0,156,222,.20);
+  transform: translateY(-1px);
+}
+.bmc-btn:active { transform: translateY(0); box-shadow: 0 1px 3px rgba(0,0,0,.10); }
+.bmc-btn:focus-visible { outline: 2px solid #009cde; outline-offset: 3px; }
+.bmc-icon { width: 72px; height: auto; display: block; flex-shrink: 0; }
+.bmc-text { line-height: 1; }
+@keyframes slideDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+
+.help-a code {
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: .82rem;
+  font-family: monospace;
+  color: var(--ink);
+}
+</style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<div id="live-region" role="status" aria-live="polite" aria-atomic="true" class="sr-only"></div>
+
+<div id="backupBanner" class="backup-banner" role="alert" aria-live="polite">
+  <span class="backup-banner-icon" aria-hidden="true">💾</span>
+  <div class="backup-banner-body">
+    <div class="backup-banner-title">Time to back up your Trip Log</div>
+    <div class="backup-banner-text" id="backupBannerText">You've added entries since your last backup. Download a backup to protect your data.</div>
+    <div class="backup-banner-actions">
+      <button class="btn btn-primary btn-sm" onclick="backupFromBanner()">Download Backup Now</button>
+      <button class="btn btn-ghost btn-sm" onclick="dismissBackupBanner()">Remind me later</button>
+    </div>
+  </div>
+  <button class="backup-banner-close" onclick="dismissBackupBanner()" aria-label="Dismiss backup reminder">✕</button>
+</div>
+
+<div class="app" id="main-content">
+
+  <header role="banner">
+    <div class="logo-group">
+      <span class="logo-title">Trip Log</span>
+      <span class="logo-sub" aria-hidden="true">Road Trip Journal</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end">
+      <a href="https://www.paypal.com/ncp/payment/YGXFAYQ4PY5X6"
+         class="bmc-btn"
+         aria-label="Support this app via PayPal">
+        <svg class="bmc-icon" viewBox="0 0 101 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path fill="#003087" d="M12.237 2.67H4.532C3.99 2.67 3.53 3.07 3.448 3.607L.342 23.14a.926.926 0 0 0 .914 1.07h3.658c.542 0 1.002-.4 1.084-.937l.837-5.31c.08-.537.542-.937 1.083-.937h2.394c4.979 0 7.852-2.41 8.602-7.186.339-2.088.014-3.729-.97-4.879-1.08-1.268-2.993-1.94-5.707-1.94zm.873 7.083c-.413 2.71-2.484 2.71-4.487 2.71h-1.14l.8-5.061a.652.652 0 0 1 .644-.55h.522c1.364 0 2.65 0 3.314.777.397.465.518 1.154.347 2.124z"/>
+          <path fill="#003087" d="M35.438 9.67h-3.674a.655.655 0 0 0-.644.55l-.166 1.052-.263-.382c-.815-1.183-2.633-1.578-4.448-1.578-4.16 0-7.716 3.151-8.406 7.572-.36 2.205.151 4.311 1.4 5.782 1.147 1.352 2.786 1.914 4.736 1.914 3.354 0 5.215-2.155 5.215-2.155l-.168 1.044a.926.926 0 0 0 .914 1.07h3.31c.542 0 1.002-.4 1.083-.937l1.987-12.584a.926.926 0 0 0-.876-1.348zm-5.12 7.327c-.362 2.147-2.072 3.588-4.244 3.588-1.09 0-1.963-.35-2.522-1.013-.555-.659-.764-1.598-.588-2.644.34-2.128 2.075-3.615 4.213-3.615 1.068 0 1.935.353 2.506 1.02.574.673.797 1.617.635 2.664z"/>
+          <path fill="#009cde" d="M55.348 9.67h-3.69a1.1 1.1 0 0 0-.907.48l-5.24 7.717-2.22-7.416a1.1 1.1 0 0 0-1.054-.781h-3.626a.657.657 0 0 0-.622.873l4.183 12.278-3.933 5.553a.657.657 0 0 0 .537 1.036h3.686a1.1 1.1 0 0 0 .9-.473l12.622-18.22a.657.657 0 0 0-.636-1.047z"/>
+          <path fill="#003087" d="M67.107 2.67H59.4c-.542 0-1.002.4-1.083.937L55.21 23.14a.926.926 0 0 0 .914 1.07h3.93c.38 0 .702-.276.76-.654l.892-5.593c.08-.537.542-.937 1.083-.937h2.394c4.979 0 7.852-2.41 8.602-7.186.339-2.088.014-3.729-.97-4.879-1.08-1.268-2.993-1.94-5.708-1.94zm.873 7.083c-.413 2.71-2.484 2.71-4.487 2.71h-1.14l.8-5.061a.652.652 0 0 1 .644-.55h.522c1.364 0 2.65 0 3.314.777.397.465.518 1.154.347 2.124z"/>
+          <path fill="#009cde" d="M90.308 9.67h-3.673a.655.655 0 0 0-.644.55l-.166 1.052-.264-.382c-.814-1.183-2.632-1.578-4.447-1.578-4.16 0-7.716 3.151-8.406 7.572-.36 2.205.151 4.311 1.4 5.782 1.147 1.352 2.786 1.914 4.736 1.914 3.354 0 5.215-2.155 5.215-2.155l-.168 1.044a.926.926 0 0 0 .914 1.07h3.31c.542 0 1.002-.4 1.083-.937l1.987-12.584a.926.926 0 0 0-.877-1.348zm-5.12 7.327c-.361 2.147-2.071 3.588-4.243 3.588-1.09 0-1.963-.35-2.522-1.013-.555-.659-.764-1.598-.588-2.644.34-2.128 2.075-3.615 4.213-3.615 1.068 0 1.935.353 2.506 1.02.574.673.797 1.617.635 2.664z"/>
+          <path fill="#009cde" d="M95.27 3.172l-3.145 20.003a.926.926 0 0 0 .914 1.07h3.168c.543 0 1.003-.4 1.084-.937L100.4 3.773a.926.926 0 0 0-.914-1.07h-3.572a.655.655 0 0 0-.644.47z"/>
+        </svg>
+        <span class="bmc-text">Support this app</span>
+      </a>
+
+      <button class="btn btn-outline" onclick="openModal('newTripModal')" aria-haspopup="dialog">
+        <span aria-hidden="true">＋</span> New Trip
+      </button>
+    </div>
+  </header>
+
+  <!-- Trip selector -->
+  <section aria-label="Trip selection" class="trip-bar">
+    <div class="vtype-filter-strip" role="group" aria-label="Filter trips by vehicle type">
+      <span class="label-text" style="margin-right:2px">Show:</span>
+      <button class="vtype-filter-btn active-all" data-filter="all"  onclick="setTripFilter('all')" >All</button>
+      <button class="vtype-filter-btn" data-filter="ice"  onclick="setTripFilter('ice')" >⛽ ICE</button>
+      <button class="vtype-filter-btn" data-filter="phev" onclick="setTripFilter('phev')">🔋 PHEV</button>
+      <button class="vtype-filter-btn" data-filter="ev"   onclick="setTripFilter('ev')"  >⚡ EV</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;width:100%">
+    <span class="label-text" id="trip-select-label">Active Trip</span>
+    <select id="tripSelect" aria-labelledby="trip-select-label" onchange="switchTrip()" style="flex:1;min-width:160px;max-width:400px"></select>
+    <span id="vehicleTypeBadge" class="vtype-badge" aria-label="Vehicle type"></span>
+    <button class="btn btn-outline btn-sm" onclick="editCurrentTrip()" aria-label="Edit current trip" id="editTripBtn">✏️ Edit</button>
+    <button class="btn btn-danger btn-sm" onclick="deleteCurrentTrip()" aria-label="Delete current trip">Delete Trip</button>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <section aria-label="Trip statistics">
+    <div class="stats-strip">
+      <div class="stat-card c-amber" role="region" aria-labelledby="lbl-dist">
+        <div class="stat-label" id="lbl-dist">Distance</div>
+        <div class="stat-value" id="statDistance" aria-live="polite">0</div>
+        <div class="stat-unit">kilometres total</div>
+      </div>
+      <div class="stat-card c-blue" role="region" aria-labelledby="lbl-fuel">
+        <div class="stat-label" id="lbl-fuel">Fuel Used</div>
+        <div class="stat-value" id="statFuel" aria-live="polite">0</div>
+        <div class="stat-unit">litres</div>
+      </div>
+      <div class="stat-card c-green" role="region" aria-labelledby="lbl-eff">
+        <div class="stat-label" id="lbl-eff">Efficiency</div>
+        <div class="stat-value" id="statEff" aria-live="polite">—</div>
+        <div class="stat-unit">litres / 100 km</div>
+      </div>
+      <div class="stat-card c-red" role="region" aria-labelledby="lbl-spend">
+        <div class="stat-label" id="lbl-spend">Total Spend</div>
+        <div class="stat-value" id="statSpend" aria-live="polite">$0</div>
+        <div class="stat-unit">fuel + expenses</div>
+      </div>
+      <div class="stat-card c-green" role="region" aria-labelledby="lbl-budget" id="statBudgetCard" style="display:none">
+        <div class="stat-label" id="lbl-budget">Budget Left</div>
+        <div class="stat-value" id="statBudget" aria-live="polite">—</div>
+        <div class="stat-unit" id="statBudgetUnit">of $0 budget</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tabs -->
+  <div role="tablist" aria-label="Trip sections">
+    <button role="tab" id="tab-fuel-btn"       aria-selected="true"  aria-controls="panel-fuel"       onclick="switchTab('fuel',this)"><span aria-hidden="true">⛽</span> Fuel</button>
+    <button role="tab" id="tab-charge-btn"     aria-selected="false" aria-controls="panel-charge"     onclick="switchTab('charge',this)"     tabindex="-1"><span aria-hidden="true">⚡</span> Charging</button>
+    <button role="tab" id="tab-expenses-btn"   aria-selected="false" aria-controls="panel-expenses"   onclick="switchTab('expenses',this)"   tabindex="-1"><span aria-hidden="true">💳</span> Expenses</button>
+    <button role="tab" id="tab-categories-btn" aria-selected="false" aria-controls="panel-categories" onclick="switchTab('categories',this)" tabindex="-1"><span aria-hidden="true">🏷</span> Categories</button>
+    <button role="tab" id="tab-summary-btn"    aria-selected="false" aria-controls="panel-summary"    onclick="switchTab('summary',this)"    tabindex="-1"><span aria-hidden="true">📊</span> Summary</button>
+    <button role="tab" id="tab-settings-btn"   aria-selected="false" aria-controls="panel-settings"   onclick="switchTab('settings',this)"   tabindex="-1"><span aria-hidden="true">⚙️</span> Settings</button>
+    <button role="tab" id="tab-help-btn"      aria-selected="false" aria-controls="panel-help"      onclick="switchTab('help',this)"      tabindex="-1"><span aria-hidden="true">❓</span> Help</button>
+  </div>
+
+  <!-- ── FUEL ─────────────────────────────────────────────────────────────── -->
+  <div role="tabpanel" id="panel-fuel" aria-labelledby="tab-fuel-btn" class="active">
+    <div class="card">
+      <div class="card-title"><span class="icon" aria-hidden="true">⛽</span> Log Fuel Stop</div>
+      <div id="phevFuelBanner" class="phev-banner" style="display:none">
+        <span class="phev-icon">⚡</span>
+        <span>This trip has <strong id="phevFuelCount">0</strong> charging session(s) totalling <strong id="phevFuelCost">$0.00</strong> —
+        <button class="phev-link" onclick="switchToEvMode()">switch to EV mode</button> to view them.</span>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="fuelDate">Date <span aria-hidden="true">*</span></label>
+          <input type="date" id="fuelDate" required aria-required="true">
+        </div>
+        <div class="form-group">
+          <label for="fuelLocation">Station / Location</label>
+          <input type="text" id="fuelLocation" placeholder="e.g. BP Alice Springs" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="fuelOdo">Odometer (km) <span aria-hidden="true">*</span></label>
+          <input type="number" id="fuelOdo" placeholder="e.g. 12540" min="0" required aria-required="true">
+        </div>
+        <div class="form-group">
+          <label for="fuelLitres">Litres filled <span aria-hidden="true">*</span></label>
+          <input type="number" id="fuelLitres" placeholder="e.g. 42.5" min="0" step="0.01" required aria-required="true">
+        </div>
+        <div class="form-group">
+          <label for="fuelPPL">Price per litre ($)</label>
+          <input type="number" id="fuelPPL" placeholder="e.g. 1.879" min="0" step="0.001">
+          <span class="field-hint">Total cost is calculated automatically</span>
+        </div>
+        <div class="form-group">
+          <label for="fuelCost">Total cost ($)</label>
+          <input type="number" id="fuelCost" placeholder="Auto-calculated or enter manually" step="0.01">
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:16px">
+        <label for="fuelNotes">Notes</label>
+        <textarea id="fuelNotes" placeholder="Any notes about this stop…"></textarea>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="addFuelEntry()">Log Fuel Stop</button>
+        <button class="btn btn-ghost"   onclick="clearFuelForm()">Clear form</button>
+      </div>
+    </div>
+    <h2 class="section-heading">
+      <span style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        Fuel History <span class="entry-count" id="fuelCount" aria-live="polite">0 stops</span>
+      </span>
+      <button class="toggle-history-btn"
+              id="fuelHistoryToggle"
+              aria-expanded="true"
+              aria-controls="fuelHistoryPanel"
+              onclick="toggleHistory('fuel')"
+              title="Show or hide fuel history">
+        <i class="toggle-arrow" aria-hidden="true">▾</i>
+        <span id="fuelHistoryLabel">Hide</span>
+      </button>
+    </h2>
+    <div id="fuelHistoryPanel" class="history-panel">
+      <div id="fuelLog" role="list" aria-label="Fuel history"></div>
+    </div>
+  </div>
+
+
+  <!-- ── CHARGING (EV / PHEV) ───────────────────────────────────────────── -->
+  <div role="tabpanel" id="panel-charge" aria-labelledby="tab-charge-btn">
+    <div class="card">
+      <div class="card-title"><span class="icon" aria-hidden="true">⚡</span> Log Charging Session</div>
+      <div id="phevChargeBanner" class="phev-banner" style="display:none">
+        <span class="phev-icon">⛽</span>
+        <span>This trip has <strong id="phevChargeCount">0</strong> fuel stop(s) totalling <strong id="phevChargeFuelCost">$0.00</strong> —
+        <button class="phev-link" onclick="switchToIceMode()">switch to ICE mode</button> to view them.</span>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="chgDate">Date</label>
+          <input type="date" id="chgDate">
+        </div>
+        <div class="form-group">
+          <label for="chgLocation">Charger / Location</label>
+          <input type="text" id="chgLocation" placeholder="e.g. Tesla Supercharger Melbourne" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="chgOdo">Odometer (km) <span aria-hidden="true">*</span></label>
+          <input type="number" id="chgOdo" placeholder="e.g. 12540" min="0" required aria-required="true"
+            oninput="checkOdoWarning(trip(), parseFloat(this.value))">
+        </div>
+        <div class="form-group">
+          <label for="chgKwh">Energy added (kWh) <span aria-hidden="true">*</span></label>
+          <input type="number" id="chgKwh" placeholder="e.g. 48.2" min="0" step="0.01" required aria-required="true"
+            oninput="autoCalcCharge()">
+        </div>
+        <div class="form-group">
+          <label for="chgPPK">Price per kWh ($)</label>
+          <input type="number" id="chgPPK" placeholder="e.g. 0.45" min="0" step="0.001"
+            oninput="autoCalcCharge()">
+        </div>
+        <div class="form-group">
+          <label for="chgCost">Total Cost ($)</label>
+          <input type="number" id="chgCost" placeholder="Auto-calculated or enter manually" step="0.01">
+        </div>
+        <div class="form-group">
+          <label for="chgType">Charger Type</label>
+          <select id="chgType">
+            <option value="">— select —</option>
+            <option value="AC Slow">AC Slow (&lt;7kW)</option>
+            <option value="AC Fast">AC Fast (7–22kW)</option>
+            <option value="DC Fast">DC Fast (50–100kW)</option>
+            <option value="DC Ultra">DC Ultra (&gt;100kW)</option>
+            <option value="Home">Home</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="chgSOCFrom">State of Charge: Start %</label>
+          <input type="number" id="chgSOCFrom" placeholder="e.g. 18" min="0" max="100">
+        </div>
+        <div class="form-group">
+          <label for="chgSOCTo">State of Charge: End %</label>
+          <input type="number" id="chgSOCTo" placeholder="e.g. 85" min="0" max="100">
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label for="chgNotes">Notes</label>
+          <textarea id="chgNotes" placeholder="Any notes about this session…"></textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:4px">
+        <button class="btn btn-primary" onclick="addChargeEntry()">Add Session</button>
+        <button class="btn btn-outline" onclick="clearChargeForm()">Clear</button>
+      </div>
+    </div>
+
+    <!-- Charge History -->
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin:20px 0 8px">
+      <div class="section-title" style="margin:0">
+        Charge History <span class="entry-count" id="chargeCount" aria-live="polite">0 sessions</span>
+      </div>
+      <button class="btn btn-outline" style="font-size:.78rem;padding:5px 12px"
+              id="chargeHistoryToggle"
+              aria-expanded="true"
+              aria-controls="chargeHistoryPanel"
+              onclick="toggleChargeHistory()">
+        <span id="chargeHistoryLabel">Hide</span>
+      </button>
+    </div>
+    <div id="chargeHistoryPanel" class="history-panel">
+      <div id="chargeLog" role="list" aria-label="Charge history"></div>
+    </div>
+
+    <!-- EV Stats strip -->
+    <div class="stats-strip" id="evStatsStrip" style="margin-top:16px"></div>
+  </div>
+
+  <!-- ── EXPENSES ──────────────────────────────────────────────────────────── -->
+  <div role="tabpanel" id="panel-expenses" aria-labelledby="tab-expenses-btn">
+    <div class="card">
+      <div class="card-title"><span class="icon" aria-hidden="true">💳</span> Log Expense</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="expDate">Date <span aria-hidden="true">*</span></label>
+          <input type="date" id="expDate" required aria-required="true">
+        </div>
+        <div class="form-group">
+          <label for="expCategory">Category <span aria-hidden="true">*</span></label>
+          <select id="expCategory" required aria-required="true"></select>
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label for="expDesc">Description <span aria-hidden="true">*</span></label>
+          <input type="text" id="expDesc" placeholder="e.g. Motel Coober Pedy" required aria-required="true" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="expAmount">Amount ($) <span aria-hidden="true">*</span></label>
+          <input type="number" id="expAmount" placeholder="e.g. 120.00" min="0" step="0.01" required aria-required="true">
+        </div>
+        <div class="form-group">
+          <label for="expNotes">Notes</label>
+          <input type="text" id="expNotes" placeholder="Receipt number, details…">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="addExpenseEntry()">Log Expense</button>
+        <button class="btn btn-ghost"   onclick="clearExpenseForm()">Clear form</button>
+      </div>
+    </div>
+    <h2 class="section-heading">
+      <span style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        Expense History <span class="entry-count" id="expCount" aria-live="polite">0 items</span>
+      </span>
+      <button class="toggle-history-btn"
+              id="expHistoryToggle"
+              aria-expanded="true"
+              aria-controls="expHistoryPanel"
+              onclick="toggleHistory('exp')"
+              title="Show or hide expense history">
+        <i class="toggle-arrow" aria-hidden="true">▾</i>
+        <span id="expHistoryLabel">Hide</span>
+      </button>
+    </h2>
+    <div id="expHistoryPanel" class="history-panel">
+      <div id="expenseLog" role="list" aria-label="Expense history"></div>
+    </div>
+  </div>
+
+  <!-- ── CATEGORIES ────────────────────────────────────────────────────────── -->
+  <div role="tabpanel" id="panel-categories" aria-labelledby="tab-categories-btn">
+    <div class="card">
+      <div class="card-title"><span class="icon" aria-hidden="true">🏷</span> Add Category</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="catName">Category name <span aria-hidden="true">*</span></label>
+          <input type="text" id="catName" placeholder="e.g. Accommodation" autocomplete="off">
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:16px">
+        <label id="colorPickerLabel">Colour</label>
+        <div class="color-picker-row" role="radiogroup" aria-labelledby="colorPickerLabel" id="colorPicker"></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="addCategory()">Add Category</button>
+      </div>
+    </div>
+    <h2 class="section-heading">Your Categories</h2>
+    <div class="cat-grid" id="catList" role="list" aria-label="Expense categories"></div>
+  </div>
+
+  <!-- ── SUMMARY ───────────────────────────────────────────────────────────── -->
+  <div role="tabpanel" id="panel-summary" aria-labelledby="tab-summary-btn">
+    <div class="chart-card">
+      <div class="chart-heading">Fuel Efficiency per Fill-up (L / 100 km)</div>
+      <div class="bar-chart" id="fuelChart" role="img" aria-label="Fuel efficiency chart"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-heading">Spend by Category</div>
+      <div class="data-table-wrapper">
+        <table class="data-table" aria-label="Total spend by category including fuel">
+          <thead><tr><th scope="col">Category</th><th scope="col">Items</th><th scope="col">Amount</th><th scope="col">Share</th></tr></thead>
+          <tbody id="expSummaryTable"></tbody>
+          <tfoot><tr class="total-row"><td colspan="2"><strong>Total</strong></td><td id="expSummaryTotal"><strong>$0.00</strong></td><td>100%</td></tr></tfoot>
+        </table>
+      </div>
+    </div>
+    <div class="chart-card" aria-label="Trip overview">
+      <div class="chart-heading">Trip Overview</div>
+      <div id="tripOverview"></div>
+    </div>
+  </div>
+
+  <!-- ── SETTINGS ──────────────────────────────────────────────────────────── -->
+  <div role="tabpanel" id="panel-settings" aria-labelledby="tab-settings-btn">
+
+    <!-- Vehicle Details -->
+    <div class="card">
+      <div class="card-title"><span class="icon" aria-hidden="true">🚗</span> Vehicle Details</div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="vehMake">Make</label>
+          <input type="text" id="vehMake" placeholder="e.g. Toyota" autocomplete="off" oninput="saveSettings()">
+        </div>
+        <div class="form-group">
+          <label for="vehModel">Model</label>
+          <input type="text" id="vehModel" placeholder="e.g. LandCruiser 300" autocomplete="off" oninput="saveSettings()">
+        </div>
+        <div class="form-group">
+          <label for="vehYear">Year</label>
+          <input type="number" id="vehYear" placeholder="e.g. 2023" min="1950" max="2099" oninput="saveSettings()">
+        </div>
+        <div class="form-group">
+          <label for="vehRego">Registration / Rego</label>
+          <input type="text" id="vehRego" placeholder="e.g. ABC 123" autocomplete="off" oninput="saveSettings()">
+        </div>
+        <div class="form-group">
+          <label for="vehColour">Colour</label>
+          <input type="text" id="vehColour" placeholder="e.g. White" autocomplete="off" oninput="saveSettings()">
+        </div>
+        <div class="form-group">
+          <label for="vehFuelType">Fuel Type</label>
+          <select id="vehFuelType" onchange="saveSettings()">
+            <option value="unleaded">Unleaded (91)</option>
+            <option value="premium">Premium Unleaded (95)</option>
+            <option value="e10">E10 (94)</option>
+            <option value="diesel">Diesel</option>
+            <option value="lpg">LPG</option>
+            <option value="ev">Electric (kWh)</option>
+            <option value="hybrid">Hybrid</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="vehTankSize">Fuel Tank Capacity (L)</label>
+          <input type="number" id="vehTankSize" placeholder="e.g. 87" min="1" step="0.5" oninput="saveSettings()">
+        </div>
+        <div class="form-group">
+          <label for="vehEngine">Engine / Notes</label>
+          <input type="text" id="vehEngine" placeholder="e.g. 3.5L V6 Twin Turbo" autocomplete="off" oninput="saveSettings()">
+        </div>
+      </div>
+
+      <!-- Vehicle preview -->
+      <div class="vehicle-preview" id="vehiclePreview" aria-live="polite" aria-label="Vehicle summary">
+        <span class="vehicle-preview-icon" id="prevIcon" aria-hidden="true">🚗</span>
+        <div class="vehicle-preview-text">
+          <div class="vehicle-preview-name" id="prevName">Your Vehicle</div>
+          <div class="vehicle-preview-sub"  id="prevSub">Fill in the details above</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trip Configuration -->
+    <div class="card">
+      <div class="card-title"><span class="icon" aria-hidden="true">🗺️</span> Trip Configuration</div>
+
+      <div class="settings-section-title" id="setupTypeLabel">Setup Type</div>
+      <div class="settings-grid" role="radiogroup" aria-labelledby="setupTypeLabel">
+
+        <div class="config-option">
+          <input type="radio" name="setupType" id="setup-solo" value="solo" onchange="saveSettings(); updateSetupUI()">
+          <label class="config-label" for="setup-solo">
+            <span class="config-icon" aria-hidden="true">🚗</span>
+            <div class="config-text">
+              <div class="config-title">Car Only</div>
+              <div class="config-desc">Solo vehicle, no tow. Standard fuel tracking and mileage.</div>
+            </div>
+            <span class="config-check" aria-hidden="true"></span>
+          </label>
+        </div>
+
+        <div class="config-option">
+          <input type="radio" name="setupType" id="setup-caravan" value="caravan" onchange="saveSettings(); updateSetupUI()">
+          <label class="config-label" for="setup-caravan">
+            <span class="config-icon" aria-hidden="true">🚗🏕️</span>
+            <div class="config-text">
+              <div class="config-title">Car &amp; Caravan</div>
+              <div class="config-desc">Towing a caravan. Tracks tow vehicle fuel and caravan details separately.</div>
+            </div>
+            <span class="config-check" aria-hidden="true"></span>
+          </label>
+        </div>
+
+        <div class="config-option">
+          <input type="radio" name="setupType" id="setup-camper" value="camper" onchange="saveSettings(); updateSetupUI()">
+          <label class="config-label" for="setup-camper">
+            <span class="config-icon" aria-hidden="true">🚐</span>
+            <div class="config-text">
+              <div class="config-title">Motorhome / Campervan</div>
+              <div class="config-desc">Self-contained motorhome or campervan — single vehicle, all-in-one.</div>
+            </div>
+            <span class="config-check" aria-hidden="true"></span>
+          </label>
+        </div>
+
+        <div class="config-option">
+          <input type="radio" name="setupType" id="setup-trailer" value="trailer" onchange="saveSettings(); updateSetupUI()">
+          <label class="config-label" for="setup-trailer">
+            <span class="config-icon" aria-hidden="true">🚗🔩</span>
+            <div class="config-text">
+              <div class="config-title">Car &amp; Trailer</div>
+              <div class="config-desc">Towing a boat, camper trailer, or utility trailer behind the vehicle.</div>
+            </div>
+            <span class="config-check" aria-hidden="true"></span>
+          </label>
+        </div>
+
+        <div class="config-option">
+          <input type="radio" name="setupType" id="setup-multi" value="multi" onchange="saveSettings(); updateSetupUI()">
+          <label class="config-label" for="setup-multi">
+            <span class="config-icon" aria-hidden="true">🚗🚙</span>
+            <div class="config-text">
+              <div class="config-title">Multi-Vehicle Convoy</div>
+              <div class="config-desc">Two or more vehicles travelling together. Log each vehicle separately.</div>
+            </div>
+            <span class="config-check" aria-hidden="true"></span>
+          </label>
+        </div>
+
+        <div class="config-option">
+          <input type="radio" name="setupType" id="setup-moto" value="moto" onchange="saveSettings(); updateSetupUI()">
+          <label class="config-label" for="setup-moto">
+            <span class="config-icon" aria-hidden="true">🏍️</span>
+            <div class="config-text">
+              <div class="config-title">Motorcycle</div>
+              <div class="config-desc">Solo motorcycle or group ride. Smaller tank sizes and higher L/100km variation.</div>
+            </div>
+            <span class="config-check" aria-hidden="true"></span>
+          </label>
+        </div>
+
+      </div>
+
+      <!-- Conditional: Caravan / Trailer details -->
+      <div id="towSection" style="display:none; margin-top:8px;">
+        <hr class="divider-line" aria-hidden="true">
+        <div class="settings-section-title">Towed Vehicle / Trailer Details</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="towMake">Make / Brand</label>
+            <input type="text" id="towMake" placeholder="e.g. Jayco, Coromal" autocomplete="off" oninput="saveSettings()">
+          </div>
+          <div class="form-group">
+            <label for="towModel">Model / Name</label>
+            <input type="text" id="towModel" placeholder="e.g. Swan Outback" autocomplete="off" oninput="saveSettings()">
+          </div>
+          <div class="form-group">
+            <label for="towYear">Year</label>
+            <input type="number" id="towYear" placeholder="e.g. 2021" min="1950" max="2099" oninput="saveSettings()">
+          </div>
+          <div class="form-group">
+            <label for="towLength">Length (m)</label>
+            <input type="number" id="towLength" placeholder="e.g. 6.2" min="0" step="0.1" oninput="saveSettings()">
+          </div>
+          <div class="form-group">
+            <label for="towATM">ATM (kg)</label>
+            <input type="number" id="towATM" placeholder="e.g. 2500" min="0" oninput="saveSettings()">
+            <span class="field-hint">Aggregate Trailer Mass</span>
+          </div>
+          <div class="form-group">
+            <label for="towTBW">Tow Ball Weight (kg)</label>
+            <input type="number" id="towTBW" placeholder="e.g. 180" min="0" oninput="saveSettings()">
+          </div>
+          <div class="form-group">
+            <label for="towRego">Rego / ID</label>
+            <input type="text" id="towRego" placeholder="e.g. TRL 456" autocomplete="off" oninput="saveSettings()">
+          </div>
+          <div class="form-group">
+            <label for="towNotes">Notes</label>
+            <input type="text" id="towNotes" placeholder="e.g. Electric brakes fitted" autocomplete="off" oninput="saveSettings()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Fuel efficiency target -->
+      <hr class="divider-line" aria-hidden="true">
+      <div class="settings-section-title">Fuel Efficiency Target</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="effTarget">Target (L/100km)</label>
+          <input type="number" id="effTarget" placeholder="e.g. 12.0" min="1" max="50" step="0.1" oninput="saveSettings()">
+          <span class="field-hint">Used to colour-code fuel stop efficiency</span>
+        </div>
+        <div class="form-group">
+          <label for="distUnit">Distance Unit</label>
+          <select id="distUnit" onchange="saveSettings()">
+            <option value="km">Kilometres (km)</option>
+            <option value="mi">Miles (mi)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="currency">Currency Symbol</label>
+          <input type="text" id="currency" placeholder="e.g. $" maxlength="3" style="max-width:100px" oninput="saveSettings()">
+        </div>
+      </div>
+
+      <!-- Emergency contacts -->
+      <hr class="divider-line" aria-hidden="true">
+      <div class="settings-section-title">Emergency &amp; Trip Info</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="emergContact">Emergency Contact Name</label>
+          <input type="text" id="emergContact" placeholder="e.g. Jane Smith" autocomplete="off" oninput="saveSettings()">
+        </div>
+        <div class="form-group">
+          <label for="emergPhone">Emergency Contact Phone</label>
+          <input type="text" id="emergPhone" placeholder="e.g. 0412 345 678" autocomplete="tel" oninput="saveSettings()">
+        </div>
+        <div class="form-group">
+          <label for="insuranceProvider">Insurance Provider</label>
+          <input type="text" id="insuranceProvider" placeholder="e.g. NRMA, RAA" autocomplete="off" oninput="saveSettings()">
+        </div>
+        <div class="form-group">
+          <label for="insurancePolicy">Policy Number</label>
+          <input type="text" id="insurancePolicy" placeholder="e.g. POL-1234567" autocomplete="off" oninput="saveSettings()">
+        </div>
+      </div>
+
+      <div class="info-banner" role="note">
+        <span class="info-icon" aria-hidden="true">ℹ️</span>
+        <span>Settings are saved automatically as you type and apply to all trips in this browser.</span>
+      </div>
+
+    </div>
+
+    <!-- Export / Import -->
+    <div class="card">
+      <div class="card-title"><span class="icon" aria-hidden="true">💾</span> Export &amp; Import Data</div>
+
+      <!-- Export -->
+      <div class="settings-section-title">Export your data</div>
+      <div class="export-grid">
+
+        <div class="export-option">
+          <div class="export-option-icon" aria-hidden="true">📦</div>
+          <div class="export-option-title">Full Backup (JSON)</div>
+          <div class="export-option-desc">Exports <strong>all trips</strong>, fuel stops, expenses, categories and settings in a single file. Use this to restore your data or move to another device.</div>
+          <button class="btn btn-primary" onclick="exportJSON()">Download Backup</button>
+        </div>
+
+        <div class="export-option">
+          <div class="export-option-icon" aria-hidden="true">⛽</div>
+          <div class="export-option-title">Fuel Log (CSV)</div>
+          <div class="export-option-desc">Exports fuel stops for the <strong>current trip</strong> as a spreadsheet-compatible CSV. Open in Excel, Numbers, or Google Sheets.</div>
+          <button class="btn btn-outline" onclick="exportFuelCSV()">Download Fuel CSV</button>
+        </div>
+
+        <div class="export-option">
+          <div class="export-option-icon" aria-hidden="true">💳</div>
+          <div class="export-option-title">Expenses (CSV)</div>
+          <div class="export-option-desc">Exports all expenses for the <strong>current trip</strong> as a spreadsheet-compatible CSV including category, description and amount.</div>
+          <button class="btn btn-outline" onclick="exportExpenseCSV()">Download Expense CSV</button>
+        </div>
+
+        <div class="export-option">
+          <div class="export-option-icon" aria-hidden="true">📊</div>
+          <div class="export-option-title">Full Trip Report (CSV)</div>
+          <div class="export-option-desc">Exports <strong>all trips</strong> with fuel and expense totals per trip as a single summary spreadsheet.</div>
+          <button class="btn btn-outline" onclick="exportSummaryCSV()">Download Summary CSV</button>
+        </div>
+
+      </div>
+
+      <hr class="divider-line" aria-hidden="true">
+
+      <!-- Import -->
+      <div class="settings-section-title">Import data</div>
+
+      <div class="import-mode-row" role="group" aria-label="Import mode">
+        <button class="import-mode-btn active" id="importMergeBtn" onclick="setImportMode('merge')" aria-pressed="true">
+          ➕ Merge — add to existing data
+        </button>
+        <button class="import-mode-btn" id="importReplaceBtn" onclick="setImportMode('replace')" aria-pressed="false">
+          🔄 Replace — overwrite everything
+        </button>
+      </div>
+
+      <div class="import-drop-area"
+           id="importDropArea"
+           role="button"
+           aria-label="Drop a Trip Log JSON backup file here, or click to browse"
+           tabindex="0"
+           ondragover="handleDragOver(event)"
+           ondragleave="handleDragLeave(event)"
+           ondrop="handleDrop(event)"
+           onkeydown="if(event.key==='Enter'||event.key===' ')document.getElementById('importFileInput').click()">
+        <input type="file"
+               id="importFileInput"
+               accept=".json"
+               aria-label="Choose a Trip Log JSON backup file"
+               onchange="handleFileSelect(event)">
+        <div class="import-drop-icon" aria-hidden="true">📂</div>
+        <div class="import-drop-title">Drop your backup file here</div>
+        <div class="import-drop-sub">or click to browse — accepts .json files only</div>
+      </div>
+
+      <div class="import-preview" id="importPreview" aria-live="polite">
+        <div class="import-preview-title">📋 Ready to import:</div>
+        <div class="import-preview-list" id="importPreviewList"></div>
+        <div class="import-preview-actions">
+          <button class="btn btn-primary" onclick="confirmImport()" id="confirmImportBtn">Confirm Import</button>
+          <button class="btn btn-ghost"   onclick="cancelImport()">Cancel</button>
+        </div>
+      </div>
+
+      <div class="info-banner" role="note" style="margin-top:16px">
+        <span class="info-icon" aria-hidden="true">ℹ️</span>
+        <span><strong>Merge</strong> adds imported trips alongside your existing ones. <strong>Replace</strong> clears all current data first — use with caution. Always export a backup before replacing.</span>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ── HELP ─────────────────────────────────────────────────────────────── -->
+  <div role="tabpanel" id="panel-help" aria-labelledby="tab-help-btn">
+
+    <!-- Quick Start -->
+    <div class="card">
+      <div class="card-title"><span class="icon" aria-hidden="true">🚀</span> Getting Started</div>
+      <p style="margin:0 0 12px;color:var(--ink-secondary);font-size:.9rem;line-height:1.6">Trip Log stores all your data privately in your browser — no account, no cloud, no sign-up required.</p>
+      <ol style="margin:0;padding-left:20px;color:var(--ink-secondary);font-size:.9rem;line-height:1.8">
+        <li>Tap <strong>New Trip</strong> in the top-right corner and give your trip a name, start date, and odometer reading.</li>
+        <li>Each time you fill up, go to the <strong>Fuel</strong> tab and log the stop.</li>
+        <li>Log meals, accommodation, tolls, and other costs under <strong>Expenses</strong>.</li>
+        <li>Check your running totals and efficiency at a glance in the stats bar at the top.</li>
+        <li>Visit <strong>Summary</strong> at any time for charts and a full cost breakdown.</li>
+      </ol>
+    </div>
+
+    <!-- Trips -->
+    <div class="card">
+      <div class="card-title"><span class="icon" aria-hidden="true">🗺️</span> Managing Trips</div>
+      <div class="help-section">
+        <div class="help-item">
+          <div class="help-q">How do I create a trip?</div>
+          <div class="help-a">Tap <strong>New Trip</strong> in the header. Enter a name (required), start date, and your current odometer reading. The trip becomes active immediately.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">How do I switch between trips?</div>
+          <div class="help-a">Use the <strong>Active Trip</strong> dropdown below the header. All tabs — Fuel, Expenses, Summary — update instantly to show the selected trip's data.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">How do I edit a trip?</div>
+          <div class="help-a">Select the trip from the dropdown, then tap the <strong>✏️ Edit</strong> button in the trip bar. The same dialog used to create trips opens, pre-filled with the current values. You can change the name, start date, end date, start odometer, and budget. Tap <strong>Save Changes</strong> to apply. Your existing fuel stops and expenses are not affected.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">How do I delete a trip?</div>
+          <div class="help-a">Select the trip from the dropdown, then tap <strong>Delete Trip</strong>. A confirmation dialog will appear — tap <strong>Yes, Delete Trip</strong> to confirm. This permanently removes all fuel stops and expenses for that trip and cannot be undone.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">Can I have multiple trips at once?</div>
+          <div class="help-a">Yes — create as many trips as you like. Each is completely independent. Great for separating annual road trips, interstate runs, or tracking different vehicles.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">Can I set a budget for a trip?</div>
+          <div class="help-a">Yes — enter an optional <strong>Trip Budget ($)</strong> when creating a trip. Once set, a budget tracker appears at the top of the Trip Overview in the Summary tab. It shows a progress bar, the amount spent so far, the percentage used, and how much remains. The bar turns amber above 80% and red if you go over budget.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">Can I set an end date for a trip?</div>
+          <div class="help-a">Yes — the <strong>End date</strong> field in the New Trip dialog is optional. Once set, it appears in the Trip Overview table in the Summary tab alongside the start date.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fuel -->
+    <div class="card">
+      <div class="card-title"><span class="icon" aria-hidden="true">⛽</span> Logging Fuel</div>
+      <div class="help-section">
+        <div class="help-item">
+          <div class="help-q">What fields are required?</div>
+          <div class="help-a"><strong>Odometer</strong> and <strong>Litres</strong> are required. All other fields — date, station, price per litre, cost, notes — are optional but help produce better reports.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">How is fuel cost calculated?</div>
+          <div class="help-a">If you enter <strong>Litres</strong> and <strong>Price per Litre</strong>, the <strong>Total Cost</strong> field is calculated automatically. You can also type the total cost directly if you know it.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">What does the L/100km badge mean?</div>
+          <div class="help-a">Each fuel entry shows the efficiency for that segment — the distance since your last fill-up divided into the litres used. <span style="color:#1A6B38;font-weight:600">Green</span> = under 9 L/100km, <span style="color:#C75B00;font-weight:600">amber</span> = 9–12, <span style="color:#991A1A;font-weight:600">red</span> = over 12. You can set your own target in <strong>Settings</strong>.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">Can I hide the fuel list?</div>
+          <div class="help-a">Yes — tap the <strong>Hide / Show</strong> button next to the Fuel History heading to collapse or expand the list. Useful on a small screen when you just want to log a stop quickly.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Expenses -->
+    <div class="card">
+      <div class="card-title"><span class="icon" aria-hidden="true">💳</span> Logging Expenses</div>
+      <div class="help-section">
+        <div class="help-item">
+          <div class="help-q">What fields are required?</div>
+          <div class="help-a"><strong>Description</strong> and <strong>Amount</strong> are required. Category and date default to your last-used values so logging is fast on the road.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">What categories are available?</div>
+          <div class="help-a">The default categories are Food &amp; Drink, Accommodation, Tolls &amp; Fees, Activities, Miscellaneous, Camping Fees, and Maintenance. You can add your own in the <strong>Categories</strong> tab.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">Can I hide the expense list?</div>
+          <div class="help-a">Yes — tap the <strong>Hide / Show</strong> button next to Expense History to collapse or expand the list, just like with fuel history.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Categories -->
+    <div class="card">
+      <div class="card-title"><span class="icon" aria-hidden="true">🏷</span> Categories</div>
+      <div class="help-section">
+        <div class="help-item">
+          <div class="help-q">How do I add a custom category?</div>
+          <div class="help-a">Go to the <strong>Categories</strong> tab, type a name, pick a colour from the swatches, then tap <strong>Add Category</strong>. It will appear immediately in the expense category dropdown.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">What happens if I delete a category that has expenses?</div>
+          <div class="help-a">The expenses are not deleted — they remain in your trip but their category will show as <em>Uncategorised</em>. You can't currently re-categorise existing entries, so it's best to create categories before you start logging.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="card">
+      <div class="card-title"><span class="icon" aria-hidden="true">📊</span> Summary Tab</div>
+      <div class="help-section">
+        <div class="help-item">
+          <div class="help-q">What does the Summary tab show?</div>
+          <div class="help-a">Three sections: a <strong>Fuel Efficiency Chart</strong> showing L/100km for each segment between fill-ups; a <strong>Spend by Category</strong> table that includes fuel as the first row so you can see your true total travel cost; and a <strong>Trip Overview</strong> with key totals and — if you set a budget — a live budget tracker showing how much you have spent and how much remains.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">Why is fuel shown in the expense table?</div>
+          <div class="help-a">Fuel is typically the largest cost on a road trip. Including it in the breakdown lets you see what percentage of your total spend went to fuel versus accommodation, food, and activities.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">The efficiency chart says I need 2 fuel stops — why?</div>
+          <div class="help-a">Efficiency is calculated from the distance between consecutive fill-ups. With only one stop there is no segment to measure. Log a second fuel stop and the chart will appear.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Export & Import -->
+    <div class="card">
+      <div class="card-title"><span class="icon" aria-hidden="true">💾</span> Export &amp; Import</div>
+      <div class="help-section">
+        <div class="help-item">
+          <div class="help-q">What can I export?</div>
+          <div class="help-a">Four options are available in Settings: <strong>Full Backup (JSON)</strong> — a complete backup of all trips, expenses, and settings; <strong>Fuel Log (CSV)</strong> — the current trip's fuel stops for spreadsheet analysis; <strong>Expenses (CSV)</strong> — the current trip's expenses with category totals; <strong>Trip Summary (CSV)</strong> — one row per trip across all trips.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">How do I back up my data?</div>
+          <div class="help-a">Go to <strong>Settings → Export</strong> and tap <strong>Download Full Backup</strong>. Save the <code>.json</code> file somewhere safe — your Downloads folder, iCloud Drive, Google Drive, or email it to yourself. Do this regularly, especially before clearing your browser or switching devices.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">How do I restore or move to a new device?</div>
+          <div class="help-a">On the new device, open Trip Log, go to <strong>Settings → Import</strong>, select <strong>Replace</strong> mode, then drop in your backup <code>.json</code> file and tap <strong>Confirm Import</strong>. All your trips, expenses, and settings will be restored.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">What is the difference between Merge and Replace?</div>
+          <div class="help-a"><strong>Merge</strong> adds trips from the backup file alongside your existing data — useful for combining trips from two devices. Duplicate trip IDs are skipped automatically. <strong>Replace</strong> wipes all current data first and loads the backup fresh. Always export a backup before using Replace.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data & Privacy -->
+    <div class="card">
+      <div class="card-title"><span class="icon" aria-hidden="true">🔒</span> Data &amp; Privacy</div>
+      <div class="help-section">
+        <div class="help-item">
+          <div class="help-q">Where is my data stored?</div>
+          <div class="help-a">Entirely in your browser's <strong>localStorage</strong> — on your device, never on a server. Trip Log has no backend, no account system, and no internet connection is needed to use it once loaded.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">Will I lose my data if I clear my browser?</div>
+          <div class="help-a">Yes. Clearing site data, clearing browser history (with cookies and local storage), or uninstalling the browser will delete your Trip Log data. <strong>Export a JSON backup regularly</strong> to protect your records.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">Does data sync between my phone and computer?</div>
+          <div class="help-a">Not automatically — each browser and device has its own separate storage. To sync, export a backup on one device and import it on the other using Merge or Replace mode.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PWA / Install -->
+    <div class="card">
+      <div class="card-title"><span class="icon" aria-hidden="true">📱</span> Installing on Your Phone</div>
+      <div class="help-section">
+        <div class="help-item">
+          <div class="help-q">iPhone / iPad (Safari)</div>
+          <div class="help-a">Open Trip Log in Safari → tap the <strong>Share</strong> button (box with arrow) → tap <strong>Add to Home Screen</strong> → tap <strong>Add</strong>. The app will appear on your home screen and open full-screen without the browser bar.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">Android (Chrome)</div>
+          <div class="help-a">Open Trip Log in Chrome → tap the <strong>three-dot menu</strong> → tap <strong>Add to Home Screen</strong> or <strong>Install app</strong> → tap <strong>Add</strong>. Works like a native app from your home screen.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">Does it work offline?</div>
+          <div class="help-a">Yes — once the page has loaded, Trip Log works entirely offline. You can log fuel stops and expenses in the middle of the outback with no signal. Your data is saved instantly to your device.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- About -->
+    <div class="card" style="text-align:center;padding:28px 24px;">
+      <div style="font-size:2rem;margin-bottom:8px" aria-hidden="true">🚗</div>
+      <div style="font-family:var(--font-display);font-size:1.15rem;font-weight:700;color:var(--ink);margin-bottom:4px">Trip Log</div>
+      <div style="font-size:.85rem;color:var(--ink-muted);margin-bottom:16px">Road Trip Journal &nbsp;·&nbsp; By Ian Fraser &copy; 2026</div>
+      <div style="font-size:.82rem;color:var(--ink-muted);line-height:1.7;max-width:400px;margin:0 auto">
+        Built for Australian road trippers.<br>
+        All data stays on your device — private, offline-capable, and always yours.
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /.app -->
+
+<footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">Trip Log by Ian Fraser &copy; 2026 &nbsp;·&nbsp; <span id="appVersion">v1.7</span></footer>
+
+<!-- Modal: New Trip -->
+<div class="modal-overlay" id="newTripModal" role="dialog" aria-modal="true" aria-labelledby="tripModalTitle">
+  <div class="modal">
+    <h2 class="modal-title" id="tripModalTitle">Start a New Trip</h2>
+    <div class="form-group" style="margin-bottom:16px">
+      <label for="newTripName">Trip name <span aria-hidden="true">*</span></label>
+      <input type="text" id="newTripName" placeholder="e.g. Darwin to Adelaide 2026" autocomplete="off">
+
+      <label style="margin-top:4px">Vehicle Type <span aria-hidden="true">*</span></label>
+      <div class="vtype-selector" id="vtypeSelector" role="group" aria-label="Select vehicle type">
+        <button type="button" class="vtype-btn active" id="vtypeIce" data-vtype="ice" onclick="selectVtype('ice')">
+          <span class="vtype-icon">⛽</span>
+          <span class="vtype-label">ICE</span>
+          <span class="vtype-sub">Petrol / Diesel</span>
+        </button>
+        <button type="button" class="vtype-btn" id="vtypePhev" data-vtype="phev" onclick="selectVtype('phev')">
+          <span class="vtype-icon">🔋</span>
+          <span class="vtype-label">PHEV</span>
+          <span class="vtype-sub">Plug-in Hybrid</span>
+        </button>
+        <button type="button" class="vtype-btn" id="vtypeEv" data-vtype="ev" onclick="selectVtype('ev')">
+          <span class="vtype-icon">⚡</span>
+          <span class="vtype-label">EV</span>
+          <span class="vtype-sub">Electric</span>
+        </button>
+      </div>
+    </div>
+    <div class="form-group" id="fuelTypeGroup" style="margin-bottom:16px">
+      <label>Fuel Type</label>
+      <div class="ftype-selector" id="ftypeSelector" role="group" aria-label="Select fuel type">
+        <button type="button" class="ftype-btn active" data-ftype="unleaded" onclick="selectFtype('unleaded')">Unleaded 91</button>
+        <button type="button" class="ftype-btn" data-ftype="premium"  onclick="selectFtype('premium')">Premium 95</button>
+        <button type="button" class="ftype-btn" data-ftype="e10"      onclick="selectFtype('e10')">E10</button>
+        <button type="button" class="ftype-btn" data-ftype="diesel"   onclick="selectFtype('diesel')">Diesel</button>
+        <button type="button" class="ftype-btn" data-ftype="lpg"      onclick="selectFtype('lpg')">LPG</button>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="newTripStart">Start date</label>
+        <input type="date" id="newTripStart">
+      </div>
+      <div class="form-group">
+        <label for="newTripEnd">End date <span style="font-weight:400;color:var(--ink-muted)">(optional)</span></label>
+        <input type="date" id="newTripEnd">
+      </div>
+      <div class="form-group">
+        <label for="newTripOdo">Start odometer (km)</label>
+        <input type="number" id="newTripOdo" placeholder="e.g. 12000" min="0">
+      </div>
+      <div class="form-group">
+        <label for="newTripBudget">Trip budget ($) <span style="font-weight:400;color:var(--ink-muted)">(optional)</span></label>
+        <input type="number" id="newTripBudget" placeholder="e.g. 5000" min="0" step="0.01">
+      </div>
+    </div>
+    <div class="form-group" style="margin-top:4px">
+      <label for="newTripNotes">Trip notes <span style="font-weight:400;color:var(--ink-muted)">(optional)</span></label>
+      <textarea id="newTripNotes" placeholder="Route, highlights, who's coming…" rows="3" style="resize:vertical"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="cancelTripModal()">Cancel</button>
+      <button class="btn btn-primary" id="tripModalSaveBtn" onclick="saveTripModal()">Create Trip</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Edit Fuel Entry -->
+<div class="modal-overlay" id="editFuelModal" role="dialog" aria-modal="true" aria-labelledby="editFuelTitle">
+  <div class="modal">
+    <h2 class="modal-title" id="editFuelTitle">Edit Fuel Stop</h2>
+    <input type="hidden" id="editFuelId">
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="editFuelDate">Date</label>
+        <input type="date" id="editFuelDate">
+      </div>
+      <div class="form-group">
+        <label for="editFuelLocation">Station / Location</label>
+        <input type="text" id="editFuelLocation" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label for="editFuelOdo">Odometer (km) <span aria-hidden="true">*</span></label>
+        <input type="number" id="editFuelOdo" min="0" required>
+      </div>
+      <div class="form-group">
+        <label for="editFuelLitres">Litres <span aria-hidden="true">*</span></label>
+        <input type="number" id="editFuelLitres" min="0" step="0.01" required>
+      </div>
+      <div class="form-group">
+        <label for="editFuelPPL">Price per litre ($)</label>
+        <input type="number" id="editFuelPPL" min="0" step="0.001">
+      </div>
+      <div class="form-group">
+        <label for="editFuelCost">Total cost ($)</label>
+        <input type="number" id="editFuelCost" step="0.01">
+      </div>
+    </div>
+    <div class="form-group" style="margin-top:12px">
+      <label for="editFuelNotes">Notes</label>
+      <textarea id="editFuelNotes" rows="2" style="resize:vertical"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('editFuelModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditFuel()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Edit Expense Entry -->
+<div class="modal-overlay" id="editExpenseModal" role="dialog" aria-modal="true" aria-labelledby="editExpenseTitle">
+  <div class="modal">
+    <h2 class="modal-title" id="editExpenseTitle">Edit Expense</h2>
+    <input type="hidden" id="editExpenseId">
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="editExpDate">Date</label>
+        <input type="date" id="editExpDate">
+      </div>
+      <div class="form-group">
+        <label for="editExpCategory">Category</label>
+        <select id="editExpCategory"></select>
+      </div>
+      <div class="form-group" style="grid-column:1/-1">
+        <label for="editExpDesc">Description <span aria-hidden="true">*</span></label>
+        <input type="text" id="editExpDesc" autocomplete="off" required>
+      </div>
+      <div class="form-group">
+        <label for="editExpAmount">Amount ($) <span aria-hidden="true">*</span></label>
+        <input type="number" id="editExpAmount" min="0" step="0.01" required>
+      </div>
+      <div class="form-group">
+        <label for="editExpNotes">Notes</label>
+        <input type="text" id="editExpNotes">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('editExpenseModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditExpense()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Confirm Delete Trip -->
+<div class="modal-overlay" id="deleteTripModal" role="alertdialog" aria-modal="true" aria-labelledby="deleteTripTitle" aria-describedby="deleteTripDesc">
+  <div class="modal" style="border-top-color:var(--accent-red)">
+    <h2 class="modal-title" id="deleteTripTitle" style="color:var(--accent-red)">Delete Trip?</h2>
+    <p id="deleteTripDesc" style="font-size:.95rem;color:var(--ink-secondary);margin-bottom:8px">
+      You are about to permanently delete:
+    </p>
+    <p id="deleteTripName" style="font-size:1.05rem;font-weight:700;color:var(--ink);margin-bottom:16px;padding:12px 16px;background:var(--accent-red-bg);border:1px solid #f5c6c6;border-radius:var(--radius)"></p>
+    <p style="font-size:.85rem;color:var(--ink-muted)">
+      This will permanently remove all fuel stops, expenses and records for this trip.
+      <strong>This cannot be undone.</strong>
+    </p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="deleteCancelBtn" onclick="closeModal('deleteTripModal')">Cancel</button>
+      <button class="btn btn-danger" id="deleteConfirmBtn" onclick="confirmDeleteTrip()">
+        <span aria-hidden="true">🗑</span> Yes, Delete Trip
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="alert" aria-live="assertive"></div>
+
+<script>
+/* ── Constants ──────────────────────────────────────────────────────────────── */
+const PALETTE = [
+  {hex:'#C75B00',label:'Amber'}, {hex:'#991A1A',label:'Red'},
+  {hex:'#1A5276',label:'Navy'},  {hex:'#1A6B38',label:'Green'},
+  {hex:'#5B2C8A',label:'Purple'},{hex:'#0E6B6B',label:'Teal'},
+  {hex:'#7A5200',label:'Brown'}, {hex:'#A62E5C',label:'Rose'},
+];
+let selectedColor = PALETTE[0].hex;
+
+/* ── State ──────────────────────────────────────────────────────────────────── */
+let state = JSON.parse(localStorage.getItem('triplog_v2') || 'null') || {
+  trips: [], currentTripId: null,
+  categories: [
+    {id:'cat_food',name:'Food & Drink',   color:'#C75B00'},
+    {id:'cat_acc', name:'Accommodation',  color:'#1A5276'},
+    {id:'cat_toll',name:'Tolls & Fees',   color:'#991A1A'},
+    {id:'cat_act', name:'Activities',     color:'#1A6B38'},
+    {id:'cat_misc',name:'Miscellaneous',  color:'#5B2C8A'},
+  ]
+};
+function save()  { localStorage.setItem('triplog_v2', JSON.stringify(state)); }
+function trip()  { return state.trips.find(t => t.id === state.currentTripId) || null; }
+function esc(s)  { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; }
+function empty(icon, title, text) {
+  return `<div class="empty-state" role="status"><div class="empty-icon" aria-hidden="true">${icon}</div><div class="empty-title">${title}</div><p class="empty-text">${text}</p></div>`;
+}
+
+/* ── Sample data (loaded once when no trips exist) ──────────────────────────── */
+(function seedSampleData() {
+  const ids = new Set(state.trips.map(t => t.id));
+
+  // ── Demo Trip 1: ICE — Melbourne to Adelaide (Diesel) ───────────────────────
+  const iceTrip = {
+    id: 'trip_demo', name: 'Melbourne to Adelaide — ICE Demo',
+    vehicleType: 'ice', fuelType: 'diesel',
+    startDate: '2026-01-10', endDate: '2026-01-14',
+    startOdo: 52000, budget: 2800,
+    notes: 'ICE demo trip — delete and start your own!',
+    charges: [],
+    fuel: [
+      { id:'f1', date:'2026-01-10', location:'Ampol Laverton North',    odo:52000, litres:72.0, ppl:2.18, cost:156.96, notes:'Full tank before leaving Melbourne' },
+      { id:'f2', date:'2026-01-11', location:'BP Horsham',              odo:52680, litres:65.4, ppl:2.22, cost:145.19, notes:'' },
+      { id:'f3', date:'2026-01-12', location:'United Bordertown',       odo:53320, litres:68.2, ppl:2.35, cost:160.27, notes:'Pricey at the border' },
+      { id:'f4', date:'2026-01-13', location:'Caltex Tailem Bend',      odo:53940, litres:60.8, ppl:2.19, cost:133.15, notes:'Almost there' },
+    ],
+    expenses: [
+      { id:'e1', date:'2026-01-10', categoryId:'cat_acc',  desc:'Horsham Motor Inn',            amount:128.00, notes:'One night' },
+      { id:'e2', date:'2026-01-11', categoryId:'cat_food', desc:'Lunch — Grampians Bakery', amount:34.50,  notes:'Best pie on the trip' },
+      { id:'e3', date:'2026-01-12', categoryId:'cat_food', desc:'Roadhouse burger — Bordertown', amount:22.00, notes:'' },
+      { id:'e4', date:'2026-01-13', categoryId:'cat_acc',  desc:'Adelaide Caravan Park',        amount:95.00,  notes:'Powered site, 2 nights' },
+      { id:'e5', date:'2026-01-14', categoryId:'cat_act',  desc:'Adelaide Central Market tour', amount:48.00,  notes:'Highly recommend' },
+    ],
+  };
+
+  // ── Demo Trip 2: PHEV — Perth to Esperance (Premium + Charging) ─────────────
+  const phevTrip = {
+    id: 'trip_phev_demo', name: 'Perth to Esperance — PHEV Demo',
+    vehicleType: 'phev', fuelType: 'premium',
+    startDate: '2026-02-05', endDate: '2026-02-09',
+    startOdo: 28500, budget: 1800,
+    notes: 'PHEV demo trip — delete and start your own!',
+    fuel: [
+      { id:'pf1', date:'2026-02-05', location:'Coles Express Cannington',  odo:28500, litres:38.2, ppl:2.08, cost:79.46, notes:'Full tank departure' },
+      { id:'pf2', date:'2026-02-06', location:'BP Hyden',                  odo:28920, litres:32.6, ppl:2.45, cost:79.87, notes:'Expensive outback pricing' },
+      { id:'pf3', date:'2026-02-08', location:'Ampol Esperance',           odo:29380, litres:35.4, ppl:2.21, cost:78.23, notes:'' },
+    ],
+    charges: [
+      { id:'pc1', date:'2026-02-05', location:'Cannington EVSE Home',    odo:28500, kwh:18.5, ppk:0.28, cost:5.18, type:'AC Slow', socFrom:22, socTo:90, notes:'Overnight home charge before departure' },
+      { id:'pc2', date:'2026-02-06', location:'Merredin NRMA Charger',   odo:28760, kwh:14.2, ppk:0.45, cost:6.39, type:'DC Fast', socFrom:18, socTo:72, notes:'Quick 25 min top-up' },
+      { id:'pc3', date:'2026-02-08', location:'Esperance Caravan Park',  odo:29380, kwh:16.8, ppk:0.32, cost:5.38, type:'AC Fast', socFrom:15, socTo:85, notes:'Overnight charge at park' },
+    ],
+    expenses: [
+      { id:'pe1', date:'2026-02-05', categoryId:'cat_acc',  desc:'Hyden Wave Rock Caravan Park', amount:72.00,  notes:'Powered site' },
+      { id:'pe2', date:'2026-02-06', categoryId:'cat_act',  desc:'Wave Rock entry',              amount:18.00,  notes:'Worth it' },
+      { id:'pe3', date:'2026-02-07', categoryId:'cat_food', desc:'Esperance Waterfront dinner',  amount:88.00,  notes:'Seafood platter' },
+      { id:'pe4', date:'2026-02-08', categoryId:'cat_acc',  desc:'Esperance Bay Holiday Park',   amount:110.00, notes:'2 nights powered' },
+    ],
+  };
+
+  // ── Demo Trip 3: EV — Brisbane to Sydney (Electric) ──────────────────────────
+  const evTrip = {
+    id: 'trip_ev_demo', name: 'Brisbane to Sydney — EV Demo',
+    vehicleType: 'ev', fuelType: 'electric',
+    startDate: '2026-02-01', endDate: '2026-02-04',
+    startOdo: 18500, budget: 1200,
+    notes: 'EV demo trip — delete and start your own!',
+    fuel: [],
+    charges: [
+      { id:'c1', date:'2026-02-01', location:'Tesla Supercharger — Wahroonga',      odo:18500, kwh:42.0, ppk:0.52, cost:21.84, type:'DC Ultra', socFrom:12, socTo:85, notes:'First charge after leaving Brisbane' },
+      { id:'c2', date:'2026-02-01', location:'NRMA Fast Charger — Newcastle',       odo:18662, kwh:38.5, ppk:0.48, cost:18.48, type:'DC Fast',  socFrom:18, socTo:80, notes:'Quick top-up, 35 min' },
+      { id:'c3', date:'2026-02-02', location:'Tesla Supercharger — Port Macquarie', odo:18917, kwh:55.2, ppk:0.52, cost:28.70, type:'DC Ultra', socFrom:10, socTo:90, notes:'Lunch stop — great cafe next door' },
+      { id:'c4', date:'2026-02-03', location:'Evie Networks — Coffs Harbour',       odo:19089, kwh:44.8, ppk:0.45, cost:20.16, type:'DC Fast',  socFrom:22, socTo:82, notes:'' },
+      { id:'c5', date:'2026-02-03', location:'Tesla Supercharger — Byron Bay',      odo:19312, kwh:50.1, ppk:0.52, cost:26.05, type:'DC Ultra', socFrom:15, socTo:88, notes:'Overnight stay' },
+      { id:'c6', date:'2026-02-04', location:'ChargePoint — Sydney CBD',            odo:19500, kwh:36.8, ppk:0.41, cost:15.09, type:'AC Fast',  socFrom:30, socTo:95, notes:'Destination charge at hotel' },
+    ],
+    expenses: [
+      { id:'ee1', date:'2026-02-01', categoryId:'cat_acc',  desc:'Novotel Newcastle',              amount:189.00, notes:'' },
+      { id:'ee2', date:'2026-02-02', categoryId:'cat_food', desc:'Lunch — Port Macquarie',    amount:38.50,  notes:'Fish tacos' },
+      { id:'ee3', date:'2026-02-02', categoryId:'cat_acc',  desc:'Aanuka Beach Resort',            amount:215.00, notes:'Splurge night' },
+      { id:'ee4', date:'2026-02-03', categoryId:'cat_food', desc:'Byron Bay Brewery dinner',       amount:94.00,  notes:'Worth every cent' },
+      { id:'ee5', date:'2026-02-03', categoryId:'cat_acc',  desc:'Byron Bay Beach House',          amount:280.00, notes:'' },
+      { id:'ee6', date:'2026-02-04', categoryId:'cat_toll', desc:'M1 Tolls',                      amount:18.60,  notes:'Linkt tag' },
+    ],
+  };
+
+  // ── Categories ───────────────────────────────────────────────────────────────
+  if (!state.categories.find(c=>c.id==='cat_camp'))
+    state.categories.push({id:'cat_camp', name:'Camping Fees',  color:'#0E6B6B'});
+  if (!state.categories.find(c=>c.id==='cat_maint'))
+    state.categories.push({id:'cat_maint', name:'Maintenance', color:'#7A5200'});
+  if (!state.categories.find(c=>c.id==='cat_toll'))
+    state.categories.push({id:'cat_toll', name:'Tolls & Fees', color:'#1A5276'});
+
+  // ── Seed (per-ID guard) ───────────────────────────────────────────────────────
+  if (!ids.has('trip_demo'))      { state.trips.push(iceTrip);  }
+  if (!ids.has('trip_phev_demo')) { state.trips.push(phevTrip); }
+  if (!ids.has('trip_ev_demo'))   { state.trips.push(evTrip);   }
+  if (!state.currentTripId)       { state.currentTripId = 'trip_demo'; }
+  save();
+})();
+
+/* ── Init ───────────────────────────────────────────────────────────────────── */
+window.addEventListener('DOMContentLoaded', () => {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('fuelDate').value     = today;
+  document.getElementById('expDate').value      = today;
+  document.getElementById('newTripStart').value = today;
+  // EV charge date init
+  const chgDateEl = document.getElementById('chgDate');
+  if (chgDateEl) chgDateEl.value = today;
+
+  // Colour picker
+  const cp = document.getElementById('colorPicker');
+  PALETTE.forEach(c => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'color-swatch' + (c.hex === selectedColor ? ' selected' : '');
+    btn.style.background = c.hex;
+    btn.setAttribute('aria-label', c.label + ' colour');
+    btn.setAttribute('aria-pressed', c.hex === selectedColor ? 'true' : 'false');
+    btn.setAttribute('title', c.label);
+    btn.onclick = () => {
+      selectedColor = c.hex;
+      cp.querySelectorAll('.color-swatch').forEach(s => { s.classList.remove('selected'); s.setAttribute('aria-pressed','false'); });
+      btn.classList.add('selected'); btn.setAttribute('aria-pressed','true');
+    };
+    cp.appendChild(btn);
+  });
+
+  // Auto-calculate fuel cost
+  ['fuelLitres','fuelPPL'].forEach(id =>
+    document.getElementById(id).addEventListener('input', () => {
+      const l = parseFloat(document.getElementById('fuelLitres').value)||0;
+      const p = parseFloat(document.getElementById('fuelPPL').value)||0;
+      if (l && p) document.getElementById('fuelCost').value = (l*p).toFixed(2);
+    })
+  );
+
+  // Keyboard arrow nav for tablist
+  document.querySelector('[role="tablist"]').addEventListener('keydown', e => {
+    const tabs = [...document.querySelectorAll('[role="tab"]')];
+    const idx  = tabs.indexOf(document.activeElement);
+    if (idx === -1) return;
+    let next = -1;
+    if (e.key === 'ArrowRight') next = (idx+1) % tabs.length;
+    if (e.key === 'ArrowLeft')  next = (idx-1+tabs.length) % tabs.length;
+    if (e.key === 'Home')       next = 0;
+    if (e.key === 'End')        next = tabs.length - 1;
+    if (next >= 0) { e.preventDefault(); tabs[next].click(); tabs[next].focus(); }
+  });
+
+  // Close modal on backdrop click / Escape
+  document.querySelectorAll('.modal-overlay').forEach(m =>
+    m.addEventListener('click', e => { if (e.target === m) closeModalEl(m); })
+  );
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(closeModalEl);
+  });
+
+  renderTripSelect();
+  renderAll();
+  loadSettings();
+  // Odo warning on blur
+  document.getElementById('fuelOdo').addEventListener('blur', () => {
+    checkOdoWarning(trip(), parseFloat(document.getElementById('fuelOdo').value));
+  });
+  const chgOdoEl = document.getElementById('chgOdo');
+  if (chgOdoEl) chgOdoEl.addEventListener('blur', () => {
+    checkOdoWarning(trip(), parseFloat(chgOdoEl.value));
+  });
+  // Check if backup prompt needed
+  setTimeout(checkBackupPrompt, 1200);
+});
+
+/* ── Trips ──────────────────────────────────────────────────────────────────── */
+// Track whether modal is in create or edit mode
+let _tripModalEditId = null;
+
+function openModal(id) {
+  // When opening newTripModal fresh, always reset to create mode
+  if (id === 'newTripModal') {
+    _tripModalEditId = null;
+    document.getElementById('tripModalTitle').textContent  = 'Start a New Trip';
+    document.getElementById('tripModalSaveBtn').textContent = 'Create Trip';
+    document.getElementById('newTripName').value   = '';
+    document.getElementById('newTripStart').value  = new Date().toISOString().split('T')[0];
+    document.getElementById('newTripEnd').value    = '';
+    document.getElementById('newTripOdo').value    = '';
+    document.getElementById('newTripBudget').value = '';
+    document.getElementById('newTripNotes').value  = '';
+    selectVtype('ice'); // default to ICE for new trips
+    selectFtype('unleaded'); // default fuel type
+  }
+  const m = document.getElementById(id); m.classList.add('open');
+  const first = m.querySelector('input,button,select,textarea');
+  if (first) setTimeout(() => first.focus(), 50);
+}
+
+function editCurrentTrip() {
+  const t = trip(); if (!t) return;
+  _tripModalEditId = t.id;
+  document.getElementById('tripModalTitle').textContent   = 'Edit Trip';
+  document.getElementById('tripModalSaveBtn').textContent = 'Save Changes';
+  document.getElementById('newTripName').value   = t.name;
+  document.getElementById('newTripStart').value  = t.startDate  || '';
+  document.getElementById('newTripEnd').value    = t.endDate    || '';
+  document.getElementById('newTripOdo').value    = t.startOdo   || '';
+  document.getElementById('newTripBudget').value = t.budget != null ? t.budget : '';
+  document.getElementById('newTripNotes').value  = t.notes  || '';
+  selectVtype(t.vehicleType || 'ice'); // pre-fill vehicle type
+  selectFtype(t.fuelType || 'unleaded'); // pre-fill fuel type
+  const m = document.getElementById('newTripModal'); m.classList.add('open');
+  setTimeout(() => document.getElementById('newTripName').focus(), 50);
+}
+
+function saveTripModal() {
+  const name = document.getElementById('newTripName').value.trim();
+  if (!name) { showToast('Please enter a trip name.'); document.getElementById('newTripName').focus(); return; }
+  const startDate = document.getElementById('newTripStart').value;
+  const endDate   = document.getElementById('newTripEnd').value   || null;
+  const startOdo  = parseFloat(document.getElementById('newTripOdo').value)    || 0;
+  const budget    = parseFloat(document.getElementById('newTripBudget').value) || null;
+  const notes     = document.getElementById('newTripNotes').value.trim() || null;
+
+  const vehicleType = document.querySelector('.vtype-btn.active')?.dataset.vtype || 'ice';
+  const fuelType    = vehicleType === 'ev' ? 'electric' : (document.querySelector('.ftype-btn.active')?.dataset.ftype || 'unleaded');
+
+  if (_tripModalEditId) {
+    const t = state.trips.find(x => x.id === _tripModalEditId);
+    if (t) {
+      t.name = name; t.startDate = startDate; t.endDate = endDate;
+      t.startOdo = startOdo; t.budget = budget; t.notes = notes;
+      t.vehicleType = vehicleType; t.fuelType = fuelType;
+    }
+    save(); closeModal('newTripModal');
+    renderTripSelect(); renderAll();
+    showToast('Trip updated: ' + name);
+  } else {
+    const t = { id:'trip_'+Date.now(), name, startDate, endDate, startOdo, budget, notes,
+      vehicleType, fuelType, fuel:[], expenses:[], charges:[] };
+    state.trips.push(t); state.currentTripId = t.id; save();
+    closeModal('newTripModal');
+    renderTripSelect(); renderAll();
+    showToast('Trip created: ' + name);
+  }
+  _tripModalEditId = null;
+}
+
+function cancelTripModal() {
+  _tripModalEditId = null;
+  closeModal('newTripModal');
+}
+
+function deleteCurrentTrip() {
+  const t = trip(); if (!t) return;
+  // Show the name in the confirmation modal
+  document.getElementById('deleteTripName').textContent = t.name;
+  openModal('deleteTripModal');
+  // Focus the Cancel button by default (safer choice)
+  setTimeout(() => document.getElementById('deleteCancelBtn').focus(), 60);
+}
+
+function confirmDeleteTrip() {
+  const t = trip(); if (!t) return;
+  const name = t.name;
+  state.trips = state.trips.filter(x => x.id !== t.id);
+  state.currentTripId = state.trips.length ? state.trips[state.trips.length-1].id : null;
+  save(); renderTripSelect(); renderAll();
+  closeModal('deleteTripModal');
+  showToast('Trip deleted: ' + name);
+}
+
+function switchTrip() {
+  state.currentTripId = document.getElementById('tripSelect').value || null;
+  save(); renderAll();
+}
+
+function tripMatchesMode(t) {
+  const hasFuel    = t.fuel   && t.fuel.length   > 0;
+  const hasCharges = t.charges && t.charges.length > 0;
+  if (vehicleMode === 'ev')  return hasCharges || (!hasFuel && !hasCharges); // EV trips or empty
+  if (vehicleMode === 'ice') return hasFuel    || (!hasFuel && !hasCharges); // ICE trips or empty
+  return true;
+}
+
+function renderTripSelect() {
+  const sel = document.getElementById('tripSelect');
+  const visible = state.trips.filter(tripMatchesMode);
+
+  if (!visible.length) {
+    sel.innerHTML = '<option value="">— No trips for this mode yet —</option>';
+    // If current trip is hidden, clear selection
+    if (state.currentTripId && !visible.find(t => t.id === state.currentTripId)) {
+      state.currentTripId = null;
+      save();
+    }
+    return;
+  }
+
+  // If current trip not visible in this mode, switch to first visible
+  if (!visible.find(t => t.id === state.currentTripId)) {
+    state.currentTripId = visible[0].id;
+    save();
+  }
+
+  sel.innerHTML = visible.map(t =>
+    `<option value="${t.id}"${t.id===state.currentTripId?' selected':''}>${esc(t.name)}</option>`
+  ).join('');
+}
+
+/* ── Fuel ───────────────────────────────────────────────────────────────────── */
+function addFuelEntry() {
+  const t = trip(); if (!t) { openModal('newTripModal'); return; }
+  const odo = parseFloat(document.getElementById('fuelOdo').value);
+  const lit = parseFloat(document.getElementById('fuelLitres').value);
+  if (!odo || !lit) { showToast('Odometer and litres are required.'); return; }
+  checkOdoWarning(t, odo);
+  t.fuel.push({ id:'f_'+Date.now(),
+    date: document.getElementById('fuelDate').value,
+    location: document.getElementById('fuelLocation').value.trim()||'Unknown station',
+    odo, litres:lit,
+    cost: parseFloat(document.getElementById('fuelCost').value)||0,
+    ppl:  parseFloat(document.getElementById('fuelPPL').value)||0,
+    notes: document.getElementById('fuelNotes').value.trim()
+  });
+  save(); clearFuelForm(); renderAll(); showToast('Fuel stop logged.');
+}
+function deleteFuelEntry(id) { const t=trip(); if(!t)return; t.fuel=t.fuel.filter(e=>e.id!==id); save(); renderAll(); showToast('Fuel entry removed.'); }
+function clearFuelForm() { ['fuelLocation','fuelOdo','fuelLitres','fuelPPL','fuelCost','fuelNotes'].forEach(id=>document.getElementById(id).value=''); }
+
+/* ── Expenses ───────────────────────────────────────────────────────────────── */
+function addExpenseEntry() {
+  const t = trip(); if (!t) { openModal('newTripModal'); return; }
+  const amount = parseFloat(document.getElementById('expAmount').value);
+  const desc   = document.getElementById('expDesc').value.trim();
+  if (!amount || !desc) { showToast('Description and amount are required.'); return; }
+  t.expenses.push({ id:'e_'+Date.now(),
+    date: document.getElementById('expDate').value,
+    categoryId: document.getElementById('expCategory').value,
+    desc, amount,
+    notes: document.getElementById('expNotes').value.trim()
+  });
+  save(); clearExpenseForm(); renderAll(); showToast('Expense logged.');
+}
+function deleteExpenseEntry(id) { const t=trip(); if(!t)return; t.expenses=t.expenses.filter(e=>e.id!==id); save(); renderAll(); showToast('Expense removed.'); }
+function clearExpenseForm() { ['expDesc','expAmount','expNotes'].forEach(id=>document.getElementById(id).value=''); }
+
+/* ── Categories ─────────────────────────────────────────────────────────────── */
+function addCategory() {
+  const name = document.getElementById('catName').value.trim();
+  if (!name) { showToast('Please enter a category name.'); return; }
+  if (state.categories.find(c=>c.name.toLowerCase()===name.toLowerCase())) { showToast('Category already exists.'); return; }
+  state.categories.push({id:'cat_'+Date.now(), name, color:selectedColor});
+  document.getElementById('catName').value = '';
+  save(); renderAll(); showToast('Category added: '+name);
+}
+function deleteCategory(id) { state.categories=state.categories.filter(c=>c.id!==id); save(); renderAll(); showToast('Category removed.'); }
+function getCat(id) { return state.categories.find(c=>c.id===id)||{name:'Uncategorised',color:'#6B6560'}; }
+
+/* ── Render all ─────────────────────────────────────────────────────────────── */
+function renderAll() { renderFuelLog(); renderExpenseLog(); renderCategories(); renderStats(); if(document.getElementById('panel-summary').classList.contains('active')) renderSummary(); }
+
+function renderFuelLog() {
+  const t=trip(), el=document.getElementById('fuelLog'), cnt=document.getElementById('fuelCount');
+  if (!t||!t.fuel.length) { cnt.textContent='0 stops'; el.innerHTML=empty('⛽','No fuel stops yet','Log your first fill-up above.'); return; }
+  const sorted=[...t.fuel].sort((a,b)=>b.date.localeCompare(a.date));
+  cnt.textContent=sorted.length+' stop'+(sorted.length!==1?'s':'');
+  el.innerHTML=sorted.map(e=>{
+    const prev=t.fuel.filter(p=>p.odo<e.odo).sort((a,b)=>b.odo-a.odo)[0];
+    let effHtml='';
+    if(prev){const dist=e.odo-prev.odo; if(dist>0){const l100=e.litres/dist*100; const cls=l100<=9?'eff-good':l100<=12?'eff-mid':'eff-poor'; effHtml=`<span class="eff-pill ${cls}">${l100.toFixed(1)} L/100km</span>`;}}
+    return `<div class="log-entry" role="listitem">
+      <div class="entry-icon fuel" aria-hidden="true">⛽</div>
+      <div class="entry-body">
+        <div class="entry-title">${esc(e.location)}</div>
+        <div class="entry-meta">
+          <span>${e.date}</span><span class="meta-sep" aria-hidden="true">·</span>
+          <span>${e.litres} L</span>
+          ${e.ppl?`<span class="meta-sep" aria-hidden="true">·</span><span>$${e.ppl.toFixed(3)}/L</span>`:''}
+          <span class="meta-sep" aria-hidden="true">·</span><span>Odo: ${e.odo.toLocaleString()} km</span>
+          ${effHtml?`<span class="meta-sep" aria-hidden="true">·</span>${effHtml}`:''}
+          ${e.notes?`<span class="meta-sep" aria-hidden="true">·</span><span>${esc(e.notes)}</span>`:''}
+        </div>
+      </div>
+      <div class="entry-right">
+        <span class="entry-amount">$${e.cost.toFixed(2)}</span>
+        <button class="btn btn-outline btn-sm btn-icon" onclick="editFuelEntry('${e.id}')" aria-label="Edit: ${esc(e.location)} on ${e.date}"><span aria-hidden="true">✏️</span></button>
+        <button class="btn btn-danger btn-sm btn-icon" onclick="deleteFuelEntry('${e.id}')" aria-label="Delete: ${esc(e.location)} on ${e.date}"><span aria-hidden="true">✕</span></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderExpenseLog() {
+  const t=trip(), el=document.getElementById('expenseLog'), cnt=document.getElementById('expCount');
+  if (!t||!t.expenses.length) { cnt.textContent='0 items'; el.innerHTML=empty('💳','No expenses yet','Log your first expense above.'); return; }
+  const sorted=[...t.expenses].sort((a,b)=>b.date.localeCompare(a.date));
+  cnt.textContent=sorted.length+' item'+(sorted.length!==1?'s':'');
+  el.innerHTML=sorted.map(e=>{
+    const cat=getCat(e.categoryId);
+    return `<div class="log-entry" role="listitem">
+      <div class="entry-icon expense" aria-hidden="true">💳</div>
+      <div class="entry-body">
+        <div class="entry-title">${esc(e.desc)}</div>
+        <div class="entry-meta">
+          <span>${e.date}</span><span class="meta-sep" aria-hidden="true">·</span>
+          <span class="badge" style="color:${cat.color};border-color:${cat.color};background:${cat.color}18"><span class="badge-dot" style="background:${cat.color}" aria-hidden="true"></span>${esc(cat.name)}</span>
+          ${e.notes?`<span class="meta-sep" aria-hidden="true">·</span><span>${esc(e.notes)}</span>`:''}
+        </div>
+      </div>
+      <div class="entry-right">
+        <span class="entry-amount">$${e.amount.toFixed(2)}</span>
+        <button class="btn btn-outline btn-sm btn-icon" onclick="editExpenseEntry('${e.id}')" aria-label="Edit: ${esc(e.desc)} on ${e.date}"><span aria-hidden="true">✏️</span></button>
+        <button class="btn btn-danger btn-sm btn-icon" onclick="deleteExpenseEntry('${e.id}')" aria-label="Delete: ${esc(e.desc)} on ${e.date}"><span aria-hidden="true">✕</span></button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderCategories() {
+  const el=document.getElementById('catList');
+  el.innerHTML=state.categories.length
+    ? state.categories.map(c=>`<div class="cat-chip" role="listitem"><span class="dot" style="background:${c.color}" aria-hidden="true"></span>${esc(c.name)}<button class="cat-del" onclick="deleteCategory('${c.id}')" aria-label="Remove ${esc(c.name)}">×</button></div>`).join('')
+    : '<p style="color:var(--ink-muted);font-size:.875rem">No categories yet.</p>';
+  const prev=document.getElementById('expCategory').value;
+  document.getElementById('expCategory').innerHTML=state.categories.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  if(prev) document.getElementById('expCategory').value=prev;
+}
+
+function renderStats() {
+  const t=trip();
+  if(!t){['statDistance','statFuel'].forEach(id=>document.getElementById(id).textContent='0'); document.getElementById('statEff').textContent='—'; document.getElementById('statSpend').textContent='$0'; return;}
+  const vtype = t.vehicleType || 'ice';
+  const isEv  = vtype === 'ev';
+  const isPhev = vtype === 'phev';
+
+  // Distance — use charge odos for EV, fuel odos for ICE, best-of for PHEV
+  let dist = 0;
+  const fuelOdos = t.fuel.map(e=>e.odo).filter(Boolean);
+  const chgOdos  = (t.charges||[]).map(c=>c.odo).filter(Boolean);
+  const allOdos  = [...fuelOdos, ...chgOdos];
+  if (allOdos.length>=2) dist = Math.max(...allOdos)-Math.min(...allOdos);
+  else if (allOdos.length && t.startOdo) dist = allOdos[0]-t.startOdo;
+
+  // Energy stat — kWh for EV/PHEV, litres for ICE
+  const totalFuel  = t.fuel.reduce((s,e)=>s+e.litres,0);
+  const totalKwh   = (t.charges||[]).reduce((s,c)=>s+c.kwh,0);
+  const fuelCost   = t.fuel.reduce((s,e)=>s+(e.cost||0),0);
+  const expCost    = t.expenses.reduce((s,e)=>s+e.amount,0);
+  const chgCost    = (t.charges||[]).reduce((s,c)=>s+(c.cost||0),0);
+  const totalSpend = fuelCost+expCost+chgCost;
+
+  // Efficiency — L/100km for ICE, km/kWh for EV, both for PHEV
+  let effStr = '—';
+  if (isEv) {
+    // EV: km per kWh (exclude last session — energy not yet consumed)
+    const charges = (t.charges||[]);
+    if (charges.length >= 2) {
+      const d   = charges[charges.length-1].odo - charges[0].odo;
+      const kwh = charges.slice(0,-1).reduce((s,c)=>s+c.kwh,0);
+      if (kwh>0) effStr = (d/kwh).toFixed(1)+' km/kWh';
+    }
+  } else if (isPhev) {
+    // PHEV: show km/kWh if charges exist, else L/100km
+    const charges = (t.charges||[]);
+    if (charges.length >= 2) {
+      const d   = charges[charges.length-1].odo - charges[0].odo;
+      const kwh = charges.slice(0,-1).reduce((s,c)=>s+c.kwh,0);
+      if (kwh>0) effStr = (d/kwh).toFixed(1)+' km/kWh';
+    } else if (dist>0 && totalFuel>0) {
+      effStr = (totalFuel/dist*100).toFixed(1)+' L/100';
+    }
+  } else {
+    // ICE: L/100km
+    const eff = dist>0&&totalFuel>0?(totalFuel/dist*100).toFixed(1):null;
+    effStr = eff ? eff+' L/100' : '—';
+  }
+
+  // Update stat bar labels dynamically
+  const lblFuel = document.getElementById('lbl-fuel');
+  const lblEff  = document.getElementById('lbl-eff');
+  if (lblFuel) lblFuel.textContent = isEv ? 'Energy Used' : isPhev ? 'Energy / Fuel' : 'Fuel Used';
+  if (lblEff)  lblEff.textContent  = isEv || isPhev ? 'Efficiency' : 'Efficiency';
+
+  // Update stat bar values
+  document.getElementById('statDistance').textContent = dist.toLocaleString();
+  if (isEv) {
+    document.getElementById('statFuel').textContent = totalKwh.toFixed(1)+' kWh';
+  } else if (isPhev) {
+    document.getElementById('statFuel').textContent = totalKwh>0
+      ? totalKwh.toFixed(1)+' kWh + '+totalFuel.toFixed(1)+'L'
+      : totalFuel.toFixed(1)+'L';
+  } else {
+    document.getElementById('statFuel').textContent = totalFuel.toFixed(1);
+  }
+  document.getElementById('statEff').textContent  = effStr;
+  document.getElementById('statSpend').textContent = '$'+Math.round(totalSpend).toLocaleString();
+  // Budget card
+  const budgetCard=document.getElementById('statBudgetCard');
+  if(t.budget){
+    const spent=totalSpend, rem=t.budget-spent, over=rem<0;
+    budgetCard.style.display='';
+    budgetCard.className='stat-card '+(over?'c-red':rem/t.budget<0.2?'c-amber':'c-green');
+    document.getElementById('lbl-budget').textContent=over?'Over Budget':'Budget Left';
+    document.getElementById('statBudget').textContent=(over?'-':'')+'$'+Math.abs(Math.round(rem)).toLocaleString();
+    document.getElementById('statBudgetUnit').textContent='of $'+Math.round(t.budget).toLocaleString()+' budget';
+  } else {
+    budgetCard.style.display='none';
+  }
+}
+
+function renderSummary() {
+  const t=trip();
+
+  // ── Fuel efficiency chart ──────────────────────────────────────────────────
+  const fc=document.getElementById('fuelChart');
+  if(!t||t.fuel.length<2){
+    fc.innerHTML='<p style="color:var(--ink-muted);font-size:.875rem">Need at least 2 fuel stops to display efficiency.</p>';
+  } else {
+    const sorted=[...t.fuel].sort((a,b)=>a.odo-b.odo);
+    const effRows=[];
+    for(let i=1;i<sorted.length;i++){const d=sorted[i].odo-sorted[i-1].odo; if(d>0)effRows.push({date:sorted[i].date,val:sorted[i].litres/d*100});}
+    const maxVal=Math.max(...effRows.map(r=>r.val),1);
+    fc.setAttribute('aria-label','Fuel efficiency: '+effRows.map(r=>`${r.date}: ${r.val.toFixed(1)} L/100km`).join(', '));
+    fc.innerHTML=effRows.map(r=>{
+      const fill=r.val<=9?'#1A6B38':r.val<=12?'#C75B00':'#991A1A';
+      return `<div class="bar-row"><div class="bar-label">${r.date}</div><div class="bar-track" role="presentation"><div class="bar-fill" style="width:${(r.val/maxVal*100).toFixed(1)}%;background:${fill}" role="presentation"></div></div><div class="bar-value">${r.val.toFixed(1)} L</div></div>`;
+    }).join('');
+  }
+
+  // ── Spend by category table (fuel + expenses) ──────────────────────────────
+  const tbl=document.getElementById('expSummaryTable'), totEl=document.getElementById('expSummaryTotal');
+
+  if(!t){tbl.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--ink-muted);padding:24px">No active trip.</td></tr>';totEl.innerHTML='<strong>$0.00</strong>';return;}
+
+  const fuelCostTotal = t.fuel.reduce((s,e)=>s+(e.cost||0),0);
+  const expTotal      = t.expenses.reduce((s,e)=>s+e.amount,0);
+  const chgCostTotal  = (t.charges||[]).reduce((s,c)=>s+(c.cost||0),0);
+  const grandTotal    = fuelCostTotal + expTotal + chgCostTotal;
+
+  if(!t.expenses.length && !t.fuel.length && !(t.charges||[]).length){
+    tbl.innerHTML='<tr><td colspan="4" style="text-align:center;color:var(--ink-muted);padding:24px">No data recorded yet.</td></tr>';
+    totEl.innerHTML='<strong>$0.00</strong>';
+    return;
+  }
+
+  // Group expenses by category
+  const byCat={};
+  t.expenses.forEach(e=>{
+    if(!byCat[e.categoryId])byCat[e.categoryId]={sum:0,count:0};
+    byCat[e.categoryId].sum+=e.amount;
+    byCat[e.categoryId].count++;
+  });
+
+  // Fuel row first (always shown for ICE/PHEV)
+  let tableRows='';
+  if(fuelCostTotal>0){
+    const pct=grandTotal>0?(fuelCostTotal/grandTotal*100).toFixed(1):'0.0';
+    tableRows+=`<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#C75B00;margin-right:8px;vertical-align:middle" aria-hidden="true"></span><strong>Fuel</strong></td><td>${t.fuel.length} stop${t.fuel.length!==1?'s':''}</td><td><strong>$${fuelCostTotal.toFixed(2)}</strong></td><td>${pct}%</td></tr>`;
+  }
+
+  // Charging row (always shown for EV/PHEV — regardless of mode)
+  if(chgCostTotal>0){
+    const pct=grandTotal>0?(chgCostTotal/grandTotal*100).toFixed(1):'0.0';
+    tableRows+=`<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--ev-brand);margin-right:8px;vertical-align:middle" aria-hidden="true"></span><strong>⚡ Charging</strong></td><td>${(t.charges||[]).length} session${(t.charges||[]).length!==1?'s':''}</td><td><strong>$${chgCostTotal.toFixed(2)}</strong></td><td>${pct}%</td></tr>`;
+  }
+
+  // Expense category rows, sorted by spend descending
+  tableRows+=Object.entries(byCat).sort((a,b)=>b[1].sum-a[1].sum).map(([id,d])=>{
+    const cat=getCat(id);
+    const pct=grandTotal>0?(d.sum/grandTotal*100).toFixed(1):'0.0';
+    return `<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${cat.color};margin-right:8px;vertical-align:middle" aria-hidden="true"></span>${esc(cat.name)}</td><td>${d.count}</td><td>$${d.sum.toFixed(2)}</td><td>${pct}%</td></tr>`;
+  }).join('');
+
+  tbl.innerHTML=tableRows;
+  totEl.innerHTML='<strong>$'+grandTotal.toFixed(2)+'</strong>';
+
+  // Overview (reuse totals already calculated above)
+  const ov=document.getElementById('tripOverview');
+  if(!t){ov.innerHTML='<p style="color:var(--ink-muted)">No active trip.</p>';return;}
+  const fc2=fuelCostTotal, ec2=expTotal, cc2=chgCostTotal, grandTotal2=grandTotal;
+  const odos2=t.fuel.map(e=>e.odo); let dist2=0;
+  if(odos2.length>=2)dist2=Math.max(...odos2)-Math.min(...odos2);
+  else if(odos2.length&&t.startOdo)dist2=odos2[0]-t.startOdo;
+
+  // Budget tracker block (only shown if budget set)
+  let budgetHtml='';
+  if(t.budget){
+    const remaining=t.budget-grandTotal2;
+    const pctUsed=Math.min((grandTotal2/t.budget)*100,100);
+    const over=remaining<0;
+    const barColor=over?'var(--accent-red)':pctUsed>=80?'#C75B00':'#1A6B38';
+    const remainLabel=over
+      ? `<span style="color:var(--accent-red);font-weight:700">$${Math.abs(remaining).toFixed(2)} over budget</span>`
+      : `<span style="color:#1A6B38;font-weight:700">$${remaining.toFixed(2)} remaining</span>`;
+    budgetHtml=`
+      <div style="margin-bottom:20px;padding:16px;background:var(--surface-alt);border:1px solid var(--border);border-radius:var(--radius-lg)">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;gap:8px;flex-wrap:wrap">
+          <span style="font-weight:700;font-size:.95rem;color:var(--ink)">Budget Tracker</span>
+          ${remainLabel}
+        </div>
+        <div style="background:var(--border);border-radius:999px;height:10px;overflow:hidden;margin-bottom:8px" role="progressbar" aria-valuenow="${pctUsed.toFixed(0)}" aria-valuemin="0" aria-valuemax="100" aria-label="Budget used: ${pctUsed.toFixed(0)}%">
+          <div style="height:100%;width:${pctUsed.toFixed(1)}%;background:${barColor};border-radius:999px;transition:width .4s ease"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--ink-muted)">
+          <span>$${grandTotal2.toFixed(2)} spent</span>
+          <span>${pctUsed.toFixed(0)}% of $${t.budget.toFixed(2)}</span>
+        </div>
+      </div>`;
+  }
+
+  ov.innerHTML=budgetHtml+`<table class="data-table" aria-label="Trip overview"><tbody>
+    <tr><td style="color:var(--ink-muted);width:50%">Trip name</td><td><strong>${esc(t.name)}</strong></td></tr>
+    <tr><td style="color:var(--ink-muted)">Start date</td><td>${t.startDate||'—'}</td></tr>
+    ${t.endDate?`<tr><td style="color:var(--ink-muted)">End date</td><td>${t.endDate}</td></tr>`:''}
+    ${t.notes?`<tr><td style="color:var(--ink-muted)">Notes</td><td style="white-space:pre-wrap">${esc(t.notes)}</td></tr>`:''}
+    ${t.budget?`<tr><td style="color:var(--ink-muted)">Budget</td><td>$${t.budget.toFixed(2)}</td></tr>`:''}
+    <tr><td style="color:var(--ink-muted)">Distance tracked</td><td>${dist2.toLocaleString()} km</td></tr>
+    ${t.fuel.length>0?`<tr><td style="color:var(--ink-muted)">Fuel stops</td><td>${t.fuel.length}</td></tr>
+    <tr><td style="color:var(--ink-muted)">Fuel cost</td><td>$${fc2.toFixed(2)}</td></tr>`:''}
+    ${(t.charges||[]).length>0?`<tr><td style="color:var(--ink-muted)">Charging sessions</td><td>${(t.charges||[]).length}</td></tr>
+    <tr><td style="color:var(--ink-muted)">Charging cost</td><td>$${cc2.toFixed(2)}</td></tr>`:''}
+    <tr><td style="color:var(--ink-muted)">Expense items</td><td>${t.expenses.length}</td></tr>
+    <tr><td style="color:var(--ink-muted)">Other expenses</td><td>$${ec2.toFixed(2)}</td></tr>
+  </tbody><tfoot><tr class="total-row"><td><strong>Grand total</strong></td><td><strong>$${grandTotal2.toFixed(2)}</strong></td></tr></tfoot></table>`;
+}
+
+/* ── Tabs ───────────────────────────────────────────────────────────────────── */
+function switchTab(name,btn) {
+  document.querySelectorAll('[role="tabpanel"]').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('[role="tab"]').forEach(b=>{b.setAttribute('aria-selected','false');b.setAttribute('tabindex','-1');});
+  document.getElementById('panel-'+name).classList.add('active');
+  btn.setAttribute('aria-selected','true'); btn.setAttribute('tabindex','0');
+  if(name==='summary') renderSummary();
+}
+
+/* ── Modals ─────────────────────────────────────────────────────────────────── */
+function closeModal(id) { closeModalEl(document.getElementById(id)); }
+function closeModalEl(m) {
+  m.classList.remove('open');
+  const opener=document.querySelector('[aria-haspopup="dialog"]');
+  if(opener) opener.focus();
+}
+
+/* ── Toast ──────────────────────────────────────────────────────────────────── */
+let toastTimer;
+function showToast(msg) {
+  const t=document.getElementById('toast'), lr=document.getElementById('live-region');
+  t.textContent=msg; t.classList.add('show'); lr.textContent=msg;
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{t.classList.remove('show');setTimeout(()=>{lr.textContent='';},500);},2800);
+}
+
+/* ── Settings ─────────────────────────────────────────────────────────────── */
+const SETUP_ICONS  = {solo:'🚗',caravan:'🚗🏕️',camper:'🚐',trailer:'🚗🔩',multi:'🚗🚙',moto:'🏍️'};
+const SETUP_LABELS = {solo:'Car Only',caravan:'Car & Caravan',camper:'Motorhome / Campervan',trailer:'Car & Trailer',multi:'Multi-Vehicle Convoy',moto:'Motorcycle'};
+const TOW_SETUPS   = ['caravan','trailer'];
+
+const SETTING_FIELDS = ['vehMake','vehModel','vehYear','vehRego','vehColour','vehFuelType',
+  'vehTankSize','vehEngine','effTarget','distUnit','currency',
+  'emergContact','emergPhone','insuranceProvider','insurancePolicy',
+  'towMake','towModel','towYear','towLength','towATM','towTBW','towRego','towNotes'];
+
+function loadSettings() {
+  const s = JSON.parse(localStorage.getItem('triplog_settings') || '{}');
+  SETTING_FIELDS.forEach(id => {
+    const el = document.getElementById(id); if (!el) return;
+    if (s[id] !== undefined) el.value = s[id];
+  });
+  const setupVal = s.setupType || 'solo';
+  const radio = document.querySelector('input[name="setupType"][value="'+setupVal+'"]');
+  if (radio) radio.checked = true;
+  else document.getElementById('setup-solo').checked = true;
+  updateSetupUI();
+  updateVehiclePreview();
+}
+
+function saveSettings() {
+  const s = {};
+  SETTING_FIELDS.forEach(id => { const el=document.getElementById(id); if(el) s[id]=el.value; });
+  const r = document.querySelector('input[name="setupType"]:checked');
+  if (r) s.setupType = r.value;
+  localStorage.setItem('triplog_settings', JSON.stringify(s));
+  updateVehiclePreview();
+}
+
+function updateSetupUI() {
+  const r = document.querySelector('input[name="setupType"]:checked');
+  const v = r ? r.value : 'solo';
+  document.getElementById('towSection').style.display = TOW_SETUPS.includes(v) ? 'block' : 'none';
+}
+
+function updateVehiclePreview() {
+  const make  = document.getElementById('vehMake').value.trim();
+  const model = document.getElementById('vehModel').value.trim();
+  const year  = document.getElementById('vehYear').value.trim();
+  const rego  = document.getElementById('vehRego').value.trim();
+  const fuelEl = document.getElementById('vehFuelType');
+  const fuelTxt = fuelEl ? fuelEl.options[fuelEl.selectedIndex].text : '';
+  const r = document.querySelector('input[name="setupType"]:checked');
+  const setupType = r ? r.value : 'solo';
+
+  document.getElementById('prevIcon').textContent = SETUP_ICONS[setupType] || '🚗';
+  if (make || model) {
+    document.getElementById('prevName').textContent = [year,make,model].filter(Boolean).join(' ') || 'Your Vehicle';
+    const parts = [];
+    if (rego) parts.push('Rego: '+rego);
+    if (fuelTxt) parts.push(fuelTxt);
+    parts.push(SETUP_LABELS[setupType]||'');
+    document.getElementById('prevSub').textContent = parts.filter(Boolean).join(' · ');
+  } else {
+    document.getElementById('prevName').textContent = 'Your Vehicle';
+    document.getElementById('prevSub').textContent  = 'Fill in the details above';
+  }
+}
+
+/* ── History toggle ─────────────────────────────────────────────────────────── */
+function toggleHistory(section) {
+  const panel  = document.getElementById(section + 'HistoryPanel');
+  const btn    = document.getElementById(section + 'HistoryToggle');
+  const label  = document.getElementById(section + 'HistoryLabel');
+  const isOpen = btn.getAttribute('aria-expanded') === 'true';
+
+  if (isOpen) {
+    panel.classList.add('collapsed');
+    btn.setAttribute('aria-expanded', 'false');
+    label.textContent = 'Show';
+  } else {
+    panel.classList.remove('collapsed');
+    btn.setAttribute('aria-expanded', 'true');
+    label.textContent = 'Hide';
+  }
+}
+
+/* ── Export / Import ─────────────────────────────────────────────────────────── */
+
+let importMode    = 'merge';   // 'merge' | 'replace'
+let pendingImport = null;      // parsed data waiting for confirmation
+
+function setImportMode(mode) {
+  importMode = mode;
+  const mergeBtn   = document.getElementById('importMergeBtn');
+  const replaceBtn = document.getElementById('importReplaceBtn');
+  mergeBtn.classList.toggle('active',   mode === 'merge');
+  replaceBtn.classList.toggle('active', mode === 'replace');
+  mergeBtn.setAttribute('aria-pressed',   mode === 'merge'   ? 'true' : 'false');
+  replaceBtn.setAttribute('aria-pressed', mode === 'replace' ? 'true' : 'false');
+}
+
+// ── JSON export (full backup) ─────────────────────────────────────────────────
+function exportJSON() {
+  const settings = JSON.parse(localStorage.getItem('triplog_settings') || '{}');
+  const backup = {
+    _meta: {
+      app:       'Trip Log',
+      version:   '1.0',
+      exported:  new Date().toISOString(),
+      tripCount: state.trips.length
+    },
+    state,
+    settings
+  };
+  const filename = 'triplog-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+  downloadText(JSON.stringify(backup, null, 2), filename, 'application/json');
+  showToast('Backup downloaded: ' + filename);
+}
+
+// ── CSV exports ───────────────────────────────────────────────────────────────
+function exportFuelCSV() {
+  const t = trip();
+  if (!t) { showToast('No active trip to export.'); return; }
+  if (!t.fuel.length) { showToast('No fuel stops to export.'); return; }
+
+  const sorted = [...t.fuel].sort((a, b) => a.date.localeCompare(b.date));
+  const rows   = [
+    ['Date', 'Station / Location', 'Odometer (km)', 'Litres', 'Price per Litre ($)', 'Total Cost ($)', 'L/100km (segment)', 'Notes']
+  ];
+
+  sorted.forEach((e, idx) => {
+    const prev = sorted.slice(0, idx).filter(p => p.odo < e.odo).sort((a,b)=>b.odo-a.odo)[0];
+    let eff = '';
+    if (prev) {
+      const dist = e.odo - prev.odo;
+      if (dist > 0) eff = (e.litres / dist * 100).toFixed(2);
+    }
+    rows.push([e.date, e.location, e.odo, e.litres, e.ppl || '', e.cost, eff, e.notes || '']);
+  });
+
+  const filename = 'triplog-fuel-' + slugify(t.name) + '-' + new Date().toISOString().slice(0, 10) + '.csv';
+  downloadText(toCSV(rows), filename, 'text/csv');
+  showToast('Fuel CSV downloaded.');
+}
+
+function exportExpenseCSV() {
+  const t = trip();
+  if (!t) { showToast('No active trip to export.'); return; }
+  if (!t.expenses.length) { showToast('No expenses to export.'); return; }
+
+  const sorted = [...t.expenses].sort((a, b) => a.date.localeCompare(b.date));
+  const rows   = [
+    ['Date', 'Category', 'Description', 'Amount ($)', 'Notes']
+  ];
+
+  sorted.forEach(e => {
+    const cat = getCat(e.categoryId);
+    rows.push([e.date, cat.name, e.desc, e.amount.toFixed(2), e.notes || '']);
+  });
+
+  // Summary rows
+  rows.push([]);
+  rows.push(['SUMMARY', '', '', '', '']);
+  const byCat = {};
+  t.expenses.forEach(e => {
+    const cat = getCat(e.categoryId);
+    if (!byCat[cat.name]) byCat[cat.name] = 0;
+    byCat[cat.name] += e.amount;
+  });
+  Object.entries(byCat).sort((a,b)=>b[1]-a[1]).forEach(([name, sum]) => {
+    rows.push([name, '', '', sum.toFixed(2), '']);
+  });
+  const total = t.expenses.reduce((s,e) => s + e.amount, 0);
+  rows.push(['TOTAL', '', '', total.toFixed(2), '']);
+
+  const filename = 'triplog-expenses-' + slugify(t.name) + '-' + new Date().toISOString().slice(0, 10) + '.csv';
+  downloadText(toCSV(rows), filename, 'text/csv');
+  showToast('Expense CSV downloaded.');
+}
+
+function exportSummaryCSV() {
+  if (!state.trips.length) { showToast('No trips to export.'); return; }
+
+  const rows = [
+    ['Trip Name', 'Start Date', 'Start Odometer', 'Fuel Stops', 'Total Litres', 'Fuel Cost ($)', 'Distance (km)', 'Avg L/100km', 'Expense Items', 'Expense Total ($)', 'Grand Total ($)']
+  ];
+
+  state.trips.forEach(t => {
+    const odos      = t.fuel.map(e => e.odo).filter(Boolean);
+    let dist        = 0;
+    if (odos.length >= 2)              dist = Math.max(...odos) - Math.min(...odos);
+    else if (odos.length && t.startOdo) dist = odos[0] - t.startOdo;
+    const totalFuel = t.fuel.reduce((s, e) => s + e.litres, 0);
+    const fuelCost  = t.fuel.reduce((s, e) => s + e.cost,   0);
+    const expCost   = t.expenses.reduce((s, e) => s + e.amount, 0);
+    const eff       = dist > 0 && totalFuel > 0 ? (totalFuel / dist * 100).toFixed(2) : '';
+    rows.push([
+      t.name, t.startDate || '', t.startOdo || '',
+      t.fuel.length, totalFuel.toFixed(1), fuelCost.toFixed(2),
+      dist, eff,
+      t.expenses.length, expCost.toFixed(2), (fuelCost + expCost).toFixed(2)
+    ]);
+  });
+
+  const filename = 'triplog-summary-' + new Date().toISOString().slice(0, 10) + '.csv';
+  downloadText(toCSV(rows), filename, 'text/csv');
+  showToast('Summary CSV downloaded.');
+}
+
+// ── Import ────────────────────────────────────────────────────────────────────
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('importDropArea').classList.add('drag-over');
+}
+function handleDragLeave(e) {
+  document.getElementById('importDropArea').classList.remove('drag-over');
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('importDropArea').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) readImportFile(file);
+}
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (file) readImportFile(file);
+}
+
+function readImportFile(file) {
+  if (!file.name.endsWith('.json')) {
+    showToast('Please select a .json file.');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      validateAndPreviewImport(data);
+    } catch (err) {
+      showToast('Invalid file — could not parse JSON.');
+      announce('Import failed: invalid JSON file.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function validateAndPreviewImport(data) {
+  // Accept both raw state and backup envelope
+  const importState    = data.state || data;
+  const importSettings = data.settings || null;
+
+  if (!importState.trips || !Array.isArray(importState.trips)) {
+    showToast('This file does not look like a Trip Log backup.');
+    return;
+  }
+
+  pendingImport = { importState, importSettings };
+
+  // Build preview
+  const totalFuel    = importState.trips.reduce((s, t) => s + (t.fuel     || []).length, 0);
+  const totalExp     = importState.trips.reduce((s, t) => s + (t.expenses || []).length, 0);
+  const totalCats    = (importState.categories || []).length;
+  const exportedOn   = data._meta ? new Date(data._meta.exported).toLocaleString() : 'unknown date';
+  const modeLabel    = importMode === 'merge' ? 'Merged with existing data' : 'Replace ALL current data';
+
+  document.getElementById('importPreviewList').innerHTML = `
+    <strong>${importState.trips.length}</strong> trip(s)<br>
+    <strong>${totalFuel}</strong> fuel stop(s)<br>
+    <strong>${totalExp}</strong> expense item(s)<br>
+    <strong>${totalCats}</strong> categor${totalCats === 1 ? 'y' : 'ies'}<br>
+    ${data._meta ? `Exported: ${exportedOn}<br>` : ''}
+    Mode: <strong>${modeLabel}</strong>
+  `;
+  document.getElementById('importPreview').classList.add('visible');
+  document.getElementById('confirmImportBtn').focus();
+  announce('Import preview ready. Review and confirm.');
+}
+
+function confirmImport() {
+  if (!pendingImport) return;
+  const { importState, importSettings } = pendingImport;
+
+  if (importMode === 'replace') {
+    // Full replace
+    state.trips          = importState.trips          || [];
+    state.currentTripId  = importState.currentTripId  || (state.trips.length ? state.trips[state.trips.length-1].id : null);
+    state.categories     = importState.categories     || state.categories;
+    if (importSettings) localStorage.setItem('triplog_settings', JSON.stringify(importSettings));
+  } else {
+    // Merge: add trips that don't already exist (match by id)
+    const existingIds = new Set(state.trips.map(t => t.id));
+    let added = 0;
+    (importState.trips || []).forEach(t => {
+      if (!existingIds.has(t.id)) { state.trips.push(t); added++; }
+    });
+    // Merge categories
+    const existingCatNames = new Set(state.categories.map(c => c.name.toLowerCase()));
+    (importState.categories || []).forEach(c => {
+      if (!existingCatNames.has(c.name.toLowerCase())) state.categories.push(c);
+    });
+    if (!state.currentTripId && state.trips.length) {
+      state.currentTripId = state.trips[state.trips.length - 1].id;
+    }
+    showToast(`Merged: ${added} new trip(s) added.`);
+  }
+
+  save();
+  cancelImport();
+  renderTripSelect();
+  renderAll();
+  if (importMode === 'replace') {
+    loadSettings();
+    showToast('Data replaced from backup.');
+  }
+  announce('Import complete.');
+  // Reset file input
+  document.getElementById('importFileInput').value = '';
+}
+
+function cancelImport() {
+  pendingImport = null;
+  document.getElementById('importPreview').classList.remove('visible');
+  document.getElementById('importFileInput').value = '';
+  announce('Import cancelled.');
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function toCSV(rows) {
+  return rows.map(row =>
+    row.map(cell => {
+      const s = String(cell === null || cell === undefined ? '' : cell);
+      return /[,"\n\r]/.test(s) ? '"' + s.replace(/"/g, '""')+'"' : s;
+    }).join(',')
+  ).join('\r\n');
+}
+
+function downloadText(text, filename, mimeType) {
+  const blob = new Blob([text], { type: mimeType });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function slugify(str) {
+  return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
+}
+
+/* ── Auto-export prompt ──────────────────────────────────────────────────────── */
+const BACKUP_KEY        = 'triplog_last_backup';
+const BACKUP_DISMISS_KEY= 'triplog_backup_dismissed';
+const BACKUP_THRESHOLD  = 10; // new entries since last backup
+
+function getEntryCount() {
+  return state.trips.reduce((s,t)=>s+t.fuel.length+t.expenses.length, 0);
+}
+
+function markBackupDone() {
+  const now = Date.now();
+  localStorage.setItem(BACKUP_KEY, JSON.stringify({ ts: now, count: getEntryCount() }));
+  document.getElementById('backupBanner').classList.remove('visible');
+}
+
+function dismissBackupBanner() {
+  // Snooze: dismiss for 24h without downloading
+  localStorage.setItem(BACKUP_DISMISS_KEY, Date.now().toString());
+  document.getElementById('backupBanner').classList.remove('visible');
+}
+
+function backupFromBanner() {
+  exportJSON(); // hook on exportJSON also calls markBackupDone()
+}
+
+function checkBackupPrompt() {
+  const total = getEntryCount();
+  if (total === 0) return; // nothing to back up
+
+  // Respect snooze (24h)
+  const dismissed = parseInt(localStorage.getItem(BACKUP_DISMISS_KEY)||'0');
+  if (Date.now() - dismissed < 86400000) return;
+
+  const saved = JSON.parse(localStorage.getItem(BACKUP_KEY)||'null');
+  const lastCount = saved ? saved.count : 0;
+  const newSince  = total - lastCount;
+
+  if (newSince >= BACKUP_THRESHOLD) {
+    const txt = newSince === total
+      ? `You have ${total} entries and no backup on record.`
+      : `You've added ${newSince} entries since your last backup.`;
+    document.getElementById('backupBannerText').textContent = txt + ' Download a backup to protect your data.';
+    document.getElementById('backupBanner').classList.add('visible');
+  }
+}
+
+// Hook exportJSON to also mark backup done
+const _origExportJSON = exportJSON;
+exportJSON = function() { _origExportJSON(); markBackupDone(); };
+
+/* ── Edit fuel entry ─────────────────────────────────────────────────────────── */
+function editFuelEntry(id) {
+  const t = trip(); if (!t) return;
+  const e = t.fuel.find(f => f.id === id); if (!e) return;
+  document.getElementById('editFuelId').value       = id;
+  document.getElementById('editFuelDate').value     = e.date     || '';
+  document.getElementById('editFuelLocation').value = e.location || '';
+  document.getElementById('editFuelOdo').value      = e.odo      || '';
+  document.getElementById('editFuelLitres').value   = e.litres   || '';
+  document.getElementById('editFuelPPL').value      = e.ppl      || '';
+  document.getElementById('editFuelCost').value     = e.cost     || '';
+  document.getElementById('editFuelNotes').value    = e.notes    || '';
+  // Auto-calc on PPL/litres change
+  ['editFuelLitres','editFuelPPL'].forEach(fid =>
+    document.getElementById(fid).oninput = () => {
+      const l = parseFloat(document.getElementById('editFuelLitres').value)||0;
+      const p = parseFloat(document.getElementById('editFuelPPL').value)||0;
+      if (l && p) document.getElementById('editFuelCost').value = (l*p).toFixed(2);
+    }
+  );
+  const m = document.getElementById('editFuelModal'); m.classList.add('open');
+  setTimeout(() => document.getElementById('editFuelOdo').focus(), 50);
+}
+
+function saveEditFuel() {
+  const t   = trip(); if (!t) return;
+  const id  = document.getElementById('editFuelId').value;
+  const odo = parseFloat(document.getElementById('editFuelOdo').value);
+  const lit = parseFloat(document.getElementById('editFuelLitres').value);
+  if (!odo || !lit) { showToast('Odometer and litres are required.'); return; }
+  const e = t.fuel.find(f => f.id === id); if (!e) return;
+  // Check odo against other stops (exclude the one being edited)
+  const othersMax = t.fuel.filter(f => f.id !== id).reduce((m,f) => Math.max(m, f.odo), 0);
+  if (othersMax > 0 && odo < othersMax) showToast(`⚠️ Odometer ${odo.toLocaleString()} km is lower than another stop (${othersMax.toLocaleString()} km). Please check.`);
+  e.date     = document.getElementById('editFuelDate').value;
+  e.location = document.getElementById('editFuelLocation').value.trim() || 'Unknown station';
+  e.odo      = odo;
+  e.litres   = lit;
+  e.ppl      = parseFloat(document.getElementById('editFuelPPL').value)  || 0;
+  e.cost     = parseFloat(document.getElementById('editFuelCost').value) || 0;
+  e.notes    = document.getElementById('editFuelNotes').value.trim();
+  save(); renderAll(); closeModal('editFuelModal');
+  showToast('Fuel stop updated.');
+}
+
+/* ── Edit expense entry ──────────────────────────────────────────────────────── */
+function editExpenseEntry(id) {
+  const t = trip(); if (!t) return;
+  const e = t.expenses.find(x => x.id === id); if (!e) return;
+  document.getElementById('editExpenseId').value  = id;
+  document.getElementById('editExpDate').value    = e.date     || '';
+  document.getElementById('editExpDesc').value    = e.desc     || '';
+  document.getElementById('editExpAmount').value  = e.amount   || '';
+  document.getElementById('editExpNotes').value   = e.notes    || '';
+  // Populate category dropdown
+  const sel = document.getElementById('editExpCategory');
+  sel.innerHTML = state.categories.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  sel.value = e.categoryId || '';
+  const m = document.getElementById('editExpenseModal'); m.classList.add('open');
+  setTimeout(() => document.getElementById('editExpDesc').focus(), 50);
+}
+
+function saveEditExpense() {
+  const t    = trip(); if (!t) return;
+  const id   = document.getElementById('editExpenseId').value;
+  const desc = document.getElementById('editExpDesc').value.trim();
+  const amt  = parseFloat(document.getElementById('editExpAmount').value);
+  if (!desc || !amt) { showToast('Description and amount are required.'); return; }
+  const e = t.expenses.find(x => x.id === id); if (!e) return;
+  e.date       = document.getElementById('editExpDate').value;
+  e.categoryId = document.getElementById('editExpCategory').value;
+  e.desc       = desc;
+  e.amount     = amt;
+  e.notes      = document.getElementById('editExpNotes').value.trim();
+  save(); renderAll(); closeModal('editExpenseModal');
+  showToast('Expense updated.');
+}
+
+/* ── Odometer sanity check ───────────────────────────────────────────────────── */
+function checkOdoWarning(newOdo) {
+  const t = trip(); if (!t || !t.fuel.length) return;
+  const maxOdo = Math.max(...t.fuel.map(f => f.odo));
+  if (newOdo && newOdo < maxOdo) {
+    showToast(`⚠️ Odometer ${newOdo.toLocaleString()} km is lower than a previous stop (${maxOdo.toLocaleString()} km). Please check.`);
+  }
+}
+
+function announce(msg) {
+  const lr = document.getElementById('live-region');
+  lr.textContent = '';
+  setTimeout(() => { lr.textContent = msg; }, 50);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   EV / PHEV MODULE  —  v1.3-ev
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+// ── Vehicle mode ─────────────────────────────────────────────────────────────
+let vehicleMode = localStorage.getItem('triplog_vehicleMode') || 'ice';
+
+function setVehicleMode(mode) {
+  vehicleMode = mode;
+  localStorage.setItem('triplog_vehicleMode', mode);
+  const isEv = mode === 'ev';
+  document.body.classList.toggle('ev-mode', isEv);
+  document.getElementById('modeIceBtn').classList.toggle('active-ice', !isEv);
+  document.getElementById('modeIceBtn').classList.toggle('active-ev', false);
+  document.getElementById('modeEvBtn').classList.toggle('active-ev', isEv);
+  document.getElementById('modeEvBtn').setAttribute('aria-pressed', String(isEv));
+  document.getElementById('modeIceBtn').setAttribute('aria-pressed', String(!isEv));
+  // Show/hide help cards
+  const evHelp = document.getElementById('evHelpCard');
+  if (evHelp) evHelp.style.display = isEv ? '' : 'none';
+  // Switch to appropriate primary tab
+  if (isEv) {
+    const chargeBtn = document.getElementById('tab-charge-btn');
+    if (chargeBtn) switchTab('charge', chargeBtn);
+  } else {
+    // If currently on charge tab, switch back to fuel
+    const chargePanel = document.getElementById('panel-charge');
+    if (chargePanel && chargePanel.classList.contains('active')) {
+      const fuelBtn = document.getElementById('tab-fuel-btn');
+      if (fuelBtn) switchTab('fuel', fuelBtn);
+    }
+  }
+  renderEvStats();
+  // Refresh trip dropdown to show only trips relevant to this mode
+  if (typeof renderTripSelect === 'function') {
+    renderTripSelect();
+    renderAll();
+  }
+}
+
+function initVehicleMode() {
+  setVehicleMode(vehicleMode);
+}
+
+// ── Auto-calc charge cost ────────────────────────────────────────────────────
+function autoCalcCharge() {
+  const kwh = parseFloat(document.getElementById('chgKwh').value);
+  const ppk = parseFloat(document.getElementById('chgPPK').value);
+  if (!isNaN(kwh) && !isNaN(ppk) && kwh > 0 && ppk > 0) {
+    document.getElementById('chgCost').value = (kwh * ppk).toFixed(2);
+  }
+}
+
+// ── Clear charge form ────────────────────────────────────────────────────────
+function clearChargeForm() {
+  ['chgDate','chgLocation','chgOdo','chgKwh','chgPPK','chgCost','chgNotes','chgSOCFrom','chgSOCTo'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const ct = document.getElementById('chgType');
+  if (ct) ct.selectedIndex = 0;
+}
+
+// ── Add charge entry ─────────────────────────────────────────────────────────
+function addChargeEntry() {
+  const t = trip();
+  if (!t) { alert('Please create or select a trip first.'); return; }
+  const odo = parseFloat(document.getElementById('chgOdo').value);
+  const kwh = parseFloat(document.getElementById('chgKwh').value);
+  if (isNaN(odo) || odo < 0) { alert('Please enter a valid odometer reading.'); return; }
+  if (isNaN(kwh) || kwh <= 0) { alert('Please enter a valid kWh amount.'); return; }
+  checkOdoWarning(t, odo);
+  const costVal = parseFloat(document.getElementById('chgCost').value);
+  const entry = {
+    id: 'c_'+Date.now(),
+    date:     document.getElementById('chgDate').value || new Date().toISOString().split('T')[0],
+    location: document.getElementById('chgLocation').value.trim(),
+    odo:      odo,
+    kwh:      kwh,
+    ppk:      parseFloat(document.getElementById('chgPPK').value) || null,
+    cost:     isNaN(costVal) ? null : costVal,
+    type:     document.getElementById('chgType').value,
+    socFrom:  parseInt(document.getElementById('chgSOCFrom').value) || null,
+    socTo:    parseInt(document.getElementById('chgSOCTo').value) || null,
+    notes:    document.getElementById('chgNotes').value.trim()
+  };
+  if (!t.charges) t.charges = [];
+  t.charges.push(entry);
+  t.charges.sort((a,b) => a.odo - b.odo);
+  save();
+  clearChargeForm();
+  renderChargeLog();
+  renderEvStats();
+  renderStats();
+}
+
+// ── Render charge log ────────────────────────────────────────────────────────
+function renderChargeLog() {
+  const t = trip();
+  const log = document.getElementById('chargeLog');
+  const cnt = document.getElementById('chargeCount');
+  if (!t || !log) return;
+  const charges = t.charges || [];
+  cnt.textContent = charges.length + (charges.length === 1 ? ' session' : ' sessions');
+  if (charges.length === 0) {
+    log.innerHTML = '<p style="color:var(--ink-muted);font-size:.9rem;padding:16px 0">No charging sessions logged yet.</p>';
+    return;
+  }
+  log.innerHTML = charges.map((c, i) => {
+    // Efficiency: km/kWh from previous session
+    let effBadge = '';
+    if (i > 0) {
+      const prev = charges[i-1];
+      const dist = c.odo - prev.odo;
+      if (dist > 0 && prev.kwh > 0) {
+        const kmkwh = dist / prev.kwh;
+        const cls = kmkwh >= 6 ? 'badge-ev-good' : kmkwh >= 4 ? 'badge-ev-ok' : 'badge-ev-poor';
+        effBadge = `<span class="charge-efficiency-badge ${cls}">${kmkwh.toFixed(1)} km/kWh</span>`;
+      }
+    }
+    const costStr = c.cost != null ? `$${c.cost.toFixed(2)}` : '—';
+    const ppkStr  = c.ppk  != null ? `$${c.ppk.toFixed(3)}/kWh` : '';
+    const socStr  = (c.socFrom != null && c.socTo != null) ? `${c.socFrom}% → ${c.socTo}%` : '';
+    const typeStr = c.type ? `<span style="font-size:.75rem;color:var(--ink-muted)">${c.type}</span>` : '';
+    return `<div class="log-entry" role="listitem">
+      <div class="log-entry-main">
+        <div class="log-entry-info">
+          <span class="log-entry-date">${c.date}</span>
+          ${c.location ? `<span class="log-entry-location">${esc(c.location)}</span>` : ''}
+          ${typeStr}
+          ${effBadge}
+        </div>
+        <div class="log-entry-stats">
+          <span><strong>${c.kwh.toFixed(1)} kWh</strong></span>
+          ${ppkStr ? `<span>${ppkStr}</span>` : ''}
+          <span><strong>${costStr}</strong></span>
+          ${socStr ? `<span style="font-size:.8rem;color:var(--ink-muted)">SOC: ${socStr}</span>` : ''}
+          <span style="font-size:.8rem;color:var(--ink-muted)">Odo: ${c.odo.toLocaleString()} km</span>
+        </div>
+      </div>
+      ${c.notes ? `<div class="log-entry-notes">${esc(c.notes)}</div>` : ''}
+      <div class="log-entry-actions">
+        <button class="btn-icon" onclick="deleteChargeEntry('${c.id}')" aria-label="Delete session" title="Delete">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Delete charge entry ───────────────────────────────────────────────────────
+function deleteChargeEntry(id) {
+  const t = trip();
+  if (!t || !t.charges) return;
+  if (!confirm('Delete this charging session?')) return;
+  t.charges = t.charges.filter(c => c.id !== id);
+  save();
+  renderChargeLog();
+  renderEvStats();
+  renderStats();
+}
+
+// ── Toggle charge history ─────────────────────────────────────────────────────
+function toggleChargeHistory() {
+  const panel = document.getElementById('chargeHistoryPanel');
+  const btn   = document.getElementById('chargeHistoryToggle');
+  const lbl   = document.getElementById('chargeHistoryLabel');
+  const open  = panel.style.display !== 'none';
+  panel.style.display = open ? 'none' : '';
+  btn.setAttribute('aria-expanded', !open);
+  lbl.textContent = open ? 'Show' : 'Hide';
+}
+
+// ── EV stats strip ────────────────────────────────────────────────────────────
+function renderEvStats() {
+  const strip = document.getElementById('evStatsStrip');
+  if (!strip) return;
+  const t = trip();
+  const charges = (t && t.charges) ? t.charges : [];
+  if (charges.length === 0) { strip.innerHTML = ''; return; }
+
+  const totalKwh  = charges.reduce((s,c) => s + c.kwh, 0);
+  const totalCost = charges.reduce((s,c) => s + (c.cost||0), 0);
+  const sessions  = charges.length;
+
+  // Overall efficiency
+  let effStr = '—';
+  if (charges.length >= 2) {
+    const dist = charges[charges.length-1].odo - charges[0].odo;
+    const kwh  = charges.slice(0,-1).reduce((s,c) => s + c.kwh, 0);
+    if (kwh > 0) effStr = (dist / kwh).toFixed(1) + ' km/kWh';
+  }
+
+  strip.innerHTML = `
+    <div class="stat-card c-amber">
+      <div class="stat-label">Charging Sessions</div>
+      <div class="stat-value">${sessions}</div>
+    </div>
+    <div class="stat-card c-amber">
+      <div class="stat-label">Total Energy</div>
+      <div class="stat-value">${totalKwh.toFixed(1)} <span class="stat-unit">kWh</span></div>
+    </div>
+    <div class="stat-card c-amber">
+      <div class="stat-label">Charging Cost</div>
+      <div class="stat-value">$${totalCost.toFixed(2)}</div>
+    </div>
+    <div class="stat-card c-amber">
+      <div class="stat-label">Avg Efficiency</div>
+      <div class="stat-value">${effStr}</div>
+    </div>`;
+}
+
+// ── Patch renderSummary to include EV charging cost ──────────────────────────
+// renderSummary PHEV support now baked into renderSummary directly (v1.4-phev)
+
+// ── Patch renderAll to include charge log ────────────────────────────────────
+const _origRenderAll = renderAll;
+renderAll = function() {
+  _origRenderAll();
+  renderChargeLog();
+  renderEvStats();
+  renderPhevBanners();
+  updateTabsForTrip();
+};
+
+// ── Patch switchTab to render charge on switch ───────────────────────────────
+const _origSwitchTab = switchTab;
+switchTab = function(name, btn) {
+  _origSwitchTab(name, btn);
+  if (name === 'charge') { renderChargeLog(); renderEvStats(); }
+  renderPhevBanners();
+};
+
+// ── Init on load ─────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // Normalise all trips for backward compat (add charges:[] if missing)
+  state.trips.forEach(t => { if (!t.charges) t.charges = []; });
+  // Seed vehicle types for demo trips
+  state.trips.forEach(t => { if (!t.vehicleType) t.vehicleType = t.charges && t.charges.length > 0 ? (t.fuel && t.fuel.length > 0 ? 'phev' : 'ev') : 'ice'; });
+  updateTabsForTrip();
+});
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PHEV MODULE — v1.4-phev
+   Shows cross-mode banners and ensures totals always include all energy costs
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+function switchToEvMode() {
+  setVehicleMode('ev');
+  const btn = document.getElementById('tab-charge-btn');
+  if (btn) switchTab('charge', btn);
+}
+
+function switchToIceMode() {
+  setVehicleMode('ice');
+  const btn = document.getElementById('tab-fuel-btn');
+  if (btn) switchTab('fuel', btn);
+}
+
+function isPHEV(t) {
+  if (!t) return false;
+  return (t.fuel && t.fuel.length > 0) && (t.charges && t.charges.length > 0);
+}
+
+function renderPhevBanners() {
+  const t = trip();
+  const fuelBanner   = document.getElementById('phevFuelBanner');
+  const chargeBanner = document.getElementById('phevChargeBanner');
+  if (!fuelBanner || !chargeBanner) return;
+
+  const vtype = t ? (t.vehicleType || 'ice') : 'ice';
+
+  if (!t || vtype !== 'phev') {
+    fuelBanner.style.display   = 'none';
+    chargeBanner.style.display = 'none';
+    return;
+  }
+
+  // PHEV fuel tab banner — shows charging summary
+  const chgSessions = (t.charges||[]).length;
+  const chgCost     = (t.charges||[]).reduce((s,c) => s + (c.cost||0), 0);
+  document.getElementById('phevFuelCount').textContent = chgSessions;
+  document.getElementById('phevFuelCost').textContent  = '$' + chgCost.toFixed(2);
+  fuelBanner.style.display = '';
+
+  // PHEV charge tab banner — shows fuel summary
+  const fuelStops = t.fuel.length;
+  const fuelCost  = t.fuel.reduce((s,f) => s + (f.cost||0), 0);
+  document.getElementById('phevChargeCount').textContent    = fuelStops;
+  document.getElementById('phevChargeFuelCost').textContent = '$' + fuelCost.toFixed(2);
+  chargeBanner.style.display = '';
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   VEHICLE TYPE MODULE — v1.5
+   Per-trip ICE / PHEV / EV selection. Drives tabs, badge, banners.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+// ── Vehicle type selector (modal) ─────────────────────────────────────────────
+function selectVtype(vtype) {
+  document.querySelectorAll('.vtype-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.vtype === vtype);
+    btn.setAttribute('aria-pressed', btn.dataset.vtype === vtype ? 'true' : 'false');
+  });
+  // Show fuel type selector only for ICE and PHEV
+  const ftg = document.getElementById('fuelTypeGroup');
+  if (ftg) ftg.style.display = (vtype === 'ev') ? 'none' : '';
+}
+
+// ── Update tabs based on active trip's vehicleType ───────────────────────────
+function updateTabsForTrip() {
+  const t = trip();
+  const vtype = t ? (t.vehicleType || 'ice') : 'ice';
+
+  const fuelTab   = document.getElementById('tab-fuel-btn');
+  const chargeTab = document.getElementById('tab-charge-btn');
+  const fuelPanel = document.getElementById('panel-fuel');
+  const chargePanel = document.getElementById('panel-charge');
+
+  if (!fuelTab || !chargeTab) return;
+
+  if (vtype === 'ice') {
+    // ICE: show fuel tab only
+    fuelTab.style.display   = '';
+    chargeTab.style.display = 'none';
+    // If currently on charge tab, switch to fuel
+    if (chargePanel && chargePanel.classList.contains('active')) {
+      switchTab('fuel', fuelTab);
+    }
+  } else if (vtype === 'ev') {
+    // EV: show charge tab only
+    fuelTab.style.display   = 'none';
+    chargeTab.style.display = '';
+    // If currently on fuel tab, switch to charge
+    if (fuelPanel && fuelPanel.classList.contains('active')) {
+      switchTab('charge', chargeTab);
+    }
+  } else {
+    // PHEV: show both tabs
+    fuelTab.style.display   = '';
+    chargeTab.style.display = '';
+  }
+
+  // Also update body class for CSS tinting (EV/PHEV = purple)
+  document.body.classList.toggle('ev-mode', vtype === 'ev' || vtype === 'phev');
+
+  renderVtypeBadge(vtype);
+  renderPhevBanners();
+}
+
+// ── Render vehicle type badge in trip bar ─────────────────────────────────────
+function renderVtypeBadge(vtype) {
+  const badge = document.getElementById('vehicleTypeBadge');
+  if (!badge) return;
+  const labels = { ice: '⛽ ICE', phev: '🔋 PHEV', ev: '⚡ EV' };
+  const classes = { ice: 'badge-ice', phev: 'badge-phev', ev: 'badge-ev' };
+  badge.textContent = labels[vtype] || '';
+  badge.className = 'vtype-badge ' + (classes[vtype] || '');
+}
+
+// switchTrip already calls renderAll which calls updateTabsForTrip via patch — no override needed
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   FUEL TYPE + TRIP FILTER — v1.6
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+// ── Fuel type selector (modal) ────────────────────────────────────────────────
+function selectFtype(ftype) {
+  document.querySelectorAll('.ftype-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.ftype === ftype);
+  });
+}
+
+// ── Trip filter state ─────────────────────────────────────────────────────────
+let tripFilter = 'all';
+
+function setTripFilter(filter) {
+  tripFilter = filter;
+  document.querySelectorAll('.vtype-filter-btn').forEach(btn => {
+    const f = btn.dataset.filter;
+    btn.className = 'vtype-filter-btn' + (f === filter ? ' active-' + filter : '');
+  });
+  renderTripSelect();
+  renderAll(); // refresh stats, tabs, badge, summary for newly active trip
+}
+
+// ── Update renderTripSelect to respect tripFilter ─────────────────────────────
+// Override the existing renderTripSelect with filter-aware version
+function renderTripSelect() {
+  const sel = document.getElementById('tripSelect');
+  const visible = tripFilter === 'all'
+    ? state.trips
+    : state.trips.filter(t => (t.vehicleType || 'ice') === tripFilter);
+
+  if (!visible.length) {
+    sel.innerHTML = '<option value="">— No ' + (tripFilter === 'all' ? '' : tripFilter.toUpperCase() + ' ') + 'trips yet —</option>';
+    if (!visible.find(t => t.id === state.currentTripId)) {
+      state.currentTripId = null; save();
+    }
+    return;
+  }
+
+  // If active trip is filtered out, switch to first visible
+  if (!visible.find(t => t.id === state.currentTripId)) {
+    state.currentTripId = visible[0].id; save();
+  }
+
+  sel.innerHTML = visible.map(t => {
+    const icon = t.vehicleType === 'ev' ? '⚡' : t.vehicleType === 'phev' ? '🔋' : '⛽';
+    const ftype = t.fuelType && t.vehicleType !== 'ev' ? ' · ' + t.fuelType.charAt(0).toUpperCase() + t.fuelType.slice(1) : '';
+    return `<option value="${t.id}"${t.id===state.currentTripId?' selected':''}>${icon} ${esc(t.name)}${ftype}</option>`;
+  }).join('');
+}
+
+// ── Fuel type label for badge / overview ─────────────────────────────────────
+function fuelTypeLabel(t) {
+  if (!t) return '';
+  const labels = {
+    unleaded:'Unleaded 91', premium:'Premium 95', e10:'E10',
+    diesel:'Diesel', lpg:'LPG', electric:'Electric'
+  };
+  return labels[t.fuelType] || (t.fuelType || '');
+}
+
+</script>
+</body>
+</html>
