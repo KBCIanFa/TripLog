@@ -914,17 +914,17 @@ function toggleHistory(section) {
       <div class="stat-card c-blue" role="region" aria-labelledby="lbl-fuel">
         <div class="stat-label" id="lbl-fuel">Fuel Used</div>
         <div class="stat-value" id="statFuel" aria-live="polite">0</div>
-        <div class="stat-unit">litres</div>
+        <div class="stat-unit" id="statFuelUnit">litres</div>
       </div>
       <div class="stat-card c-green" role="region" aria-labelledby="lbl-eff">
         <div class="stat-label" id="lbl-eff">Efficiency</div>
         <div class="stat-value" id="statEff" aria-live="polite">—</div>
-        <div class="stat-unit">litres / 100 km</div>
+        <div class="stat-unit" id="statEffUnit">L / 100 km</div>
       </div>
       <div class="stat-card c-red" role="region" aria-labelledby="lbl-spend">
         <div class="stat-label" id="lbl-spend">Total Spend</div>
         <div class="stat-value" id="statSpend" aria-live="polite">$0</div>
-        <div class="stat-unit">fuel + expenses</div>
+        <div class="stat-unit" id="statSpendUnit">fuel + expenses</div>
       </div>
       <div class="stat-card c-green" role="region" aria-labelledby="lbl-budget" id="statBudgetCard" style="display:none">
         <div class="stat-label" id="lbl-budget">Budget Left</div>
@@ -1717,7 +1717,7 @@ function toggleHistory(section) {
 
 </div><!-- /.app -->
 
-<footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">Trip Log by Ian Fraser &copy; 2026 &nbsp;·&nbsp; <span id="appVersion">v1.7</span></footer>
+<footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">Trip Log by Ian Fraser &copy; 2026 &nbsp;·&nbsp; <span id="appVersion">v2.0</span></footer>
 
 <!-- Modal: New Trip -->
 <div class="modal-overlay" id="newTripModal" role="dialog" aria-modal="true" aria-labelledby="tripModalTitle">
@@ -1945,49 +1945,77 @@ function empty(icon, title, text) {
     id: 'trip_phev_demo', name: 'Perth to Esperance — PHEV Demo',
     vehicleType: 'phev', fuelType: 'premium',
     startDate: '2026-02-05', endDate: '2026-02-09',
-    startOdo: 28500, budget: 1800,
-    notes: 'PHEV demo trip — delete and start your own!',
+    startOdo: 28500, budget: 2200,
+    notes: 'PHEV demo — Mix of EV and petrol legs. Delete and start your own!',
     fuel: [
-      { id:'pf1', date:'2026-02-05', location:'Coles Express Cannington',  odo:28500, litres:38.2, ppl:2.08, cost:79.46, notes:'Full tank departure' },
-      { id:'pf2', date:'2026-02-06', location:'BP Hyden',                  odo:28920, litres:32.6, ppl:2.45, cost:79.87, notes:'Expensive outback pricing' },
-      { id:'pf3', date:'2026-02-08', location:'Ampol Esperance',           odo:29380, litres:35.4, ppl:2.21, cost:78.23, notes:'' },
+      { id:'pf1', date:'2026-02-05', location:'Coles Express Cannington',    odo:28500, litres:38.2, ppl:2.08, cost:79.46, notes:'Full tank before leaving Perth' },
+      { id:'pf2', date:'2026-02-06', location:'BP Merredin',                 odo:28840, litres:28.4, ppl:2.28, cost:64.75, notes:'Short petrol leg after EV range' },
+      { id:'pf3', date:'2026-02-06', location:'United Hyden',                odo:29080, litres:22.6, ppl:2.46, cost:55.60, notes:'Expensive outback stop' },
+      { id:'pf4', date:'2026-02-07', location:'Ampol Norseman',              odo:29520, litres:35.8, ppl:2.38, cost:85.20, notes:'Long petrol leg — limited chargers' },
+      { id:'pf5', date:'2026-02-08', location:'BP Esperance',                odo:29890, litres:30.2, ppl:2.21, cost:66.74, notes:'Arrived Esperance' },
     ],
     charges: [
-      { id:'pc1', date:'2026-02-05', location:'Cannington EVSE Home',    odo:28500, kwh:18.5, ppk:0.28, cost:5.18, type:'AC Slow', socFrom:22, socTo:90, notes:'Overnight home charge before departure' },
-      { id:'pc2', date:'2026-02-06', location:'Merredin NRMA Charger',   odo:28760, kwh:14.2, ppk:0.45, cost:6.39, type:'DC Fast', socFrom:18, socTo:72, notes:'Quick 25 min top-up' },
-      { id:'pc3', date:'2026-02-08', location:'Esperance Caravan Park',  odo:29380, kwh:16.8, ppk:0.32, cost:5.38, type:'AC Fast', socFrom:15, socTo:85, notes:'Overnight charge at park' },
+      { id:'pc1', date:'2026-02-05', location:'Home — Cannington',          odo:28500, kwh:18.5, ppk:0.28, cost:5.18, type:'AC Slow',  socFrom:22, socTo:90, notes:'Overnight home charge before departure' },
+      { id:'pc2', date:'2026-02-05', location:'Midland NRMA Fast Charger',    odo:28618, kwh:22.4, ppk:0.45, cost:10.08, type:'DC Fast',  socFrom:28, socTo:88, notes:'45 min stop — coffee break' },
+      { id:'pc3', date:'2026-02-06', location:'Merredin EVSE (Council)',      odo:28840, kwh:16.2, ppk:0.40, cost:6.48, type:'AC Fast',  socFrom:12, socTo:75, notes:'Slow charger at council carpark' },
+      { id:'pc4', date:'2026-02-07', location:'Coolgardie Tesla Destination', odo:29285, kwh:24.8, ppk:0.48, cost:11.90, type:'DC Fast',  socFrom:10, socTo:82, notes:'Great little pub nearby' },
+      { id:'pc5', date:'2026-02-08', location:'Esperance Caravan Park',       odo:29890, kwh:20.6, ppk:0.32, cost:6.59, type:'AC Fast',  socFrom:18, socTo:88, notes:'Overnight at the park — beautiful bay' },
     ],
     expenses: [
-      { id:'pe1', date:'2026-02-05', categoryId:'cat_acc',  desc:'Hyden Wave Rock Caravan Park', amount:72.00,  notes:'Powered site' },
-      { id:'pe2', date:'2026-02-06', categoryId:'cat_act',  desc:'Wave Rock entry',              amount:18.00,  notes:'Worth it' },
-      { id:'pe3', date:'2026-02-07', categoryId:'cat_food', desc:'Esperance Waterfront dinner',  amount:88.00,  notes:'Seafood platter' },
-      { id:'pe4', date:'2026-02-08', categoryId:'cat_acc',  desc:'Esperance Bay Holiday Park',   amount:110.00, notes:'2 nights powered' },
+      { id:'pe1', date:'2026-02-05', categoryId:'cat_food', desc:'Cafe stop — Midland',            amount:24.50, notes:'Good coffee' },
+      { id:'pe2', date:'2026-02-05', categoryId:'cat_acc',  desc:'Merredin Motel',                    amount:115.00, notes:'' },
+      { id:'pe3', date:'2026-02-06', categoryId:'cat_act',  desc:'Wave Rock entry + guided tour',     amount:42.00, notes:'Highly recommend the walk' },
+      { id:'pe4', date:'2026-02-06', categoryId:'cat_food', desc:'Hyden bakery lunch',                amount:18.50, notes:'Famous meat pie' },
+      { id:'pe5', date:'2026-02-07', categoryId:'cat_acc',  desc:'Norseman Gold and Country Motel',   amount:128.00, notes:'' },
+      { id:'pe6', date:'2026-02-07', categoryId:'cat_food', desc:'Roadhouse dinner — Norseman',   amount:34.00, notes:'' },
+      { id:'pe7', date:'2026-02-08', categoryId:'cat_acc',  desc:'Esperance Bay Holiday Park',        amount:145.00, notes:'3 nights powered site, stunning view' },
+      { id:'pe8', date:'2026-02-09', categoryId:'cat_act',  desc:'Cape Le Grand National Park entry', amount:22.00, notes:'Lucky Bay — kangaroos on the beach!' },
+      { id:'pe9', date:'2026-02-09', categoryId:'cat_food', desc:'Seafood platter — Esperance Jetty', amount:92.00, notes:'Best prawns of the trip' },
     ],
   };
 
   // ── Demo Trip 3: EV — Brisbane to Sydney (Electric) ──────────────────────────
   const evTrip = {
-    id: 'trip_ev_demo', name: 'Brisbane to Sydney — EV Demo',
+    id: 'trip_ev_demo', name: 'Melbourne to Cairns — EV Demo',
     vehicleType: 'ev', fuelType: 'electric',
-    startDate: '2026-02-01', endDate: '2026-02-04',
-    startOdo: 18500, budget: 1200,
-    notes: 'EV demo trip — delete and start your own!',
+    startDate: '2026-03-01', endDate: '2026-03-08',
+    startOdo: 34200, budget: 2400,
+    notes: 'EV demo — Proving you can go Melbourne to Cairns on electrons. Delete and start your own!',
     fuel: [],
     charges: [
-      { id:'c1', date:'2026-02-01', location:'Tesla Supercharger — Wahroonga',      odo:18500, kwh:42.0, ppk:0.52, cost:21.84, type:'DC Ultra', socFrom:12, socTo:85, notes:'First charge after leaving Brisbane' },
-      { id:'c2', date:'2026-02-01', location:'NRMA Fast Charger — Newcastle',       odo:18662, kwh:38.5, ppk:0.48, cost:18.48, type:'DC Fast',  socFrom:18, socTo:80, notes:'Quick top-up, 35 min' },
-      { id:'c3', date:'2026-02-02', location:'Tesla Supercharger — Port Macquarie', odo:18917, kwh:55.2, ppk:0.52, cost:28.70, type:'DC Ultra', socFrom:10, socTo:90, notes:'Lunch stop — great cafe next door' },
-      { id:'c4', date:'2026-02-03', location:'Evie Networks — Coffs Harbour',       odo:19089, kwh:44.8, ppk:0.45, cost:20.16, type:'DC Fast',  socFrom:22, socTo:82, notes:'' },
-      { id:'c5', date:'2026-02-03', location:'Tesla Supercharger — Byron Bay',      odo:19312, kwh:50.1, ppk:0.52, cost:26.05, type:'DC Ultra', socFrom:15, socTo:88, notes:'Overnight stay' },
-      { id:'c6', date:'2026-02-04', location:'ChargePoint — Sydney CBD',            odo:19500, kwh:36.8, ppk:0.41, cost:15.09, type:'AC Fast',  socFrom:30, socTo:95, notes:'Destination charge at hotel' },
+      { id:'c1',  date:'2026-03-01', location:'Tesla SC — Wodonga',            odo:34200, kwh:44.2, ppk:0.52, cost:22.98, type:'DC Ultra', socFrom:14, socTo:86, notes:'First stop after crossing into NSW' },
+      { id:'c2',  date:'2026-03-01', location:'Evie — Albury Myer',            odo:34388, kwh:38.8, ppk:0.45, cost:17.46, type:'DC Fast',  socFrom:20, socTo:82, notes:'Shopping centre charge while we grabbed lunch' },
+      { id:'c3',  date:'2026-03-02', location:'NRMA — Gundagai',               odo:34602, kwh:52.4, ppk:0.48, cost:25.15, type:'DC Fast',  socFrom:10, socTo:88, notes:'Great pie shop next door' },
+      { id:'c4',  date:'2026-03-02', location:'Tesla SC — Goulburn',           odo:34820, kwh:40.6, ppk:0.52, cost:21.11, type:'DC Ultra', socFrom:22, socTo:84, notes:'Quick 25 min top-up' },
+      { id:'c5',  date:'2026-03-03', location:'ChargePoint — Sydney Olympic Park', odo:35050, kwh:58.2, ppk:0.41, cost:23.86, type:'AC Fast',  socFrom:16, socTo:92, notes:'Overnight at hotel' },
+      { id:'c6',  date:'2026-03-04', location:'Tesla SC — Gosford',            odo:35182, kwh:36.4, ppk:0.52, cost:18.93, type:'DC Ultra', socFrom:28, socTo:80, notes:'Coffee and top-up' },
+      { id:'c7',  date:'2026-03-04', location:'Evie — Port Macquarie',         odo:35440, kwh:48.6, ppk:0.46, cost:22.36, type:'DC Fast',  socFrom:12, socTo:86, notes:'Lunch stop at the harbour' },
+      { id:'c8',  date:'2026-03-05', location:'Tesla SC — Coffs Harbour',      odo:35640, kwh:42.0, ppk:0.52, cost:21.84, type:'DC Ultra', socFrom:18, socTo:82, notes:'Afternoon charge' },
+      { id:'c9',  date:'2026-03-05', location:'AmpCharge — Byron Bay',         odo:35820, kwh:50.4, ppk:0.49, cost:24.70, type:'DC Fast',  socFrom:10, socTo:88, notes:'Parked here while we walked the beach' },
+      { id:'c10', date:'2026-03-06', location:'Tesla SC — Tugun (Gold Coast)',  odo:35900, kwh:32.8, ppk:0.52, cost:17.06, type:'DC Ultra', socFrom:30, socTo:88, notes:'Just over the QLD border' },
+      { id:'c11', date:'2026-03-06', location:'Chargefox — Sunshine Coast',    odo:36085, kwh:46.2, ppk:0.44, cost:20.33, type:'DC Fast',  socFrom:15, socTo:84, notes:'Stop at Noosa for the night' },
+      { id:'c12', date:'2026-03-07', location:'Tesla SC — Childers',           odo:36340, kwh:54.8, ppk:0.52, cost:28.50, type:'DC Ultra', socFrom:8,  socTo:90, notes:'Long leg today — needed a proper charge' },
+      { id:'c13', date:'2026-03-07', location:'Evie — Rockhampton',            odo:36620, kwh:48.0, ppk:0.46, cost:22.08, type:'DC Fast',  socFrom:14, socTo:82, notes:'Stopover in Rocky' },
+      { id:'c14', date:'2026-03-08', location:'NRMA — Mackay',                 odo:36900, kwh:52.6, ppk:0.48, cost:25.25, type:'DC Fast',  socFrom:10, socTo:85, notes:'Almost there!' },
+      { id:'c15', date:'2026-03-08', location:'Tesla SC — Cairns Central',     odo:37100, kwh:38.4, ppk:0.52, cost:19.97, type:'DC Ultra', socFrom:18, socTo:80, notes:'Made it! Destination charge at hotel' },
     ],
     expenses: [
-      { id:'ee1', date:'2026-02-01', categoryId:'cat_acc',  desc:'Novotel Newcastle',              amount:189.00, notes:'' },
-      { id:'ee2', date:'2026-02-02', categoryId:'cat_food', desc:'Lunch — Port Macquarie',    amount:38.50,  notes:'Fish tacos' },
-      { id:'ee3', date:'2026-02-02', categoryId:'cat_acc',  desc:'Aanuka Beach Resort',            amount:215.00, notes:'Splurge night' },
-      { id:'ee4', date:'2026-02-03', categoryId:'cat_food', desc:'Byron Bay Brewery dinner',       amount:94.00,  notes:'Worth every cent' },
-      { id:'ee5', date:'2026-02-03', categoryId:'cat_acc',  desc:'Byron Bay Beach House',          amount:280.00, notes:'' },
-      { id:'ee6', date:'2026-02-04', categoryId:'cat_toll', desc:'M1 Tolls',                      amount:18.60,  notes:'Linkt tag' },
+      { id:'ee1',  date:'2026-03-01', categoryId:'cat_acc',  desc:'Murray River Motor Inn — Albury',   amount:138.00, notes:'Good value' },
+      { id:'ee2',  date:'2026-03-01', categoryId:'cat_food', desc:'Lunch — Albury',                    amount:42.00,  notes:'Thai place near charger' },
+      { id:'ee3',  date:'2026-03-02', categoryId:'cat_food', desc:'Gundagai pie shop',                     amount:18.00,  notes:'Famous pies — worth the detour' },
+      { id:'ee4',  date:'2026-03-02', categoryId:'cat_acc',  desc:'Canberra Rex Hotel',                    amount:165.00, notes:'Short detour to see the capital' },
+      { id:'ee5',  date:'2026-03-03', categoryId:'cat_acc',  desc:'Ibis Sydney Olympic Park',              amount:182.00, notes:'Convenient for the SC' },
+      { id:'ee6',  date:'2026-03-03', categoryId:'cat_toll', desc:'Sydney Harbour Tunnel + M1',            amount:24.80,  notes:'Linkt tag' },
+      { id:'ee7',  date:'2026-03-04', categoryId:'cat_food', desc:'Seafood lunch — Port Macquarie',   amount:58.00,  notes:'Best fish of the trip' },
+      { id:'ee8',  date:'2026-03-04', categoryId:'cat_acc',  desc:'Rydges Port Macquarie',                 amount:198.00, notes:'' },
+      { id:'ee9',  date:'2026-03-05', categoryId:'cat_acc',  desc:'Byron Bay Beach House',                 amount:295.00, notes:'Worth every cent' },
+      { id:'ee10', date:'2026-03-05', categoryId:'cat_food', desc:'Byron Bay Brewery dinner',              amount:88.00,  notes:'' },
+      { id:'ee11', date:'2026-03-06', categoryId:'cat_acc',  desc:'Noosa Heads Resort',                    amount:245.00, notes:'Stunning location' },
+      { id:'ee12', date:'2026-03-06', categoryId:'cat_food', desc:'Noosa Waterfront restaurant',           amount:112.00, notes:'Splurge dinner — worth it' },
+      { id:'ee13', date:'2026-03-07', categoryId:'cat_acc',  desc:'Rockhampton Riverside Hotel',           amount:125.00, notes:'' },
+      { id:'ee14', date:'2026-03-07', categoryId:'cat_food', desc:'Beef capital BBQ dinner — Rocky',  amount:68.00,  notes:'You have to eat beef in Rockhampton' },
+      { id:'ee15', date:'2026-03-08', categoryId:'cat_acc',  desc:'Cairns Esplanade Hotel',               amount:210.00, notes:'Views of the bay' },
+      { id:'ee16', date:'2026-03-08', categoryId:'cat_food', desc:'Celebration dinner — Cairns',      amount:145.00, notes:'Made it to Cairns on electrons!' },
     ],
   };
 
@@ -2384,16 +2412,22 @@ function renderStats() {
     effStr = eff ? eff+' L/100' : '—';
   }
 
-  // Update stat bar labels dynamically
-  const lblFuel = document.getElementById('lbl-fuel');
-  const lblEff  = document.getElementById('lbl-eff');
+  // Update stat bar labels + unit subtitles dynamically
+  const lblFuel      = document.getElementById('lbl-fuel');
+  const lblEff       = document.getElementById('lbl-eff');
+  const statFuelUnit = document.getElementById('statFuelUnit');
+  const statEffUnit  = document.getElementById('statEffUnit');
+  const statSpendUnit= document.getElementById('statSpendUnit');
+
   if (lblFuel) lblFuel.textContent = isEv ? 'Energy Used' : isPhev ? 'Energy / Fuel' : 'Fuel Used';
-  if (lblEff)  lblEff.textContent  = isEv || isPhev ? 'Efficiency' : 'Efficiency';
+  if (statFuelUnit) statFuelUnit.textContent = isEv ? 'kWh total' : isPhev ? 'kWh + litres' : 'litres';
+  if (statEffUnit)  statEffUnit.textContent  = isEv || isPhev ? 'km / kWh' : 'L / 100 km';
+  if (statSpendUnit) statSpendUnit.textContent = isEv ? 'charging + expenses' : isPhev ? 'fuel + charging + expenses' : 'fuel + expenses';
 
   // Update stat bar values
   document.getElementById('statDistance').textContent = dist.toLocaleString();
   if (isEv) {
-    document.getElementById('statFuel').textContent = totalKwh.toFixed(1)+' kWh';
+    document.getElementById('statFuel').textContent = totalKwh.toFixed(1);
   } else if (isPhev) {
     document.getElementById('statFuel').textContent = totalKwh>0
       ? totalKwh.toFixed(1)+' kWh + '+totalFuel.toFixed(1)+'L'
@@ -3050,47 +3084,28 @@ function announce(msg) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   EV / PHEV MODULE  —  v1.3-ev
+   EV / PHEV MODULE  —  v2.0
    ═══════════════════════════════════════════════════════════════════════════ */
 
 // ── Vehicle mode ─────────────────────────────────────────────────────────────
 let vehicleMode = localStorage.getItem('triplog_vehicleMode') || 'ice';
 
 function setVehicleMode(mode) {
+  // v2.0: mode is now per-trip via vehicleType — this fn is kept for PHEV banner
+  // switchToEvMode/switchToIceMode calls. Just update body class + delegate to updateTabsForTrip.
   vehicleMode = mode;
   localStorage.setItem('triplog_vehicleMode', mode);
-  const isEv = mode === 'ev';
-  document.body.classList.toggle('ev-mode', isEv);
-  document.getElementById('modeIceBtn').classList.toggle('active-ice', !isEv);
-  document.getElementById('modeIceBtn').classList.toggle('active-ev', false);
-  document.getElementById('modeEvBtn').classList.toggle('active-ev', isEv);
-  document.getElementById('modeEvBtn').setAttribute('aria-pressed', String(isEv));
-  document.getElementById('modeIceBtn').setAttribute('aria-pressed', String(!isEv));
   // Show/hide help cards
   const evHelp = document.getElementById('evHelpCard');
-  if (evHelp) evHelp.style.display = isEv ? '' : 'none';
-  // Switch to appropriate primary tab
-  if (isEv) {
-    const chargeBtn = document.getElementById('tab-charge-btn');
-    if (chargeBtn) switchTab('charge', chargeBtn);
-  } else {
-    // If currently on charge tab, switch back to fuel
-    const chargePanel = document.getElementById('panel-charge');
-    if (chargePanel && chargePanel.classList.contains('active')) {
-      const fuelBtn = document.getElementById('tab-fuel-btn');
-      if (fuelBtn) switchTab('fuel', fuelBtn);
-    }
-  }
-  renderEvStats();
-  // Refresh trip dropdown to show only trips relevant to this mode
-  if (typeof renderTripSelect === 'function') {
+  if (evHelp) evHelp.style.display = (mode === 'ev') ? '' : 'none';
+  if (typeof updateTabsForTrip === 'function') {
     renderTripSelect();
     renderAll();
   }
 }
 
 function initVehicleMode() {
-  setVehicleMode(vehicleMode);
+  // v2.0: tabs are driven by trip vehicleType, not global mode — no-op
 }
 
 // ── Auto-calc charge cost ────────────────────────────────────────────────────
@@ -3260,7 +3275,7 @@ function renderEvStats() {
 }
 
 // ── Patch renderSummary to include EV charging cost ──────────────────────────
-// renderSummary PHEV support now baked into renderSummary directly (v1.4-phev)
+// renderSummary PHEV support baked in natively (v2.0)
 
 // ── Patch renderAll to include charge log ────────────────────────────────────
 const _origRenderAll = renderAll;
@@ -3291,7 +3306,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   PHEV MODULE — v1.4-phev
+   PHEV MODULE — v2.0
    Shows cross-mode banners and ensures totals always include all energy costs
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -3343,7 +3358,7 @@ function renderPhevBanners() {
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   VEHICLE TYPE MODULE — v1.5
+   VEHICLE TYPE MODULE — v2.0
    Per-trip ICE / PHEV / EV selection. Drives tabs, badge, banners.
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -3413,7 +3428,7 @@ function renderVtypeBadge(vtype) {
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   FUEL TYPE + TRIP FILTER — v1.6
+   FUEL TYPE + TRIP FILTER — v2.0
    ═══════════════════════════════════════════════════════════════════════════ */
 
 // ── Fuel type selector (modal) ────────────────────────────────────────────────
