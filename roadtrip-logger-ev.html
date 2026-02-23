@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trip Log by Ian Fraser © 2026</title>
+<title>LogMyJourney AU</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
@@ -859,7 +859,7 @@ function toggleHistory(section) {
 <div id="backupBanner" class="backup-banner" role="alert" aria-live="polite">
   <span class="backup-banner-icon" aria-hidden="true">💾</span>
   <div class="backup-banner-body">
-    <div class="backup-banner-title">Time to back up your Trip Log</div>
+    <div class="backup-banner-title">Time to back up your LogMyJourney data</div>
     <div class="backup-banner-text" id="backupBannerText">You've added entries since your last backup. Download a backup to protect your data.</div>
     <div class="backup-banner-actions">
       <button class="btn btn-primary btn-sm" onclick="backupFromBanner()">Download Backup Now</button>
@@ -873,8 +873,8 @@ function toggleHistory(section) {
 
   <header role="banner">
     <div class="logo-group">
-      <span class="logo-title">Trip Log</span>
-      <span class="logo-sub" aria-hidden="true">Road Trip Journal</span>
+      <span class="logo-title">LogMyJourney <span style="color:var(--brand-border);font-size:.7em;vertical-align:super;font-weight:700">AU</span></span>
+      <span class="logo-sub" aria-hidden="true">Track Every Journey</span>
     </div>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end">
       <a href="https://www.paypal.com/ncp/payment/YGXFAYQ4PY5X6"
@@ -1530,7 +1530,7 @@ function toggleHistory(section) {
       <div class="import-drop-area"
            id="importDropArea"
            role="button"
-           aria-label="Drop a Trip Log JSON backup file here, or click to browse"
+           aria-label="Drop a LogMyJourney AU JSON backup file here, or click to browse"
            tabindex="0"
            ondragover="handleDragOver(event)"
            ondragleave="handleDragLeave(event)"
@@ -1539,7 +1539,7 @@ function toggleHistory(section) {
         <input type="file"
                id="importFileInput"
                accept=".json"
-               aria-label="Choose a Trip Log JSON backup file"
+               aria-label="Choose a LogMyJourney AU JSON backup file"
                onchange="handleFileSelect(event)">
         <div class="import-drop-icon" aria-hidden="true">📂</div>
         <div class="import-drop-title">Drop your backup file here</div>
@@ -1570,7 +1570,7 @@ function toggleHistory(section) {
     <!-- Quick Start -->
     <div class="card">
       <div class="card-title"><span class="icon" aria-hidden="true">🚀</span> Getting Started</div>
-      <p style="margin:0 0 12px;color:var(--ink-secondary);font-size:.9rem;line-height:1.6">Trip Log stores all your data privately in your browser — no account, no cloud, no sign-up required.</p>
+      <p style="margin:0 0 12px;color:var(--ink-secondary);font-size:.9rem;line-height:1.6">LogMyJourney AU stores all your data privately in your browser — no account, no cloud, no sign-up required.</p>
       <ol style="margin:0;padding-left:20px;color:var(--ink-secondary);font-size:.9rem;line-height:1.8">
         <li>Tap <strong>New Trip</strong> in the top-right corner and give your trip a name, start date, and odometer reading.</li>
         <li>Each time you fill up, go to the <strong>Fuel</strong> tab and log the stop.</li>
@@ -1705,7 +1705,7 @@ function toggleHistory(section) {
         </div>
         <div class="help-item">
           <div class="help-q">How do I restore or move to a new device?</div>
-          <div class="help-a">On the new device, open Trip Log, go to <strong>Settings → Import</strong>, select <strong>Replace</strong> mode, then drop in your backup <code>.json</code> file and tap <strong>Confirm Import</strong>. All your trips, expenses, and settings will be restored.</div>
+          <div class="help-a">On the new device, open LogMyJourney AU, go to <strong>Settings → Import</strong>, select <strong>Replace</strong> mode, then drop in your backup <code>.json</code> file and tap <strong>Confirm Import</strong>. All your trips, expenses, and settings will be restored.</div>
         </div>
         <div class="help-item">
           <div class="help-q">What is the difference between Merge and Replace?</div>
@@ -1720,11 +1720,11 @@ function toggleHistory(section) {
       <div class="help-section">
         <div class="help-item">
           <div class="help-q">Where is my data stored?</div>
-          <div class="help-a">Entirely in your browser's <strong>localStorage</strong> — on your device, never on a server. Trip Log has no backend, no account system, and no internet connection is needed to use it once loaded.</div>
+          <div class="help-a">Entirely in your browser's <strong>localStorage</strong> — on your device, never on a server. LogMyJourney AU has no backend, no account system, and no internet connection is needed to use it once loaded.</div>
         </div>
         <div class="help-item">
           <div class="help-q">Will I lose my data if I clear my browser?</div>
-          <div class="help-a">Yes. Clearing site data, clearing browser history (with cookies and local storage), or uninstalling the browser will delete your Trip Log data. <strong>Export a JSON backup regularly</strong> to protect your records.</div>
+          <div class="help-a">Yes. Clearing site data, clearing browser history (with cookies and local storage), or uninstalling the browser will delete your LogMyJourney AU data. <strong>Export a JSON backup regularly</strong> to protect your records.</div>
         </div>
         <div class="help-item">
           <div class="help-q">Does data sync between my phone and computer?</div>
@@ -1739,15 +1739,15 @@ function toggleHistory(section) {
       <div class="help-section">
         <div class="help-item">
           <div class="help-q">iPhone / iPad (Safari)</div>
-          <div class="help-a">Open Trip Log in Safari → tap the <strong>Share</strong> button (box with arrow) → tap <strong>Add to Home Screen</strong> → tap <strong>Add</strong>. The app will appear on your home screen and open full-screen without the browser bar.</div>
+          <div class="help-a">Open LogMyJourney AU in Safari → tap the <strong>Share</strong> button (box with arrow) → tap <strong>Add to Home Screen</strong> → tap <strong>Add</strong>. The app will appear on your home screen and open full-screen without the browser bar.</div>
         </div>
         <div class="help-item">
           <div class="help-q">Android (Chrome)</div>
-          <div class="help-a">Open Trip Log in Chrome → tap the <strong>three-dot menu</strong> → tap <strong>Add to Home Screen</strong> or <strong>Install app</strong> → tap <strong>Add</strong>. Works like a native app from your home screen.</div>
+          <div class="help-a">Open LogMyJourney AU in Chrome → tap the <strong>three-dot menu</strong> → tap <strong>Add to Home Screen</strong> or <strong>Install app</strong> → tap <strong>Add</strong>. Works like a native app from your home screen.</div>
         </div>
         <div class="help-item">
           <div class="help-q">Does it work offline?</div>
-          <div class="help-a">Yes — once the page has loaded, Trip Log works entirely offline. You can log fuel stops and expenses in the middle of the outback with no signal. Your data is saved instantly to your device.</div>
+          <div class="help-a">Yes — once the page has loaded, LogMyJourney AU works entirely offline. You can log fuel stops and expenses in the middle of the outback with no signal. Your data is saved instantly to your device.</div>
         </div>
       </div>
     </div>
@@ -1755,10 +1755,10 @@ function toggleHistory(section) {
     <!-- About -->
     <div class="card" style="text-align:center;padding:28px 24px;">
       <div style="font-size:2rem;margin-bottom:8px" aria-hidden="true">🚗</div>
-      <div style="font-family:var(--font-display);font-size:1.15rem;font-weight:700;color:var(--ink);margin-bottom:4px">Trip Log</div>
-      <div style="font-size:.85rem;color:var(--ink-muted);margin-bottom:16px">Road Trip Journal &nbsp;·&nbsp; By Ian Fraser &copy; 2026</div>
+      <div style="font-family:var(--font-display);font-size:1.15rem;font-weight:700;color:var(--ink);margin-bottom:4px">LogMyJourney AU</div>
+      <div style="font-size:.85rem;color:var(--ink-muted);margin-bottom:16px">Track Every Journey &nbsp;·&nbsp; By Ian Fraser &copy; 2026</div>
       <div style="font-size:.82rem;color:var(--ink-muted);line-height:1.7;max-width:400px;margin:0 auto">
-        Built for Australian road trippers.<br>
+        Built for Australian road trippers and adventurers.<br>
         All data stays on your device — private, offline-capable, and always yours.
       </div>
     </div>
@@ -1767,7 +1767,7 @@ function toggleHistory(section) {
 
 </div><!-- /.app -->
 
-<footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">Trip Log by Ian Fraser &copy; 2026 &nbsp;·&nbsp; <span id="appVersion">v2.2</span></footer>
+<footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">LogMyJourney AU by Ian Fraser &copy; 2026 &nbsp;·&nbsp; <span id="appVersion">v2.2</span></footer>
 
 <!-- Modal: New Trip -->
 <div class="modal-overlay" id="newTripModal" role="dialog" aria-modal="true" aria-labelledby="tripModalTitle">
@@ -2763,7 +2763,7 @@ function exportJSON() {
   const settings = JSON.parse(localStorage.getItem('triplog_settings') || '{}');
   const backup = {
     _meta: {
-      app:       'Trip Log',
+      app:       'LogMyJourney AU',
       version:   '1.0',
       exported:  new Date().toISOString(),
       tripCount: state.trips.length
@@ -2771,7 +2771,7 @@ function exportJSON() {
     state,
     settings
   };
-  const filename = 'triplog-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+  const filename = 'lmj-backup-' + new Date().toISOString().slice(0, 10) + '.json';
   downloadText(JSON.stringify(backup, null, 2), filename, 'application/json');
   showToast('Backup downloaded: ' + filename);
 }
@@ -2797,7 +2797,7 @@ function exportFuelCSV() {
     rows.push([e.date, e.location, e.odo, e.litres, e.ppl || '', e.cost, eff, e.notes || '']);
   });
 
-  const filename = 'triplog-fuel-' + slugify(t.name) + '-' + new Date().toISOString().slice(0, 10) + '.csv';
+  const filename = 'lmj-fuel-' + slugify(t.name) + '-' + new Date().toISOString().slice(0, 10) + '.csv';
   downloadText(toCSV(rows), filename, 'text/csv');
   showToast('Fuel CSV downloaded.');
 }
@@ -2832,7 +2832,7 @@ function exportExpenseCSV() {
   const total = t.expenses.reduce((s,e) => s + e.amount, 0);
   rows.push(['TOTAL', '', '', total.toFixed(2), '']);
 
-  const filename = 'triplog-expenses-' + slugify(t.name) + '-' + new Date().toISOString().slice(0, 10) + '.csv';
+  const filename = 'lmj-expenses-' + slugify(t.name) + '-' + new Date().toISOString().slice(0, 10) + '.csv';
   downloadText(toCSV(rows), filename, 'text/csv');
   showToast('Expense CSV downloaded.');
 }
@@ -2861,7 +2861,7 @@ function exportSummaryCSV() {
     ]);
   });
 
-  const filename = 'triplog-summary-' + new Date().toISOString().slice(0, 10) + '.csv';
+  const filename = 'lmj-summary-' + new Date().toISOString().slice(0, 10) + '.csv';
   downloadText(toCSV(rows), filename, 'text/csv');
   showToast('Summary CSV downloaded.');
 }
@@ -2909,7 +2909,7 @@ function validateAndPreviewImport(data) {
   const importSettings = data.settings || null;
 
   if (!importState.trips || !Array.isArray(importState.trips)) {
-    showToast('This file does not look like a Trip Log backup.');
+    showToast('This file does not look like a LogMyJourney AU backup.');
     return;
   }
 
