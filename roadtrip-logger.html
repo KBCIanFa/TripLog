@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Trip Log — Road Trip Journal</title>
+<title>LogMyJourney AU — Road Trip Journal</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -507,7 +507,7 @@ textarea { resize: vertical; min-height: 80px; }
 <div id="backupBanner" class="backup-banner" role="alert" aria-live="polite">
   <span class="backup-banner-icon" aria-hidden="true">💾</span>
   <div class="backup-banner-body">
-    <div class="backup-banner-title">Time to back up your Trip Log</div>
+    <div class="backup-banner-title">Time to back up your LogMyJourney AU data</div>
     <div class="backup-banner-text" id="backupBannerText">You've added entries since your last backup.</div>
     <div class="backup-banner-actions">
       <button class="btn btn-primary btn-sm" onclick="backupFromBanner()">Download Backup</button>
@@ -521,7 +521,7 @@ textarea { resize: vertical; min-height: 80px; }
 
   <header role="banner">
     <div class="logo-group">
-      <span class="logo-title">Trip<span>Log</span></span>
+      <span class="logo-title">LogMyJourney <span>AU</span></span>
       <span class="logo-sub">Road Trip Journal</span>
     </div>
     <div class="header-actions">
@@ -772,7 +772,7 @@ textarea { resize: vertical; min-height: 80px; }
   <div role="tabpanel" id="panel-help" aria-labelledby="tab-help-btn">
     <div class="card">
       <div class="card-title"><span class="card-icon">🚀</span> Getting Started</div>
-      <p style="color:var(--ink-3);font-size:.88rem;line-height:1.7;margin-bottom:14px">Trip Log stores all your data privately in your browser — no account, no cloud, no sign-up required.</p>
+      <p style="color:var(--ink-3);font-size:.88rem;line-height:1.7;margin-bottom:14px">LogMyJourney AU stores all your data privately in your browser — no account, no cloud, no sign-up required.</p>
       <ol style="margin:0;padding-left:20px;color:var(--ink-3);font-size:.88rem;line-height:2">
         <li>Tap <strong>New Trip</strong> in the top-right and give your trip a name, start date and odometer reading.</li>
         <li>Each time you fill up, go to the <strong>Fuel</strong> tab and log the stop.</li>
@@ -790,7 +790,7 @@ textarea { resize: vertical; min-height: 80px; }
     </div>
     <div class="card">
       <div class="card-title"><span class="card-icon">💾</span> Data &amp; Privacy</div>
-      <div class="help-item"><div class="help-q">Where is my data stored?</div><div class="help-a">Entirely in your browser's <strong>localStorage</strong> — on your device, never on a server. Trip Log has no backend and no internet connection needed once loaded.</div></div>
+      <div class="help-item"><div class="help-q">Where is my data stored?</div><div class="help-a">Entirely in your browser's <strong>localStorage</strong> — on your device, never on a server. LogMyJourney AU has no backend and no internet connection needed once loaded.</div></div>
       <div class="help-item"><div class="help-q">Will I lose data if I clear my browser?</div><div class="help-a">Yes. <strong>Export a JSON backup regularly</strong> from Settings to protect your records.</div></div>
       <div class="help-item"><div class="help-q">Does data sync between devices?</div><div class="help-a">Not automatically. Export a backup on one device and import it on the other using Merge or Replace mode.</div></div>
     </div>
@@ -798,11 +798,11 @@ textarea { resize: vertical; min-height: 80px; }
       <div class="card-title"><span class="card-icon">📱</span> Install on Your Phone</div>
       <div class="help-item"><div class="help-q">iPhone / iPad (Safari)</div><div class="help-a">Open in Safari → tap <strong>Share</strong> → <strong>Add to Home Screen</strong> → <strong>Add</strong>. Opens full-screen without the browser bar.</div></div>
       <div class="help-item"><div class="help-q">Android (Chrome)</div><div class="help-a">Open in Chrome → tap <strong>three-dot menu</strong> → <strong>Add to Home Screen</strong>. Works like a native app.</div></div>
-      <div class="help-item"><div class="help-q">Does it work offline?</div><div class="help-a">Yes — once loaded, Trip Log works entirely offline. Log fuel stops in the middle of the outback with no signal.</div></div>
+      <div class="help-item"><div class="help-q">Does it work offline?</div><div class="help-a">Yes — once loaded, LogMyJourney AU works entirely offline. Log fuel stops in the middle of the outback with no signal.</div></div>
     </div>
     <div class="card" style="text-align:center;padding:32px 24px">
       <div style="font-size:2rem;margin-bottom:10px">🚗</div>
-      <div style="font-family:var(--font-display);font-size:1.2rem;color:var(--ink);margin-bottom:4px">Trip Log</div>
+      <div style="font-family:var(--font-display);font-size:1.2rem;color:var(--ink);margin-bottom:4px">LogMyJourney AU</div>
       <div style="font-size:.8rem;color:var(--ink-4);margin-bottom:16px">Road Trip Journal &nbsp;·&nbsp; By Ian Fraser © 2026</div>
       <div style="font-size:.8rem;color:var(--ink-4);line-height:1.8;max-width:380px;margin:0 auto">Built for Australian road trippers.<br>All data stays on your device — private, offline-capable, and always yours.</div>
     </div>
@@ -811,7 +811,7 @@ textarea { resize: vertical; min-height: 80px; }
 </div>
 
 <footer style="text-align:center;padding:16px 20px 28px;font-size:.75rem;color:var(--ink-4);letter-spacing:.02em">
-  Trip Log by Ian Fraser © 2026 &nbsp;·&nbsp; v1.3
+  LogMyJourney AU by Ian Fraser © 2026 &nbsp;·&nbsp; v1.3
 </footer>
 
 <!-- Modal: New / Edit Trip -->
@@ -1473,8 +1473,8 @@ function setImportMode(mode) {
 }
 function exportJSON() {
   const settings=JSON.parse(localStorage.getItem('triplog_settings')||'{}');
-  const backup={_meta:{app:'Trip Log',version:'1.0',exported:new Date().toISOString(),tripCount:state.trips.length},state,settings};
-  const filename='triplog-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  const backup={_meta:{app:'LogMyJourney AU',version:'1.0',exported:new Date().toISOString(),tripCount:state.trips.length},state,settings};
+  const filename='logmyjourney-backup-'+new Date().toISOString().slice(0,10)+'.json';
   downloadText(JSON.stringify(backup,null,2),filename,'application/json');
   showToast('Backup downloaded.','💾');
   markBackupDone();
@@ -1484,7 +1484,7 @@ function exportFuelCSV() {
   const sorted=[...t.fuel].sort((a,b)=>a.date.localeCompare(b.date));
   const rows=[['Date','Station','Odometer (km)','Litres','Price/L ($)','Total Cost ($)','L/100km','Notes']];
   sorted.forEach((e,idx)=>{const prev=sorted.slice(0,idx).filter(p=>p.odo<e.odo).sort((a,b)=>b.odo-a.odo)[0];let eff='';if(prev){const d=e.odo-prev.odo;if(d>0)eff=(e.litres/d*100).toFixed(2);}rows.push([e.date,e.location,e.odo,e.litres,e.ppl||'',e.cost,eff,e.notes||'']);});
-  downloadText(toCSV(rows),'triplog-fuel-'+slugify(t.name)+'-'+new Date().toISOString().slice(0,10)+'.csv','text/csv');
+  downloadText(toCSV(rows),'logmyjourney-fuel-'+slugify(t.name)+'-'+new Date().toISOString().slice(0,10)+'.csv','text/csv');
   showToast('Fuel CSV downloaded.','📄');
 }
 function exportExpenseCSV() {
@@ -1492,14 +1492,14 @@ function exportExpenseCSV() {
   const sorted=[...t.expenses].sort((a,b)=>a.date.localeCompare(b.date));
   const rows=[['Date','Category','Description','Amount ($)','Notes']];
   sorted.forEach(e=>{const cat=getCat(e.categoryId);rows.push([e.date,cat.name,e.desc,e.amount.toFixed(2),e.notes||'']);});
-  downloadText(toCSV(rows),'triplog-expenses-'+slugify(t.name)+'-'+new Date().toISOString().slice(0,10)+'.csv','text/csv');
+  downloadText(toCSV(rows),'logmyjourney-expenses-'+slugify(t.name)+'-'+new Date().toISOString().slice(0,10)+'.csv','text/csv');
   showToast('Expense CSV downloaded.','📄');
 }
 function exportSummaryCSV() {
   if (!state.trips.length){showToast('No trips to export.','⚠️');return;}
   const rows=[['Trip Name','Start Date','Start Odo','Fuel Stops','Total Litres','Fuel Cost ($)','Distance (km)','Avg L/100km','Expense Items','Expense Total ($)','Grand Total ($)']];
   state.trips.forEach(t=>{const odos=t.fuel.map(e=>e.odo).filter(Boolean);let dist=0;if(odos.length>=2)dist=Math.max(...odos)-Math.min(...odos);else if(odos.length&&t.startOdo)dist=odos[0]-t.startOdo;const totalFuel=t.fuel.reduce((s,e)=>s+e.litres,0);const fuelCost=t.fuel.reduce((s,e)=>s+e.cost,0);const expCost=t.expenses.reduce((s,e)=>s+e.amount,0);const eff=dist>0&&totalFuel>0?(totalFuel/dist*100).toFixed(2):'';rows.push([t.name,t.startDate||'',t.startOdo||'',t.fuel.length,totalFuel.toFixed(1),fuelCost.toFixed(2),dist,eff,t.expenses.length,expCost.toFixed(2),(fuelCost+expCost).toFixed(2)]);});
-  downloadText(toCSV(rows),'triplog-summary-'+new Date().toISOString().slice(0,10)+'.csv','text/csv');
+  downloadText(toCSV(rows),'logmyjourney-summary-'+new Date().toISOString().slice(0,10)+'.csv','text/csv');
   showToast('Summary CSV downloaded.','📄');
 }
 function handleDragOver(e){e.preventDefault();document.getElementById('importDropArea').classList.add('drag-over');}
@@ -1514,7 +1514,7 @@ function readImportFile(file) {
 }
 function validateAndPreviewImport(data) {
   const importState=data.state||data,importSettings=data.settings||null;
-  if (!importState.trips||!Array.isArray(importState.trips)){showToast('Not a valid Trip Log backup.','⚠️');return;}
+  if (!importState.trips||!Array.isArray(importState.trips)){showToast('Not a valid LogMyJourney AU backup.','⚠️');return;}
   pendingImport={importState,importSettings};
   const tf=importState.trips.reduce((s,t)=>s+(t.fuel||[]).length,0);
   const te=importState.trips.reduce((s,t)=>s+(t.expenses||[]).length,0);
