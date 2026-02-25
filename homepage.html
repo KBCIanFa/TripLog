@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>LogMyJourney AU — Track Every Journey</title>
+<meta name="description" content="Two free Australian road trip apps. Track fuel, charging sessions, and expenses for any vehicle. Petrol, diesel, PHEV or EV. Works offline. No account needed.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,600;12..96,800&family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --amber:#9A4200;--amber-lt:#FFF0E2;--amber-glow:rgba(192,90,0,.18);
+  --teal:#06746A;--teal-lt:#E2F5F3;--teal-glow:rgba(6,116,106,.16);
+  --night:#0B0F12;--ink:#151D22;--ink-mid:#344050;--ink-muted:#677685;
+  --cream:#FAF7F2;--cream-dark:#F0EBE2;--rule:#E0D9CF;
+  --gold:#C9961A;
+  --muted-warm:#556070;
+  --muted-dk:#4E5D6B;
+  --ff-head:'Bricolage Grotesque',sans-serif;
+  --ff-body:'Lora',serif;
+  --ff-mono:'DM Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--ff-body);background:var(--cream);color:var(--ink);overflow-x:hidden;line-height:1.6}
+
+/* Global base resets for accessibility */
+img,svg{max-width:100%;height:auto}
+*:focus-visible{outline:3px solid #009cde;outline-offset:3px;border-radius:3px}
+a:focus-visible{outline:3px solid #009cde;outline-offset:3px}
+
+/* Skip link */
+.skip-link{
+  position:absolute;top:-100%;left:0;z-index:9999;
+  background:#fff;color:var(--ink);
+  font-family:var(--ff-head);font-weight:600;font-size:.9rem;
+  padding:12px 20px;border-radius:0 0 8px 0;
+  text-decoration:none;border-bottom:2px solid var(--amber);
+}
+.skip-link:focus{top:0}
+
+/* Screen-reader only utility */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* Reduced motion */
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  html{scroll-behavior:auto}
+}
+
+/* ─────────────────────────────────────────────
+   HERO — diagonal split
+───────────────────────────────────────────── */
+.hero{
+  position:relative;min-height:100svh;
+  background:var(--night);
+  overflow:hidden;
+  display:flex;flex-direction:column;
+}
+
+/* Left half — amber glow */
+.hero-half-l{
+  position:absolute;inset:0;right:50%;
+  background:radial-gradient(ellipse 80% 70% at 30% 80%,var(--amber-glow),transparent);
+  pointer-events:none;
+}
+/* Right half — teal glow */
+.hero-half-r{
+  position:absolute;inset:0;left:50%;
+  background:radial-gradient(ellipse 80% 70% at 70% 80%,var(--teal-glow),transparent);
+  pointer-events:none;
+}
+
+/* Diagonal divider line */
+.hero-divide{
+  position:absolute;
+  top:0;bottom:0;
+  left:calc(50% - 1px);
+  width:2px;
+  background:linear-gradient(to bottom,transparent 0%,rgba(255,255,255,.07) 20%,rgba(255,255,255,.12) 55%,rgba(255,255,255,.04) 85%,transparent 100%);
+  transform:skewX(-4deg);
+  pointer-events:none;
+}
+
+/* Road horizon line */
+.hero-road{
+  position:absolute;
+  bottom:0;left:50%;transform:translateX(-50%);
+  width:3px;height:45%;
+  background:linear-gradient(to top,rgba(201,150,26,.55),transparent);
+  pointer-events:none;
+}
+.hero-road::before,.hero-road::after{
+  content:'';position:absolute;bottom:0;
+  width:1px;height:100%;
+  background:linear-gradient(to top,rgba(201,150,26,.2),transparent);
+}
+.hero-road::before{left:-60px}
+.hero-road::after{left:60px}
+
+.nav-mobile-hint{display:none;font-family:var(--ff-mono);font-size:.65rem;color:rgba(255,255,255,.4);letter-spacing:.1em}
+
+/* Fine grid */
+.hero-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:64px 64px;
+  pointer-events:none;
+}
+
+/* Grain */
+.hero-grain{
+  position:absolute;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)' opacity='.04'/%3E%3C/svg%3E");
+  pointer-events:none;opacity:.6;
+}
+
+/* Nav */
+.nav{
+  position:relative;z-index:30;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:28px 52px;
+}
+.nav-logo{
+  font-family:var(--ff-head);font-weight:800;
+  font-size:1.4rem;color:#fff;letter-spacing:-.01em;
+  display:flex;align-items:center;gap:8px;
+}
+.nav-logo-au{
+  font-family:var(--ff-mono);font-size:.62rem;font-weight:500;
+  color:var(--gold);letter-spacing:.15em;text-transform:uppercase;
+  border:1px solid rgba(201,150,26,.4);padding:3px 8px;border-radius:3px;
+  align-self:center;
+}
+.nav-links{display:flex;gap:8px}
+.nav-link{
+  font-family:var(--ff-head);font-size:.78rem;font-weight:600;
+  color:rgba(255,255,255,.45);text-decoration:none;
+  padding:12px 18px;border:1px solid rgba(255,255,255,.1);
+  border-radius:6px;transition:all .2s;
+  min-height:44px;display:inline-flex;align-items:center;
+}
+.nav-link:hover{color:#fff;border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.07)}
+
+/* Hero body */
+.hero-body{
+  position:relative;z-index:10;flex:1;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:50px 40px 110px;text-align:center;
+}
+
+.hero-eyebrow{
+  font-family:var(--ff-mono);font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--gold);margin-bottom:22px;
+  opacity:0;animation:riseIn .6s ease .15s forwards;
+}
+
+.hero-hl{
+  font-family:var(--ff-head);font-weight:800;
+  font-size:clamp(4.5rem,12vw,10.5rem);
+  line-height:.9;color:#fff;letter-spacing:-.025em;
+  margin-bottom:14px;
+  opacity:0;animation:riseIn .6s ease .3s forwards;
+}
+
+.hero-hl span{
+  display:inline-block;
+  background:linear-gradient(95deg,#FF9A4D 0%,#FFCA80 35%,#72E8DA 65%,#38BFB4 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+
+.hero-sub{
+  font-family:var(--ff-body);font-style:italic;font-weight:400;
+  font-size:clamp(1rem,2.2vw,1.55rem);
+  color:rgba(255,255,255,.58);margin-bottom:48px;
+  opacity:0;animation:riseIn .6s ease .45s forwards;
+}
+
+/* App duo pills */
+.hero-duo{
+  display:flex;gap:12px;flex-wrap:wrap;justify-content:center;
+  margin-bottom:44px;
+  opacity:0;animation:riseIn .6s ease .6s forwards;
+}
+.duo-pill{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 22px;border-radius:12px;
+  font-family:var(--ff-head);font-weight:600;font-size:.88rem;
+  text-decoration:none;transition:all .25s;cursor:default;
+  border:1px solid rgba(255,255,255,.1);
+}
+.duo-pill--amber{color:#FFB366;background:rgba(192,90,0,.12);border-color:rgba(192,90,0,.25)}
+.duo-pill--teal {color:#5FD9CF;background:rgba(6,116,106,.12);border-color:rgba(6,116,106,.25)}
+
+/* Trust badges */
+.hero-badges{
+  display:flex;flex-wrap:wrap;gap:8px;justify-content:center;
+  opacity:0;animation:riseIn .6s ease .75s forwards;
+}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;font-size:.74rem;
+  color:rgba(255,255,255,.60);background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);padding:6px 14px;border-radius:999px;
+}
+
+/* Scroll hint */
+.hero-scroll{
+  position:absolute;bottom:30px;left:50%;transform:translateX(-50%);z-index:10;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  opacity:0;animation:riseIn .6s ease 1.1s forwards;
+}
+.scroll-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:rgba(255,255,255,.25);
+  animation:scrollBob 2s ease-in-out 1.5s infinite;
+}
+
+/* ─────────────────────────────────────────────
+   APP CARDS SECTION
+───────────────────────────────────────────── */
+.apps{padding:96px 52px;background:var(--cream)}
+.apps-hd{max-width:1140px;margin:0 auto 60px}
+.eyebrow{
+  font-family:var(--ff-mono);font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--muted-warm);margin-bottom:12px;
+}
+.section-title{
+  font-family:var(--ff-head);font-weight:800;
+  font-size:clamp(2rem,4.5vw,3.4rem);
+  line-height:1.05;letter-spacing:-.025em;color:var(--ink);
+}
+.section-lead{
+  font-size:.98rem;color:var(--muted-warm);
+  max-width:540px;line-height:1.8;margin-top:14px;
+}
+
+.apps-grid{
+  max-width:1140px;margin:0 auto;
+  display:grid;grid-template-columns:1fr 1fr;gap:24px;
+}
+
+/* Card */
+.card{
+  border-radius:22px;overflow:hidden;
+  background:#fff;border:1px solid var(--rule);
+  transition:transform .3s cubic-bezier(.2,.7,0,1.15),box-shadow .3s;
+}
+.card:hover{transform:translateY(-8px);box-shadow:0 28px 60px rgba(0,0,0,.1)}
+
+.card-bar{height:5px}
+.card--amber .card-bar{background:linear-gradient(90deg,#A34800,#E07020,#F5A050)}
+.card--teal  .card-bar{background:linear-gradient(90deg,#035C54,#079B8A,#3DC9BC)}
+
+.card-head{padding:28px 34px 24px;position:relative;border-bottom:1px solid var(--rule)}
+.card--amber .card-head{background:linear-gradient(145deg,var(--amber-lt),#FDE4C4 100%)}
+.card--teal  .card-head{background:linear-gradient(145deg,var(--teal-lt),#C3E8E4 100%)}
+
+.card-chip{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--ff-mono);font-size:.62rem;font-weight:500;
+  letter-spacing:.1em;text-transform:uppercase;
+  padding:4px 11px;border-radius:4px;margin-bottom:14px;
+}
+.card--amber .card-chip{background:var(--amber);color:#fff}
+.card--teal  .card-chip{background:var(--teal);color:#fff}
+
+.card-name{
+  font-family:var(--ff-head);font-weight:800;
+  font-size:2rem;line-height:1.05;letter-spacing:-.02em;margin-bottom:6px;
+}
+.card--amber .card-name{color:var(--amber)}
+.card--teal  .card-name{color:var(--teal)}
+
+.card-tagline{font-size:.86rem;color:var(--ink-mid);line-height:1.5;max-width:320px}
+
+.card-ver{
+  position:absolute;top:24px;right:26px;
+  font-family:var(--ff-mono);font-size:.62rem;color:var(--muted-warm);
+  background:rgba(0,0,0,.06);padding:3px 8px;border-radius:4px;
+}
+
+.card-body{padding:26px 34px 32px}
+.card-desc{
+  font-size:.87rem;color:var(--ink-mid);line-height:1.75;
+  padding-bottom:20px;margin-bottom:20px;border-bottom:1px solid var(--rule);
+}
+
+.feat-lbl{
+  font-family:var(--ff-mono);font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-muted);margin-bottom:12px;
+}
+.feats{
+  list-style:none;
+  display:grid;grid-template-columns:1fr 1fr;gap:7px 18px;
+  margin-bottom:28px;
+}
+.feats li{display:flex;align-items:baseline;gap:8px;font-size:.8rem;color:var(--ink-mid);line-height:1.4}
+.fd{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.card--amber .fd{background:var(--amber)}
+.card--teal  .fd{background:var(--teal)}
+
+.card-cta{
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  padding:14px 24px;border-radius:10px;
+  font-family:var(--ff-head);font-weight:600;font-size:.88rem;
+  text-decoration:none;transition:all .22s;
+}
+.card--amber .card-cta{background:var(--amber);color:#fff}
+.card--amber .card-cta:hover{background:#A34800;transform:translateY(-2px);box-shadow:0 10px 28px rgba(192,90,0,.35)}
+.card--teal  .card-cta{background:var(--teal);color:#fff}
+.card--teal  .card-cta:hover{background:#035C54;transform:translateY(-2px);box-shadow:0 10px 28px rgba(6,116,106,.35)}
+
+/* ─────────────────────────────────────────────
+   COMPARISON
+───────────────────────────────────────────── */
+.compare{background:var(--cream-dark);padding:96px 52px}
+.compare-in{max-width:900px;margin:0 auto}
+.compare .section-title{color:var(--ink)}
+.compare .eyebrow{color:var(--muted-dk)}
+.compare .section-lead{color:var(--muted-dk);margin-bottom:48px}
+
+.tbl-wrap{overflow-x:auto;border:1px solid var(--rule);border-radius:14px;background:#fff}
+table{width:100%;border-collapse:collapse}
+thead tr{background:#fff}
+thead th{
+  padding:14px 20px;text-align:left;
+  font-family:var(--ff-mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;
+  color:#5E6E80;border-bottom:2px solid var(--rule);
+}
+thead th:nth-child(2){color:#7A3800}
+thead th:nth-child(3){color:#025248}
+tbody tr{border-bottom:1px solid var(--rule);transition:background .15s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:#F7F5F1}
+tbody td{padding:13px 20px;font-size:.85rem;color:#344050;vertical-align:middle}
+tbody td:first-child{color:#677685;font-size:.82rem}
+.tg td{
+  padding:18px 20px 5px;
+  font-family:var(--ff-mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;
+  color:#5E6E80;border-bottom:none;font-weight:500;background:#F7F5F1;
+}
+.tg:hover{background:#F7F5F1!important}
+.yes{color:#166534;font-size:1.05rem;font-weight:700}
+.no{color:#7A8FA0;font-size:.9rem}
+
+/* ─────────────────────────────────────────────
+   HOW IT WORKS
+───────────────────────────────────────────── */
+.how{padding:96px 52px;background:var(--cream-dark)}
+.how-in{max-width:1080px;margin:0 auto}
+.how-hd{text-align:center;margin-bottom:64px}
+.how-hd .eyebrow{color:var(--muted-dk)}
+
+.steps{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  position:relative;
+}
+.steps::after{
+  content:'';position:absolute;
+  top:29px;left:calc(12.5% + 4px);right:calc(12.5% + 4px);
+  height:1px;background:var(--rule);
+}
+
+.step{padding:0 20px;text-align:center}
+.step-n{
+  width:58px;height:58px;border-radius:50%;
+  margin:0 auto 18px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--ff-head);font-weight:800;font-size:1.55rem;
+  position:relative;z-index:1;
+}
+.step:nth-child(odd)  .step-n{background:var(--amber-lt);color:var(--amber);border:2px solid #F5B07A}
+.step:nth-child(even) .step-n{background:var(--teal-lt);color:var(--teal);border:2px solid #7ECFC9}
+.step-t{font-family:var(--ff-head);font-weight:600;font-size:.87rem;color:var(--ink);margin-bottom:7px}
+.step-d{font-size:.79rem;color:var(--muted-dk);line-height:1.65}
+
+/* ─────────────────────────────────────────────
+   WHY
+───────────────────────────────────────────── */
+.why{padding:96px 52px;background:var(--cream)}
+.why-in{max-width:1140px;margin:0 auto}
+.why-grid{margin-top:60px;display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.why-card{
+  padding:32px 28px;border:1px solid var(--rule);border-radius:18px;background:#fff;
+  transition:box-shadow .25s,transform .25s;
+}
+.why-card:hover{box-shadow:0 14px 40px rgba(0,0,0,.07);transform:translateY(-5px)}
+.why-ico{font-size:2rem;margin-bottom:14px;display:block}
+.why-t{font-family:var(--ff-head);font-weight:600;font-size:1.05rem;color:var(--ink);margin-bottom:8px}
+.why-d{font-size:.83rem;color:var(--ink-muted);line-height:1.72}
+
+/* ─────────────────────────────────────────────
+   CTA BAND
+───────────────────────────────────────────── */
+.cta{
+  background:var(--night);padding:88px 52px;text-align:center;
+  position:relative;overflow:hidden;
+}
+/* Split glow behind CTA */
+.cta::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 55% 80% at 30% 50%,var(--amber-glow),transparent),
+    radial-gradient(ellipse 55% 80% at 70% 50%,var(--teal-glow),transparent);
+  pointer-events:none;
+}
+.cta-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);
+  background-size:52px 52px;pointer-events:none;
+}
+.cta-hl{
+  font-family:var(--ff-head);font-weight:800;
+  font-size:clamp(3rem,8vw,7rem);
+  color:#fff;letter-spacing:-.02em;line-height:.95;
+  margin-bottom:16px;position:relative;
+}
+.cta-sub{
+  font-family:var(--ff-body);font-style:italic;
+  font-size:1.1rem;color:rgba(255,255,255,.65);
+  margin-bottom:44px;position:relative;
+}
+.cta-btns{
+  display:flex;gap:14px;justify-content:center;flex-wrap:wrap;position:relative;
+}
+.cta-btn{
+  display:inline-flex;align-items:center;gap:9px;
+  padding:15px 32px;border-radius:10px;
+  font-family:var(--ff-head);font-weight:600;font-size:.92rem;
+  text-decoration:none;transition:all .22s;
+}
+.cta-btn--a{background:var(--amber);color:#fff}
+.cta-btn--a:hover{background:#A34800;transform:translateY(-3px);box-shadow:0 12px 30px rgba(192,90,0,.4)}
+.cta-btn--t{background:var(--teal);color:#fff}
+.cta-btn--t:hover{background:#035C54;transform:translateY(-3px);box-shadow:0 12px 30px rgba(6,116,106,.38)}
+
+/* ─────────────────────────────────────────────
+   FOOTER
+───────────────────────────────────────────── */
+footer{
+  background:#060A0D;padding:36px 52px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:16px;border-top:1px solid rgba(255,255,255,.05);
+}
+.foot-brand{
+  font-family:var(--ff-head);font-weight:800;
+  font-size:1.25rem;color:rgba(255,255,255,.55);letter-spacing:-.01em;
+}
+.foot-brand span{
+  font-family:var(--ff-mono);font-size:.42em;color:var(--gold);
+  letter-spacing:.12em;vertical-align:super;
+}
+.foot-copy{font-size:.7rem;color:#7A8FA0;margin-top:4px}
+.foot-links{display:flex;gap:18px;flex-wrap:wrap}
+.foot-links a{font-size:.74rem;color:#8A9FB5;text-decoration:none;transition:color .15s}
+.foot-links a:hover{color:rgba(255,255,255,.7)}
+
+/* ─────────────────────────────────────────────
+   ANIMATIONS
+───────────────────────────────────────────── */
+@keyframes riseIn{
+  from{opacity:0;transform:translateY(20px)}
+  to  {opacity:1;transform:translateY(0)}
+}
+@keyframes scrollBob{
+  0%,100%{transform:translateY(0)}
+  50%    {transform:translateY(6px)}
+}
+
+.reveal{
+  opacity:0;transform:translateY(26px);
+  transition:opacity .6s cubic-bezier(.2,.7,0,1),transform .6s cubic-bezier(.2,.7,0,1);
+}
+.reveal.in{opacity:1;transform:none}
+
+
+/* ─────────────────────────────────────────────
+   DONATE SECTION
+───────────────────────────────────────────── */
+.donate {
+  padding: 80px 52px;
+  background: var(--cream-dark);
+}
+.donate-in {
+  max-width: 780px;
+  margin: 0 auto;
+  text-align: center;
+}
+.donate-emoji {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 20px;
+}
+.donate-title {
+  font-family: var(--ff-head);
+  font-weight: 800;
+  font-size: clamp(1.7rem, 3.5vw, 2.6rem);
+  letter-spacing: -.02em;
+  color: var(--ink);
+  margin-bottom: 16px;
+}
+.donate-body {
+  font-size: .97rem;
+  color: var(--muted-dk);
+  line-height: 1.8;
+  max-width: 620px;
+  margin: 0 auto 18px;
+}
+.donate-body strong { color: var(--ink-mid); font-weight: 600; }
+.donate-note {
+  font-size: .78rem;
+  color: var(--muted-dk);
+  margin-top: 14px;
+  font-style: italic;
+}
+.paypal-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  background: #fff;
+  color: #003087;
+  border: 1.5px solid #C8C2B4;
+  border-radius: 999px;
+  font-family: var(--ff-head);
+  font-size: .9rem;
+  font-weight: 600;
+  text-decoration: none;
+  letter-spacing: .01em;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  transition: border-color .15s, box-shadow .15s, transform .15s, background .15s;
+  margin-top: 8px;
+}
+.paypal-btn:hover {
+  background: #EFF5FF;
+  border-color: #009cde;
+  box-shadow: 0 6px 20px rgba(0,156,222,.22);
+  transform: translateY(-2px);
+}
+.paypal-btn:active { transform: translateY(0); }
+.paypal-icon { width: 80px; height: auto; display: block; flex-shrink: 0; }
+
+/* ─────────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────────── */
+@media(max-width:980px){
+  .nav{padding:20px 24px}
+  .nav-links{display:none}
+  .nav-mobile-hint{display:block}
+  .hero-body{padding:36px 24px 80px}
+  .apps,.compare,.how,.why,.cta,.donate{padding:64px 24px}
+  .apps-grid{grid-template-columns:1fr}
+  .feats{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr 1fr;gap:32px}
+  .steps::after{display:none}
+  .why-grid{grid-template-columns:1fr;gap:14px}
+  footer{padding:28px 24px;flex-direction:column;align-items:flex-start}
+}
+@media(max-width:540px){
+  .steps{grid-template-columns:1fr}
+  .hero-duo{flex-direction:column;align-items:center}
+}
+</style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<!-- ════════ HERO ════════ -->
+<section class="hero" id="top">
+  <div class="hero-grid" aria-hidden="true"></div>
+  <div class="hero-grain" aria-hidden="true"></div>
+  <div class="hero-half-l" aria-hidden="true"></div>
+  <div class="hero-half-r" aria-hidden="true"></div>
+  <div class="hero-divide" aria-hidden="true"></div>
+  <div class="hero-road" aria-hidden="true"></div>
+
+  <nav class="nav" aria-label="Site navigation">
+    <a href="#top" class="nav-logo" aria-label="LogMyJourney AU — back to top">
+      LogMyJourney
+      <span class="nav-logo-au" aria-hidden="true">AU</span>
+    </a>
+    <div class="nav-links" role="list" aria-label="App links">
+      <a href="roadtrip-logger.html" class="nav-link" role="listitem">⛽ Trip Log</a>
+      <a href="roadtrip-logger-v2.html" class="nav-link" role="listitem">⚡ LogMyJourney AU</a>
+    </div>
+  </nav>
+
+  <div class="hero-body">
+    <div class="hero-eyebrow">Australian Road Trip Apps</div>
+
+    <h1 class="hero-hl">TRACK<br><span aria-hidden="true">EVERY JOURNEY</span></h1>
+    <p class="hero-sub">From the outback servo to the city charger — every stop, logged.</p>
+
+    <div class="hero-duo">
+      <div class="duo-pill duo-pill--amber">⛽ &nbsp;<strong>Trip Log</strong> &nbsp;— petrol &amp; diesel</div>
+      <div class="duo-pill duo-pill--teal">⚡ &nbsp;<strong>LogMyJourney AU</strong> &nbsp;— EV, PHEV &amp; ICE</div>
+    </div>
+
+    <div class="hero-badges">
+      <span class="badge">🇦🇺 Built for Australian roads</span>
+      <span class="badge">📵 Works offline — zero signal needed</span>
+      <span class="badge">🔒 Data stays on your device</span>
+      <span class="badge">🆓 Free — no account, no ads, no cloud</span>
+    </div>
+  </div>
+
+  <div class="hero-scroll" aria-hidden="true">
+    <div class="scroll-dot"></div>
+  </div>
+</section>
+
+<main id="main-content">
+<!-- ════════ APPS ════════ -->
+<section class="apps" id="apps">
+  <div class="apps-hd reveal">
+    <div class="eyebrow">Choose your app</div>
+    <h2 class="section-title" id="apps-heading">Two apps. Every driver covered.</h2>
+    <p class="section-lead">Both are single-file HTML apps — no install, no account, no cloud. Open in any browser and start logging in seconds.</p>
+  </div>
+
+  <div class="apps-grid">
+
+    <!-- TRIP LOG -->
+    <div class="card card--amber reveal">
+      <div class="card-bar"></div>
+      <div class="card-head">
+        <div class="card-ver">v1.2</div>
+        <div class="card-chip">⛽ Petrol &amp; Diesel</div>
+        <div class="card-name">Trip Log</div>
+        <div class="card-tagline">The clean, simple companion for traditional fuel vehicles — car, caravan, ute or motorbike</div>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">Everything you need to track a petrol or diesel road trip without the clutter. Log every fill-up and expense, watch L/100km update in real time, and stay on budget the whole way.</p>
+        <div class="feat-lbl">What's included</div>
+        <ul class="feats">
+          <li><span class="fd"></span>Fuel stops — location, litres, $/L, odo</li>
+          <li><span class="fd"></span>L/100km badge per fill-up</li>
+          <li><span class="fd"></span>Expenses with custom categories</li>
+          <li><span class="fd"></span>Trip budget &amp; live spend tracker</li>
+          <li><span class="fd"></span>Fuel efficiency bar chart</li>
+          <li><span class="fd"></span>Spend-by-category breakdown</li>
+          <li><span class="fd"></span>Multiple trips, instant switching</li>
+          <li><span class="fd"></span>Vehicle &amp; tow vehicle profiles</li>
+          <li><span class="fd"></span>Edit &amp; delete any entry</li>
+          <li><span class="fd"></span>Odometer sanity warnings</li>
+          <li><span class="fd"></span>Emergency contacts &amp; insurance</li>
+          <li><span class="fd"></span>CSV export (fuel, expenses, summary)</li>
+          <li><span class="fd"></span>JSON backup &amp; restore</li>
+          <li><span class="fd"></span>Install to home screen</li>
+        </ul>
+        <a href="roadtrip-logger.html" class="card-cta">Open Trip Log &nbsp;→</a>
+      </div>
+    </div>
+
+    <!-- LOGMYJOURNEY AU -->
+    <div class="card card--teal reveal" style="transition-delay:.15s">
+      <div class="card-bar"></div>
+      <div class="card-head">
+        <div class="card-ver">v2.2</div>
+        <div class="card-chip">⚡ EV · PHEV · ICE</div>
+        <div class="card-name">LogMyJourney AU</div>
+        <div class="card-tagline">The full multi-powertrain tracker — every vehicle type, every stop, lifetime trends</div>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">Built for the modern Australian fleet. Select ICE, PHEV or EV per trip and the app adapts — tabs, stats and efficiency metrics all switch to match your powertrain. Includes everything in Trip Log, plus a full EV charging module and lifetime trend analytics.</p>
+        <div class="feat-lbl">Everything in Trip Log, plus</div>
+        <ul class="feats">
+          <li><span class="fd"></span>Charging sessions — kWh, $/kWh, SOC%</li>
+          <li><span class="fd"></span>km/kWh efficiency per charge &amp; overall</li>
+          <li><span class="fd"></span>PHEV — fuel + charging in one trip</li>
+          <li><span class="fd"></span>Per-trip type: ⛽ ICE · 🔋 PHEV · ⚡ EV</li>
+          <li><span class="fd"></span>Fuel type: Unleaded · Premium · Diesel · E10 · LPG</li>
+          <li><span class="fd"></span>Stat bar adapts to your vehicle type</li>
+          <li><span class="fd"></span>Filter trips by powertrain</li>
+          <li><span class="fd"></span>Estimated range from tank + efficiency</li>
+          <li><span class="fd"></span>📈 Trends — lifetime efficiency per trip</li>
+          <li><span class="fd"></span>Spend per trip &amp; cost per km charts</li>
+          <li><span class="fd"></span>Total lifetime km, litres &amp; kWh</li>
+          <li><span class="fd"></span>Dates in dd/mm/yyyy throughout</li>
+          <li><span class="fd"></span>PHEV cross-mode spend banners</li>
+          <li><span class="fd"></span>3 demo trips included (ICE, PHEV, EV)</li>
+        </ul>
+        <a href="roadtrip-logger-v2.html" class="card-cta">Open LogMyJourney AU &nbsp;→</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════════ COMPARE ════════ -->
+<section class="compare" id="compare">
+  <div class="compare-in">
+    <div class="reveal">
+      <div class="eyebrow">Side by side</div>
+      <h2 class="section-title" id="compare-heading">Which one is right for you?</h2>
+      <p class="section-lead">Drive petrol or diesel and want something simple? Trip Log. Drive anything else, or want lifetime analytics? LogMyJourney AU.</p>
+    </div>
+    <div class="tbl-wrap reveal" style="transition-delay:.1s">
+      <table>
+        <caption class="sr-only">Feature comparison: Trip Log versus LogMyJourney AU</caption>
+        <thead>
+          <tr>
+            <th scope="col" style="width:46%">Feature</th>
+            <th scope="col" style="width:27%">⛽ Trip Log</th>
+            <th scope="col" style="width:27%">⚡ LogMyJourney AU</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="tg"><th colspan="3" scope="colgroup">Core features</th></tr>
+          <tr><td scope="row">Fuel stops &amp; L/100km badge</td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+          <tr><td scope="row">Expenses &amp; custom categories</td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+          <tr><td scope="row">Trip budget tracker</td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+          <tr><td scope="row">Multiple trips, instant switching</td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+          <tr><td scope="row">Vehicle &amp; tow vehicle setup</td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+          <tr><td scope="row">Edit &amp; delete entries</td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+          <tr><td scope="row">CSV &amp; JSON export / backup</td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+          <tr><td scope="row">Works fully offline</td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+          <tr><td scope="row">No account · no tracking · no ads</td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+          <tr class="tg"><th colspan="3" scope="colgroup">EV &amp; PHEV</th></tr>
+          <tr><td scope="row">Charging session tracker (kWh, $/kWh, SOC)</td><td><span class="no">—</span></td><td><span class="yes">✓</span></td></tr>
+          <tr><td scope="row">km/kWh efficiency</td><td><span class="no">—</span></td><td><span class="yes">✓</span></td></tr>
+          <tr><td scope="row">PHEV — fuel + charging in one trip</td><td><span class="no">—</span></td><td><span class="yes">✓</span></td></tr>
+          <tr><td scope="row">Per-trip vehicle type (ICE / PHEV / EV)</td><td><span class="no">—</span></td><td><span class="yes">✓</span></td></tr>
+          <tr><td scope="row">Fuel type selector (Unleaded / Diesel / E10 / LPG)</td><td><span class="no">—</span></td><td><span class="yes">✓</span></td></tr>
+          <tr><td scope="row">Filter trips by powertrain</td><td><span class="no">—</span></td><td><span class="yes">✓</span></td></tr>
+          <tr class="tg"><th colspan="3" scope="colgroup">Analytics</th></tr>
+          <tr><td scope="row">Fuel efficiency chart (L/100km per fill)</td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+          <tr><td scope="row">Spend-by-category breakdown</td><td><span class="yes">✓</span></td><td><span class="yes">✓</span></td></tr>
+          <tr><td scope="row">Estimated range from tank size</td><td><span class="no">—</span></td><td><span class="yes">✓</span></td></tr>
+          <tr><td scope="row">Lifetime efficiency trend across all trips</td><td><span class="no">—</span></td><td><span class="yes">✓</span></td></tr>
+          <tr><td scope="row">Spend per trip &amp; cost per km charts</td><td><span class="no">—</span></td><td><span class="yes">✓</span></td></tr>
+          <tr><td scope="row">Total lifetime km, litres and kWh</td><td><span class="no">—</span></td><td><span class="yes">✓</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ HOW ════════ -->
+<section class="how" id="how">
+  <div class="how-in">
+    <div class="how-hd reveal">
+      <div class="eyebrow">Get started</div>
+      <h2 class="section-title" id="how-heading">No install. No account. Open and go.</h2>
+    </div>
+    <div class="steps reveal" style="transition-delay:.1s">
+      <div class="step">
+        <div class="step-n">1</div>
+        <div class="step-t">Download the file</div>
+        <div class="step-d">One HTML file. About 180 KB. Save it to your phone or computer — that's the whole app.</div>
+      </div>
+      <div class="step">
+        <div class="step-n">2</div>
+        <div class="step-t">Open in any browser</div>
+        <div class="step-d">Safari, Chrome, Firefox. Tap the file or drag it to your browser tab. No install required.</div>
+      </div>
+      <div class="step">
+        <div class="step-n">3</div>
+        <div class="step-t">Create your trip</div>
+        <div class="step-d">Name it, choose vehicle type, set a budget. Ready to log in under 60 seconds.</div>
+      </div>
+      <div class="step">
+        <div class="step-n">4</div>
+        <div class="step-t">Log every stop</div>
+        <div class="step-d">Fuel, charging, expenses. Works deep in the outback with zero bars of signal.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════ WHY ════════ -->
+<section class="why" id="why">
+  <div class="why-in">
+    <div class="reveal">
+      <div class="eyebrow">Why LogMyJourney AU</div>
+      <h2 class="section-title" id="why-heading">Built different.</h2>
+    </div>
+    <div class="why-grid">
+      <div class="why-card reveal">
+        <span class="why-ico" aria-hidden="true">🔒</span>
+        <div class="why-t">Your data is yours. Full stop.</div>
+        <div class="why-d">Everything lives in your browser's local storage. No server ever sees your trips, odometer or costs. Export a JSON backup anytime — you own it completely.</div>
+      </div>
+      <div class="why-card reveal" style="transition-delay:.08s">
+        <span class="why-ico" aria-hidden="true">📵</span>
+        <div class="why-t">Works in the middle of nowhere.</div>
+        <div class="why-d">Nullarbor. Gibb River Road. Outback QLD. Once loaded, both apps run 100% offline. Log that fuel stop at Penong without a single bar of reception.</div>
+      </div>
+      <div class="why-card reveal" style="transition-delay:.16s">
+        <span class="why-ico" aria-hidden="true">🇦🇺</span>
+        <div class="why-t">Actually Australian.</div>
+        <div class="why-d">Kilometres. Dollars. Litres. Dates in dd/mm/yyyy. Built by an Australian who knows the difference between a servo, a roadhouse and a truck stop.</div>
+      </div>
+      <div class="why-card reveal" style="transition-delay:.08s">
+        <span class="why-ico" aria-hidden="true">⚡</span>
+        <div class="why-t">Ready for the EV transition.</div>
+        <div class="why-d">Australia's charging network is growing fast. LogMyJourney AU tracks every session — kWh, price paid, SOC percentage, charger type — so you know exactly what each trip cost.</div>
+      </div>
+      <div class="why-card reveal" style="transition-delay:.16s">
+        <span class="why-ico" aria-hidden="true">📊</span>
+        <div class="why-t">Numbers that mean something.</div>
+        <div class="why-d">L/100km per fill shows if towing is hurting your economy. km/kWh shows if your EV is performing. Lifetime trends show how efficiency changes across every trip you've ever logged.</div>
+      </div>
+      <div class="why-card reveal" style="transition-delay:.24s">
+        <span class="why-ico" aria-hidden="true">🆓</span>
+        <div class="why-t">Free. No catch. No agenda.</div>
+        <div class="why-d">No subscription. No premium tier. No ads. No tracking. There's an optional support button inside the app — nothing more. Because Australian road trippers deserve better tools.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════ DONATE ════════ -->
+<section class="donate" id="support" aria-labelledby="support-heading">
+  <div class="donate-in reveal">
+    <span class="donate-emoji" aria-hidden="true">☕</span>
+    <h2 class="donate-title" id="support-heading">Found these apps useful?</h2>
+    <p class="donate-body">
+      Both apps are <strong>completely free</strong> — no subscription, no ads, no upsell. They're built and maintained in spare time because Australian road trippers deserve better tools than a spreadsheet or a scrappy notes app.
+    </p>
+    <p class="donate-body">
+      If LogMyJourney AU or Trip Log has saved you time, helped you stay on budget, or made a long road trip that little bit smoother — a small donation goes a long way toward keeping them updated and improving.
+    </p>
+    <p class="donate-body" style="margin-bottom:28px">
+      <strong>Entirely optional. Genuinely appreciated.</strong>
+    </p>
+    <a href="https://www.paypal.com/ncp/payment/YGXFAYQ4PY5X6"
+       class="paypal-btn"
+       target="_blank"
+       rel="noopener noreferrer"
+       aria-label="Support LogMyJourney AU via PayPal">
+      <svg class="paypal-icon" viewBox="0 0 101 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path fill="#003087" d="M12.237 2.67H4.532C3.99 2.67 3.53 3.07 3.448 3.607L.342 23.14a.926.926 0 0 0 .914 1.07h3.658c.542 0 1.002-.4 1.084-.937l.837-5.31c.08-.537.542-.937 1.083-.937h2.394c4.979 0 7.852-2.41 8.602-7.186.339-2.088.014-3.729-.97-4.879-1.08-1.268-2.993-1.94-5.707-1.94zm.873 7.083c-.413 2.71-2.484 2.71-4.487 2.71h-1.14l.8-5.061a.652.652 0 0 1 .644-.55h.522c1.364 0 2.65 0 3.314.777.397.465.518 1.154.347 2.124z"/>
+        <path fill="#003087" d="M35.438 9.67h-3.674a.655.655 0 0 0-.644.55l-.166 1.052-.263-.382c-.815-1.183-2.633-1.578-4.448-1.578-4.16 0-7.716 3.151-8.406 7.572-.36 2.205.151 4.311 1.4 5.782 1.147 1.352 2.786 1.914 4.736 1.914 3.354 0 5.215-2.155 5.215-2.155l-.168 1.044a.926.926 0 0 0 .914 1.07h3.31c.542 0 1.002-.4 1.083-.937l1.987-12.584a.926.926 0 0 0-.876-1.348zm-5.12 7.327c-.362 2.147-2.072 3.588-4.244 3.588-1.09 0-1.963-.35-2.522-1.013-.555-.659-.764-1.598-.588-2.644.34-2.128 2.075-3.615 4.213-3.615 1.068 0 1.935.353 2.506 1.02.574.673.797 1.617.635 2.664z"/>
+        <path fill="#009cde" d="M55.348 9.67h-3.69a1.1 1.1 0 0 0-.907.48l-5.24 7.717-2.22-7.416a1.1 1.1 0 0 0-1.054-.781h-3.626a.657.657 0 0 0-.622.873l4.183 12.278-3.933 5.553a.657.657 0 0 0 .537 1.036h3.686a1.1 1.1 0 0 0 .9-.473l12.622-18.22a.657.657 0 0 0-.636-1.047z"/>
+        <path fill="#003087" d="M67.107 2.67H59.4c-.542 0-1.002.4-1.083.937L55.21 23.14a.926.926 0 0 0 .914 1.07h3.93c.38 0 .702-.276.76-.654l.892-5.593c.08-.537.542-.937 1.083-.937h2.394c4.979 0 7.852-2.41 8.602-7.186.339-2.088.014-3.729-.97-4.879-1.08-1.268-2.993-1.94-5.708-1.94zm.873 7.083c-.413 2.71-2.484 2.71-4.487 2.71h-1.14l.8-5.061a.652.652 0 0 1 .644-.55h.522c1.364 0 2.65 0 3.314.777.397.465.518 1.154.347 2.124z"/>
+        <path fill="#009cde" d="M90.308 9.67h-3.673a.655.655 0 0 0-.644.55l-.166 1.052-.264-.382c-.814-1.183-2.632-1.578-4.447-1.578-4.16 0-7.716 3.151-8.406 7.572-.36 2.205.151 4.311 1.4 5.782 1.147 1.352 2.786 1.914 4.736 1.914 3.354 0 5.215-2.155 5.215-2.155l-.168 1.044a.926.926 0 0 0 .914 1.07h3.31c.542 0 1.002-.4 1.083-.937l1.987-12.584a.926.926 0 0 0-.877-1.348zm-5.12 7.327c-.361 2.147-2.071 3.588-4.243 3.588-1.09 0-1.963-.35-2.522-1.013-.555-.659-.764-1.598-.588-2.644.34-2.128 2.075-3.615 4.213-3.615 1.068 0 1.935.353 2.506 1.02.574.673.797 1.617.635 2.664z"/>
+        <path fill="#009cde" d="M95.27 3.172l-3.145 20.003a.926.926 0 0 0 .914 1.07h3.168c.543 0 1.003-.4 1.084-.937L100.4 3.773a.926.926 0 0 0-.914-1.07h-3.572a.655.655 0 0 0-.644.47z"/>
+      </svg>
+      <span>Support via PayPal</span>
+    </a>
+    <p class="donate-note">100% optional. No pressure. Even just sharing the apps with a mate helps.</p>
+  </div>
+</section>
+
+<!-- ════════ CTA BAND ════════ -->
+<section class="cta" aria-label="Download the apps">
+  <div class="cta-grid"></div>
+  <div class="cta-hl">READY<br>TO ROLL?</div>
+  <p class="cta-sub">Pick your app and start logging before the next servo.</p>
+  <div class="cta-btns">
+    <a href="roadtrip-logger.html"    class="cta-btn cta-btn--a">⛽ &nbsp;Open Trip Log &nbsp;→</a>
+    <a href="roadtrip-logger-v2.html" class="cta-btn cta-btn--t">⚡ &nbsp;Open LogMyJourney AU &nbsp;→</a>
+  </div>
+</section>
+
+</main><!-- /main -->
+
+<!-- ════════ FOOTER ════════ -->
+<footer aria-label="Site footer">
+  <div>
+    <div class="foot-brand">LogMyJourney <span>AU</span></div>
+    <div class="foot-copy">By Ian Fraser &copy; 2026 &nbsp;·&nbsp; Trip Log v1.2 &nbsp;·&nbsp; LogMyJourney AU v2.2</div>
+  </div>
+  <div class="foot-links">
+    <a href="#top">Back to top</a>
+    <a href="#apps">Apps</a>
+    <a href="#compare">Compare</a>
+    <a href="#why">Why</a>
+    <a href="#support">Support</a>
+    <a href="roadtrip-logger.html">⛽ Trip Log</a>
+    <a href="roadtrip-logger-v2.html">⚡ LogMyJourney AU</a>
+  </div>
+</footer>
+
+<script>
+// Scroll reveal
+(function(){
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}
+    });
+  },{threshold:.1});
+  document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
+})();
+</script>
+</body>
+</html>
