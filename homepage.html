@@ -193,7 +193,7 @@ img,svg{max-width:100%;height:auto}
 .mockup-dot{width:10px;height:10px;border-radius:50%}
 .mockup-dot-r{background:#FF5F57}.mockup-dot-y{background:#FEBC2E}.mockup-dot-g{background:#28C840}
 .mockup-url{flex:1;background:#fff;border:1px solid var(--rule);border-radius:5px;padding:3px 10px;font-family:var(--ff-mono);font-size:.65rem;color:var(--muted-warm);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mockup-inner{padding:18px}
+.mockup-inner{padding:18px;min-height:300px}
 
 .sim-header{padding:10px 14px;border-radius:7px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
 .sim-header--amber{background:linear-gradient(135deg,var(--amber-lt),#FDE4C4)}
@@ -202,10 +202,17 @@ img,svg{max-width:100%;height:auto}
 .sim-logo--amber{color:var(--amber)}.sim-logo--teal{color:var(--teal)}
 .sim-ver{font-family:var(--ff-mono);font-size:.52rem;color:var(--muted-warm);background:rgba(0,0,0,.06);padding:2px 6px;border-radius:3px}
 
+/* Interactive tabs */
 .sim-tabs{display:flex;gap:3px;margin-bottom:12px;border-bottom:2px solid var(--rule);padding-bottom:0}
-.sim-tab{font-family:var(--ff-head);font-size:.62rem;font-weight:600;padding:5px 9px;border-radius:4px 4px 0 0;color:var(--muted-warm);border-bottom:2px solid transparent;margin-bottom:-2px}
-.sim-tab-a--amber{color:var(--amber);border-bottom-color:var(--amber);background:var(--amber-lt)}
-.sim-tab-a--teal{color:var(--teal);border-bottom-color:var(--teal);background:var(--teal-lt)}
+.sim-tab{font-family:var(--ff-head);font-size:.62rem;font-weight:600;padding:5px 9px;border-radius:4px 4px 0 0;color:var(--muted-warm);border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;background:none;border-top:none;border-left:none;border-right:none;transition:color .15s,background .15s}
+.sim-tab:hover{color:var(--ink)}
+.sim-tab.active--amber{color:var(--amber);border-bottom:2px solid var(--amber);background:var(--amber-lt);margin-bottom:-2px}
+.sim-tab.active--teal{color:var(--teal);border-bottom:2px solid var(--teal);background:var(--teal-lt);margin-bottom:-2px}
+
+/* Tab panels */
+.sim-panel{display:none}
+.sim-panel.active{display:block;animation:tabIn .2s ease}
+@keyframes tabIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 
 .sim-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
 .sim-stat{background:var(--cream);border:1px solid var(--rule);border-radius:7px;padding:7px 8px;text-align:center}
@@ -219,6 +226,46 @@ img,svg{max-width:100%;height:auto}
 .sim-badge--amber{background:var(--amber-lt);color:var(--amber);border:1px solid #F5B07A}
 .sim-badge--teal{background:var(--teal-lt);color:var(--teal);border:1px solid #7ECFC9}
 .sim-badge--green{background:#DCFCE7;color:#166534;border:1px solid #BBF7D0}
+.sim-badge--purple{background:#F3E8FF;color:#6B21A8;border:1px solid #D8B4FE}
+.sim-badge--blue{background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE}
+
+/* Expense rows */
+.sim-exp-row{display:flex;align-items:center;justify-content:space-between;padding:5px 9px;border-radius:6px;margin-bottom:4px;background:var(--cream);border:1px solid var(--rule)}
+.sim-exp-cat{display:flex;align-items:center;gap:7px;font-size:.7rem;color:var(--ink-mid);font-family:var(--ff-head);font-weight:600}
+.sim-exp-ico{font-size:.9rem}
+.sim-exp-amt{font-family:var(--ff-mono);font-size:.65rem;color:var(--muted-dk);font-weight:500}
+
+/* Budget bar */
+.sim-budget{background:var(--cream);border:1px solid var(--rule);border-radius:7px;padding:9px 11px;margin-bottom:10px}
+.sim-budget-lbl{font-family:var(--ff-mono);font-size:.52rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted-warm);margin-bottom:5px}
+.sim-budget-bar{height:6px;border-radius:999px;background:var(--rule);overflow:hidden;margin-bottom:4px}
+.sim-budget-fill--amber{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--amber),#E87A30)}
+.sim-budget-fill--teal{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--teal),#3DC9BC)}
+.sim-budget-nums{display:flex;justify-content:space-between;font-family:var(--ff-mono);font-size:.55rem;color:var(--muted-warm)}
+
+/* Chart bars */
+.sim-chart{margin-top:4px}
+.sim-chart-row{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.sim-chart-lbl{font-family:var(--ff-mono);font-size:.54rem;color:var(--muted-warm);width:52px;flex-shrink:0;text-align:right}
+.sim-chart-bar-wrap{flex:1;height:12px;background:var(--cream);border-radius:999px;overflow:hidden;border:1px solid var(--rule)}
+.sim-chart-bar{height:100%;border-radius:999px;transition:width .4s ease}
+.sim-chart-val{font-family:var(--ff-mono);font-size:.54rem;color:var(--muted-dk);width:38px;flex-shrink:0}
+
+/* Trend chart (v2 Trends tab) */
+.sim-trend{display:flex;align-items:flex-end;gap:4px;height:60px;margin-bottom:8px;padding:0 2px}
+.sim-trend-bar{flex:1;border-radius:3px 3px 0 0;transition:height .4s ease;min-width:0}
+.sim-trend-labels{display:flex;gap:4px;margin-bottom:8px}
+.sim-trend-lbl{flex:1;font-family:var(--ff-mono);font-size:.46rem;color:var(--muted-warm);text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sim-trend-caption{font-family:var(--ff-mono);font-size:.54rem;color:var(--muted-warm);text-align:center;margin-bottom:8px;text-transform:uppercase;letter-spacing:.08em}
+
+/* Settings panel */
+.sim-setting{display:flex;align-items:center;justify-content:space-between;padding:7px 9px;border-radius:6px;margin-bottom:5px;background:var(--cream);border:1px solid var(--rule)}
+.sim-setting-lbl{font-size:.72rem;color:var(--ink-mid);font-family:var(--ff-head);font-weight:600}
+.sim-setting-val{font-family:var(--ff-mono);font-size:.62rem;color:var(--muted-warm)}
+.sim-toggle{width:28px;height:16px;border-radius:999px;display:flex;align-items:center;padding:2px;flex-shrink:0}
+.sim-toggle--on{background:var(--teal);justify-content:flex-end}
+.sim-toggle--off{background:var(--rule);justify-content:flex-start}
+.sim-toggle-dot{width:12px;height:12px;border-radius:50%;background:#fff}
 
 /* ── COMPARISON TABLE ────────────────────────────────────── */
 .compare{background:var(--cream-dark);padding:96px 52px}
@@ -529,68 +576,165 @@ footer{background:#060A0D;padding:36px 52px;display:flex;align-items:center;just
 </section>
 
 <!-- ══ MOCKUPS ════════════════════════════════════════════════ -->
-<section class="mockups" aria-label="App interface previews">
+<section class="mockups" aria-label="Interactive app previews — click the tabs to explore">
   <div class="mockups-grid">
 
-    <div class="mockup-frame reveal">
+    <!-- ── Petrol & Diesel Edition (v1.2) ── -->
+    <div class="mockup-frame reveal" id="mock-amber">
       <div class="mockup-bar" aria-hidden="true">
         <div class="mockup-dot mockup-dot-r"></div>
         <div class="mockup-dot mockup-dot-y"></div>
         <div class="mockup-dot mockup-dot-g"></div>
         <div class="mockup-url">roadtrip-logger.html</div>
       </div>
-      <div class="mockup-inner" role="img" aria-label="Preview of LogMyJourney AU Petrol &amp; Diesel Edition showing fuel stops with L/100km efficiency badges and trip statistics">
+      <div class="mockup-inner">
         <div class="sim-header sim-header--amber">
           <span class="sim-logo sim-logo--amber">LogMyJourney AU</span>
-          <span class="sim-ver">v1.2</span>
+          <span class="sim-ver">v1.2 · Petrol &amp; Diesel</span>
         </div>
-        <div class="sim-tabs" aria-hidden="true">
-          <div class="sim-tab sim-tab-a--amber">⛽ Fuel</div>
-          <div class="sim-tab">💳 Expenses</div>
-          <div class="sim-tab">📊 Summary</div>
-          <div class="sim-tab">⚙️ Settings</div>
+        <div class="sim-tabs" role="tablist" aria-label="Petrol & Diesel Edition tabs">
+          <button class="sim-tab active--amber" role="tab" aria-selected="true"  aria-controls="a-fuel"     data-mock="amber" data-panel="a-fuel">⛽ Fuel</button>
+          <button class="sim-tab"              role="tab" aria-selected="false" aria-controls="a-expenses" data-mock="amber" data-panel="a-expenses">💳 Expenses</button>
+          <button class="sim-tab"              role="tab" aria-selected="false" aria-controls="a-summary"  data-mock="amber" data-panel="a-summary">📊 Summary</button>
+          <button class="sim-tab"              role="tab" aria-selected="false" aria-controls="a-settings" data-mock="amber" data-panel="a-settings">⚙️ Settings</button>
         </div>
-        <div class="sim-stats" aria-hidden="true">
-          <div class="sim-stat"><div class="sim-stat-val">1,847</div><div class="sim-stat-lbl">km</div></div>
-          <div class="sim-stat"><div class="sim-stat-val">148 L</div><div class="sim-stat-lbl">fuel used</div></div>
-          <div class="sim-stat"><div class="sim-stat-val">$312</div><div class="sim-stat-lbl">total spend</div></div>
+
+        <!-- FUEL -->
+        <div class="sim-panel active" id="a-fuel" role="tabpanel">
+          <div class="sim-stats">
+            <div class="sim-stat"><div class="sim-stat-val">1,847</div><div class="sim-stat-lbl">km</div></div>
+            <div class="sim-stat"><div class="sim-stat-val">148 L</div><div class="sim-stat-lbl">fuel used</div></div>
+            <div class="sim-stat"><div class="sim-stat-val">8.0</div><div class="sim-stat-lbl">L/100km</div></div>
+          </div>
+          <div class="sim-row"><span class="sim-row-loc">Mildura</span><span class="sim-row-meta">42L · $1.89/L · 520km</span><span class="sim-badge sim-badge--amber">8.1 L/100km</span></div>
+          <div class="sim-row"><span class="sim-row-loc">Broken Hill</span><span class="sim-row-meta">38L · $2.14/L · 453km</span><span class="sim-badge sim-badge--amber">8.4 L/100km</span></div>
+          <div class="sim-row"><span class="sim-row-loc">Cobar</span><span class="sim-row-meta">35L · $1.96/L · 449km</span><span class="sim-badge sim-badge--green">7.8 L/100km ✓</span></div>
+          <div class="sim-row"><span class="sim-row-loc">Dubbo</span><span class="sim-row-meta">33L · $1.88/L · 421km</span><span class="sim-badge sim-badge--amber">7.8 L/100km</span></div>
         </div>
-        <div aria-hidden="true">
-          <div class="sim-row"><span class="sim-row-loc">Mildura</span><span class="sim-row-meta">42L · $1.89/L</span><span class="sim-badge sim-badge--amber">8.1 L/100km</span></div>
-          <div class="sim-row"><span class="sim-row-loc">Broken Hill</span><span class="sim-row-meta">38L · $2.14/L</span><span class="sim-badge sim-badge--amber">8.4 L/100km</span></div>
-          <div class="sim-row"><span class="sim-row-loc">Cobar</span><span class="sim-row-meta">35L · $1.96/L</span><span class="sim-badge sim-badge--green">7.8 L/100km ✓</span></div>
+
+        <!-- EXPENSES -->
+        <div class="sim-panel" id="a-expenses" role="tabpanel">
+          <div class="sim-budget">
+            <div class="sim-budget-lbl">Trip budget — Sydney to Adelaide</div>
+            <div class="sim-budget-bar"><div class="sim-budget-fill--amber" style="width:74%"></div></div>
+            <div class="sim-budget-nums"><span>$741 spent</span><span>$259 remaining of $1,000</span></div>
+          </div>
+          <div class="sim-exp-row"><span class="sim-exp-cat"><span class="sim-exp-ico">⛽</span>Fuel</span><span class="sim-exp-amt">$429.14</span></div>
+          <div class="sim-exp-row"><span class="sim-exp-cat"><span class="sim-exp-ico">🏨</span>Accommodation</span><span class="sim-exp-amt">$185.00</span></div>
+          <div class="sim-exp-row"><span class="sim-exp-cat"><span class="sim-exp-ico">🍔</span>Food &amp; Drink</span><span class="sim-exp-amt">$94.50</span></div>
+          <div class="sim-exp-row"><span class="sim-exp-cat"><span class="sim-exp-ico">🅿️</span>Parking</span><span class="sim-exp-amt">$32.00</span></div>
         </div>
+
+        <!-- SUMMARY -->
+        <div class="sim-panel" id="a-summary" role="tabpanel">
+          <div class="sim-stats">
+            <div class="sim-stat"><div class="sim-stat-val">1,847</div><div class="sim-stat-lbl">km</div></div>
+            <div class="sim-stat"><div class="sim-stat-val">$741</div><div class="sim-stat-lbl">total</div></div>
+            <div class="sim-stat"><div class="sim-stat-val">40¢</div><div class="sim-stat-lbl">per km</div></div>
+          </div>
+          <div class="sim-trend-caption">L/100km per fill-up</div>
+          <div class="sim-chart">
+            <div class="sim-chart-row"><span class="sim-chart-lbl">Mildura</span><div class="sim-chart-bar-wrap"><div class="sim-chart-bar" style="width:81%;background:var(--amber)"></div></div><span class="sim-chart-val">8.1</span></div>
+            <div class="sim-chart-row"><span class="sim-chart-lbl">Broken Hill</span><div class="sim-chart-bar-wrap"><div class="sim-chart-bar" style="width:84%;background:#C05800"></div></div><span class="sim-chart-val">8.4</span></div>
+            <div class="sim-chart-row"><span class="sim-chart-lbl">Cobar</span><div class="sim-chart-bar-wrap"><div class="sim-chart-bar" style="width:78%;background:#166534"></div></div><span class="sim-chart-val">7.8 ✓</span></div>
+            <div class="sim-chart-row"><span class="sim-chart-lbl">Dubbo</span><div class="sim-chart-bar-wrap"><div class="sim-chart-bar" style="width:78%;background:var(--amber)"></div></div><span class="sim-chart-val">7.8</span></div>
+          </div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div class="sim-panel" id="a-settings" role="tabpanel">
+          <div class="sim-setting"><span class="sim-setting-lbl">🚗 Vehicle</span><span class="sim-setting-val">Toyota LandCruiser 200</span></div>
+          <div class="sim-setting"><span class="sim-setting-lbl">🚐 Towing</span><span class="sim-setting-val">Jayco Starcraft 17ft</span></div>
+          <div class="sim-setting"><span class="sim-setting-lbl">⛽ Tank size</span><span class="sim-setting-val">138 L</span></div>
+          <div class="sim-setting"><span class="sim-setting-lbl">🛣️ Range estimate</span><span class="sim-setting-val">~1,240 km</span></div>
+          <div class="sim-setting"><span class="sim-setting-lbl">Odometer warnings</span><div class="sim-toggle sim-toggle--on"><div class="sim-toggle-dot"></div></div></div>
+          <div class="sim-setting"><span class="sim-setting-lbl">Backup reminder</span><div class="sim-toggle sim-toggle--on"><div class="sim-toggle-dot"></div></div></div>
+        </div>
+
       </div>
     </div>
 
-    <div class="mockup-frame reveal" style="transition-delay:.15s">
+    <!-- ── Multi-Powertrain Edition (v2.2) ── -->
+    <div class="mockup-frame reveal" id="mock-teal" style="transition-delay:.15s">
       <div class="mockup-bar" aria-hidden="true">
         <div class="mockup-dot mockup-dot-r"></div>
         <div class="mockup-dot mockup-dot-y"></div>
         <div class="mockup-dot mockup-dot-g"></div>
         <div class="mockup-url">roadtrip-logger-v2.html</div>
       </div>
-      <div class="mockup-inner" role="img" aria-label="Preview of LogMyJourney AU showing EV charging sessions with km/kWh efficiency and trip statistics">
+      <div class="mockup-inner">
         <div class="sim-header sim-header--teal">
           <span class="sim-logo sim-logo--teal">LogMyJourney AU</span>
-          <span class="sim-ver">v2.2</span>
+          <span class="sim-ver">v2.2 · Multi-Powertrain</span>
         </div>
-        <div class="sim-tabs" aria-hidden="true">
-          <div class="sim-tab">⛽ Fuel</div>
-          <div class="sim-tab sim-tab-a--teal">⚡ Charging</div>
-          <div class="sim-tab">📈 Trends</div>
-          <div class="sim-tab">⚙️</div>
+        <div class="sim-tabs" role="tablist" aria-label="Multi-Powertrain Edition tabs">
+          <button class="sim-tab"             role="tab" aria-selected="false" aria-controls="t-fuel"     data-mock="teal" data-panel="t-fuel">⛽ Fuel</button>
+          <button class="sim-tab active--teal" role="tab" aria-selected="true"  aria-controls="t-charging" data-mock="teal" data-panel="t-charging">⚡ Charging</button>
+          <button class="sim-tab"             role="tab" aria-selected="false" aria-controls="t-trends"   data-mock="teal" data-panel="t-trends">📈 Trends</button>
+          <button class="sim-tab"             role="tab" aria-selected="false" aria-controls="t-settings" data-mock="teal" data-panel="t-settings">⚙️</button>
         </div>
-        <div class="sim-stats" aria-hidden="true">
-          <div class="sim-stat"><div class="sim-stat-val">412</div><div class="sim-stat-lbl">km</div></div>
-          <div class="sim-stat"><div class="sim-stat-val">68 kWh</div><div class="sim-stat-lbl">charged</div></div>
-          <div class="sim-stat"><div class="sim-stat-val">6.1</div><div class="sim-stat-lbl">km/kWh</div></div>
+
+        <!-- FUEL (EV trip — no fuel stops) -->
+        <div class="sim-panel" id="t-fuel" role="tabpanel">
+          <div class="sim-stats">
+            <div class="sim-stat"><div class="sim-stat-val">412</div><div class="sim-stat-lbl">km</div></div>
+            <div class="sim-stat"><div class="sim-stat-val">0 L</div><div class="sim-stat-lbl">fuel used</div></div>
+            <div class="sim-stat"><div class="sim-stat-val">—</div><div class="sim-stat-lbl">L/100km</div></div>
+          </div>
+          <div class="sim-row" style="justify-content:center;padding:14px">
+            <span style="font-size:.78rem;color:var(--muted-warm);font-style:italic;font-family:var(--ff-body)">⚡ EV trip — no fuel stops logged</span>
+          </div>
+          <div class="sim-row" style="justify-content:center;padding:8px">
+            <span style="font-size:.7rem;color:var(--muted-warm);font-family:var(--ff-mono)">Switch to ⚡ Charging tab to see this trip</span>
+          </div>
         </div>
-        <div aria-hidden="true">
-          <div class="sim-row"><span class="sim-row-loc">Canberra DC</span><span class="sim-row-meta">24 kWh · $0.52/kWh</span><span class="sim-badge sim-badge--teal">6.3 km/kWh</span></div>
-          <div class="sim-row"><span class="sim-row-loc">Goulburn NRMA</span><span class="sim-row-meta">22 kWh · $0.48/kWh</span><span class="sim-badge sim-badge--teal">6.1 km/kWh</span></div>
-          <div class="sim-row"><span class="sim-row-loc">Mittagong</span><span class="sim-row-meta">22 kWh · $0.51/kWh</span><span class="sim-badge sim-badge--green">6.4 km/kWh ✓</span></div>
+
+        <!-- CHARGING -->
+        <div class="sim-panel active" id="t-charging" role="tabpanel">
+          <div class="sim-stats">
+            <div class="sim-stat"><div class="sim-stat-val">412</div><div class="sim-stat-lbl">km</div></div>
+            <div class="sim-stat"><div class="sim-stat-val">68 kWh</div><div class="sim-stat-lbl">charged</div></div>
+            <div class="sim-stat"><div class="sim-stat-val">6.1</div><div class="sim-stat-lbl">km/kWh</div></div>
+          </div>
+          <div class="sim-row"><span class="sim-row-loc">Canberra DC</span><span class="sim-row-meta">24 kWh · $0.52/kWh · 20→80%</span><span class="sim-badge sim-badge--teal">6.3 km/kWh</span></div>
+          <div class="sim-row"><span class="sim-row-loc">Goulburn NRMA</span><span class="sim-row-meta">22 kWh · $0.48/kWh · 18→72%</span><span class="sim-badge sim-badge--teal">6.1 km/kWh</span></div>
+          <div class="sim-row"><span class="sim-row-loc">Mittagong</span><span class="sim-row-meta">22 kWh · $0.51/kWh · 15→75%</span><span class="sim-badge sim-badge--green">6.4 km/kWh ✓</span></div>
         </div>
+
+        <!-- TRENDS -->
+        <div class="sim-panel" id="t-trends" role="tabpanel">
+          <div class="sim-trend-caption">km/kWh efficiency — last 5 trips</div>
+          <div class="sim-trend" aria-hidden="true">
+            <div class="sim-trend-bar" style="height:62%;background:var(--teal);opacity:.5" title="5.8"></div>
+            <div class="sim-trend-bar" style="height:72%;background:var(--teal);opacity:.6" title="6.1"></div>
+            <div class="sim-trend-bar" style="height:78%;background:var(--teal);opacity:.75" title="6.3"></div>
+            <div class="sim-trend-bar" style="height:68%;background:var(--teal);opacity:.7" title="5.9"></div>
+            <div class="sim-trend-bar" style="height:85%;background:var(--teal)" title="6.8"></div>
+          </div>
+          <div class="sim-trend-labels" aria-hidden="true">
+            <span class="sim-trend-lbl">Syd→Mel</span>
+            <span class="sim-trend-lbl">Mel→Can</span>
+            <span class="sim-trend-lbl">Can→Syd</span>
+            <span class="sim-trend-lbl">Syd→Syd</span>
+            <span class="sim-trend-lbl">Syd→Bris</span>
+          </div>
+          <div class="sim-stats" style="margin-top:4px">
+            <div class="sim-stat"><div class="sim-stat-val">2,140</div><div class="sim-stat-lbl">lifetime km</div></div>
+            <div class="sim-stat"><div class="sim-stat-val">342 kWh</div><div class="sim-stat-lbl">lifetime</div></div>
+            <div class="sim-stat"><div class="sim-stat-val">$178</div><div class="sim-stat-lbl">lifetime $</div></div>
+          </div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div class="sim-panel" id="t-settings" role="tabpanel">
+          <div class="sim-setting"><span class="sim-setting-lbl">⚡ Vehicle</span><span class="sim-setting-val">BYD Sealion 6 DM-i</span></div>
+          <div class="sim-setting"><span class="sim-setting-lbl">🔋 Trip type</span><span class="sim-badge sim-badge--teal" style="font-size:.65rem">PHEV</span></div>
+          <div class="sim-setting"><span class="sim-setting-lbl">⛽ Tank size</span><span class="sim-setting-val">15.0 L</span></div>
+          <div class="sim-setting"><span class="sim-setting-lbl">🔌 Filter trips</span><span class="sim-badge sim-badge--blue" style="font-size:.65rem">All powertrains</span></div>
+          <div class="sim-setting"><span class="sim-setting-lbl">Date format</span><span class="sim-setting-val">dd/mm/yyyy ✓</span></div>
+          <div class="sim-setting"><span class="sim-setting-lbl">Backup reminder</span><div class="sim-toggle sim-toggle--on"><div class="sim-toggle-dot"></div></div></div>
+        </div>
+
       </div>
     </div>
 
@@ -945,6 +1089,35 @@ footer{background:#060A0D;padding:36px 52px;display:flex;align-items:center;just
         item.classList.add('open');
         btn.setAttribute('aria-expanded','true');
       }
+    });
+  });
+})();
+
+// Interactive mockup tabs
+(function(){
+  document.querySelectorAll('.sim-tab[data-panel]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var mock  = btn.dataset.mock;   // 'amber' or 'teal'
+      var panel = btn.dataset.panel;
+      var frame = btn.closest('.mockup-frame');
+      var activeClass = 'active--' + mock;
+
+      // Deactivate all tabs in this frame
+      frame.querySelectorAll('.sim-tab').forEach(function(t){
+        t.classList.remove('active--amber','active--teal');
+        t.setAttribute('aria-selected','false');
+      });
+      // Activate clicked tab
+      btn.classList.add(activeClass);
+      btn.setAttribute('aria-selected','true');
+
+      // Hide all panels in this frame
+      frame.querySelectorAll('.sim-panel').forEach(function(p){
+        p.classList.remove('active');
+      });
+      // Show target panel
+      var target = document.getElementById(panel);
+      if(target) target.classList.add('active');
     });
   });
 })();
