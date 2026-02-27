@@ -3,15 +3,16 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>JourneyLedger AU — Friend Format Edition</title>
+  <title>LogMyJourney AU — Unified (ICE • PHEV • EV)</title>
   <meta name="theme-color" content="#0b1020" />
   <style>
     :root{
       --bg0:#070b18;
       --bg1:#0b1020;
-      --panel:#0e1630;
-      --card:#0f1a3a;
+      --panel:#0f1a3a;
+      --panel2:#0a1228;
       --stroke:rgba(255,255,255,.10);
+      --stroke2:rgba(255,255,255,.14);
       --text:#eaf0ff;
       --muted:rgba(234,240,255,.72);
       --muted2:rgba(234,240,255,.55);
@@ -23,10 +24,7 @@
       --shadow2: 0 8px 24px rgba(0,0,0,.35);
       --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
     }
-
-    /* Helps native form controls adopt dark palettes on supporting browsers */
     html { color-scheme: dark; }
-
     *{box-sizing:border-box}
     body{
       margin:0;
@@ -38,8 +36,10 @@
         linear-gradient(180deg, var(--bg0), var(--bg1));
       min-height:100vh;
     }
+    a{color:var(--acc); text-decoration:none}
+    a:hover{text-decoration:underline}
 
-    .app{max-width:1180px; margin:0 auto; padding:18px;}
+    .app{max-width:1220px; margin:0 auto; padding:18px;}
     .shell{
       border:1px solid var(--stroke);
       border-radius:24px;
@@ -47,20 +47,20 @@
       box-shadow:var(--shadow);
       overflow:hidden;
     }
-
     .header{
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap:14px;
-      padding:16px 18px;
+      padding:14px 16px;
       border-bottom:1px solid var(--stroke);
       background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      flex-wrap:wrap;
     }
     .brand{display:flex; flex-direction:column; gap:2px}
     .brand b{font-size:18px; letter-spacing:.2px}
     .brand span{font-size:12px; color:var(--muted)}
-    .header .right{display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end;}
+    .hdrRight{display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end; margin-left:auto;}
 
     select, input, textarea, button{
       font:inherit;
@@ -72,18 +72,17 @@
       outline:none;
     }
 
-    /* --- Critical dropdown fix --- */
+    /* Dropdown readability */
     select{
-      min-width:240px;
+      min-width:220px;
       background:linear-gradient(180deg, rgba(15,26,58,.95), rgba(10,18,40,.95));
       color:var(--text);
       border:1px solid rgba(255,255,255,.15);
     }
     select option, select optgroup{
-      background:#0f1a3a;   /* ensures the list isn't white */
-      color:#eaf0ff;       /* ensures option text is visible */
+      background:#0f1a3a;
+      color:#eaf0ff;
     }
-    /* -------------------------------- */
 
     button{cursor:pointer}
     button.primary{
@@ -99,11 +98,11 @@
 
     .layout{
       display:grid;
-      grid-template-columns: 320px 1fr;
+      grid-template-columns: 360px 1fr;
       gap:14px;
       padding:14px;
     }
-    @media (max-width: 980px){
+    @media (max-width: 1020px){
       .layout{grid-template-columns:1fr}
       select{min-width:200px}
     }
@@ -115,18 +114,18 @@
       box-shadow:var(--shadow2);
       overflow:hidden;
     }
-
     .sidebar{padding:14px}
-    .main{padding:14px}
 
     .sectionTitle{
       font-size:12px;
       color:var(--muted);
       letter-spacing:.35px;
-      font-weight:700;
+      font-weight:800;
       text-transform:uppercase;
       margin:2px 0 10px;
     }
+    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .rowBetween{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap}
 
     .stats{
       display:grid;
@@ -140,41 +139,41 @@
       background:linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.08));
     }
     .stat .k{font-size:12px; color:var(--muted2)}
-    .stat .v{font-size:18px; font-weight:800; margin-top:4px}
+    .stat .v{font-size:18px; font-weight:900; margin-top:4px; letter-spacing:.2px}
 
-    .tabs{
+    .tabsRow{
       display:flex;
-      flex-direction:column;
-      gap:10px;
-      margin-top:12px;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:10px;
     }
-    .tab{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      padding:12px 12px;
-      border-radius:16px;
+    .tabBtn{
+      padding:10px 12px;
+      border-radius:999px;
       border:1px solid var(--stroke);
       background:rgba(0,0,0,.18);
+      font-weight:800;
+      font-size:13px;
       cursor:pointer;
       user-select:none;
     }
-    .tab.active{
+    .tabBtn.active{
       border-color:rgba(70,179,255,.55);
       box-shadow:0 0 0 3px rgba(70,179,255,.12) inset;
       background:rgba(70,179,255,.08);
     }
-    .tab .label{display:flex; gap:10px; align-items:center; font-weight:700}
-    .badge{
+
+    .pill{
       font-size:12px;
-      padding:4px 10px;
+      padding:6px 10px;
       border-radius:999px;
       border:1px solid var(--stroke);
-      color:var(--muted);
       background:rgba(0,0,0,.18);
       white-space:nowrap;
     }
+    .pill.good{border-color:rgba(38,208,124,.6)}
+    .pill.warn{border-color:rgba(255,176,32,.6)}
+    .pill.bad{border-color:rgba(255,77,77,.6)}
 
     .hint{
       margin-top:12px;
@@ -193,6 +192,7 @@
       padding:12px 12px;
       border-bottom:1px solid var(--stroke);
       background:rgba(0,0,0,.12);
+      flex-wrap:wrap;
     }
     .toolbar h1{font-size:16px; margin:0; letter-spacing:.2px;}
     .toolbar .sub{font-size:12px; color:var(--muted); margin-top:2px;}
@@ -201,7 +201,7 @@
 
     .content{padding:12px}
     .grid2{display:grid; grid-template-columns:1fr; gap:10px}
-    @media (min-width: 860px){ .grid2{grid-template-columns:repeat(2,1fr)} }
+    @media (min-width: 900px){ .grid2{grid-template-columns:repeat(2,1fr)} }
 
     label{display:flex; flex-direction:column; gap:6px; font-size:12px; color:var(--muted)}
     textarea{min-height:86px; resize:vertical}
@@ -222,17 +222,6 @@
     .meta span{display:block; font-size:12px; color:var(--muted); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
     .meta .note{white-space:normal; overflow:visible; text-overflow:clip}
 
-    .pill{
-      font-size:12px;
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid var(--stroke);
-      background:rgba(0,0,0,.18);
-      white-space:nowrap;
-    }
-    .pill.good{border-color:rgba(38,208,124,.6)}
-    .pill.warn{border-color:rgba(255,176,32,.6)}
-    .pill.bad{border-color:rgba(255,77,77,.6)}
     .rightRow{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
 
     .empty{
@@ -258,17 +247,6 @@
     td{font-size:13px}
     tr:last-child td{border-bottom:none}
 
-    pre{
-      margin:0;
-      padding:12px;
-      border-radius:18px;
-      border:1px solid var(--stroke);
-      background:rgba(0,0,0,.18);
-      overflow:auto;
-      font-size:12px;
-      line-height:1.35;
-    }
-
     .footer{
       padding:12px 16px;
       border-top:1px solid var(--stroke);
@@ -284,7 +262,7 @@
       background:linear-gradient(180deg, rgba(15,26,58,.96), rgba(10,18,40,.96));
       color:var(--text);
       box-shadow:var(--shadow);
-      max-width:820px;
+      max-width:980px;
       width:calc(100% - 24px);
     }
     dialog::backdrop{background:rgba(0,0,0,.60)}
@@ -302,24 +280,86 @@
       color:var(--text);
       font-size:13px;
       opacity:0; pointer-events:none; transition:opacity .18s ease;
+      z-index:9999;
     }
     .toast.show{opacity:1}
+
+    .banner{
+      display:none;
+      position:sticky;
+      top:0;
+      z-index:999;
+      background:linear-gradient(180deg, rgba(255,176,32,.22), rgba(255,176,32,.10));
+      border-bottom:1px solid rgba(255,176,32,.35);
+      padding:10px 14px;
+      font-size:13px;
+      color:var(--text);
+    }
+    .banner .brow{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap}
+    .dropzone{
+      margin-top:10px;
+      border:1px dashed rgba(255,255,255,.22);
+      border-radius:18px;
+      padding:14px;
+      background:rgba(0,0,0,.10);
+      color:var(--muted);
+      text-align:center;
+    }
+    .dropzone.drag{border-color:rgba(70,179,255,.55); box-shadow:0 0 0 3px rgba(70,179,255,.12) inset; color:var(--text)}
+    pre{
+      margin:0;
+      padding:12px;
+      border-radius:18px;
+      border:1px solid var(--stroke);
+      background:rgba(0,0,0,.18);
+      overflow:auto;
+      font-size:12px;
+      line-height:1.35;
+    }
   </style>
 </head>
 <body>
+
+<div class="banner" id="backupBanner">
+  <div class="brow">
+    <div><b>Time to back up LogMyJourney AU</b> — you’ve added entries since your last backup. Download a backup to protect your data.</div>
+    <div class="row">
+      <button class="primary" id="backupNowBtn">Download Backup Now</button>
+      <button class="ghost" id="backupLaterBtn">Remind me later</button>
+      <button class="ghost" id="backupCloseBtn">✕</button>
+    </div>
+  </div>
+</div>
 
 <div class="app">
   <div class="shell">
     <div class="header">
       <div class="brand">
-        <b>JourneyLedger AU</b>
-        <span>Offline trip costs • Your data stays on your device • v0.3 (regression-tested build)</span>
+        <b>LogMyJourney AU</b>
+        <span>Unified build: ICE • PHEV • EV • Offline • No account • No tracking • Single-file</span>
       </div>
-      <div class="right">
-        <select id="tripSelect" title="Active trip"></select>
-        <button class="primary" id="newTripBtn">+ New Trip</button>
-        <button class="ghost" id="exportBtn">Export</button>
-        <button class="ghost" id="importBtn">Import</button>
+
+      <div class="hdrRight">
+        <a id="supportLink" href="https://www.paypal.com" target="_blank" rel="noopener">Support this app</a>
+        <button class="primary" id="newTripBtn">＋ New Trip</button>
+
+        <label style="gap:4px; font-size:12px; color:var(--muted)">
+          Show:
+          <select id="powerFilter">
+            <option value="ALL">All</option>
+            <option value="ICE">⛽ ICE</option>
+            <option value="PHEV">⛽⚡ PHEV</option>
+            <option value="EV">⚡ EV</option>
+          </select>
+        </label>
+
+        <label style="gap:4px; font-size:12px; color:var(--muted)">
+          Active Trip
+          <select id="tripSelect"></select>
+        </label>
+
+        <button class="ghost" id="editTripBtn">✏️ Edit</button>
+        <button class="danger" id="deleteTripBtn">Delete Trip</button>
       </div>
     </div>
 
@@ -329,41 +369,28 @@
         <div class="sectionTitle">At a glance</div>
         <div class="stats">
           <div class="stat"><div class="k">Distance</div><div class="v" id="statDistance">—</div></div>
-          <div class="stat"><div class="k">Fuel used</div><div class="v" id="statFuel">—</div></div>
+          <div class="stat"><div class="k">Fuel Used</div><div class="v" id="statFuel">—</div></div>
+          <div class="stat"><div class="k">Energy Added</div><div class="v" id="statEnergy">—</div></div>
           <div class="stat"><div class="k">Efficiency</div><div class="v" id="statEff">—</div></div>
-          <div class="stat"><div class="k">Total spend</div><div class="v" id="statSpend">—</div></div>
+          <div class="stat"><div class="k">Total Spend</div><div class="v" id="statSpend">—</div></div>
+          <div class="stat"><div class="k">Budget Left</div><div class="v" id="statBudget">—</div></div>
         </div>
 
-        <div style="margin-top:14px" class="sectionTitle">Tabs</div>
-        <div class="tabs" id="tabs">
-          <div class="tab active" data-tab="fuel">
-            <div class="label">⛽ Fuel</div>
-            <span class="badge" id="badgeFuel">—</span>
-          </div>
-          <div class="tab" data-tab="expenses">
-            <div class="label">🧾 Expenses</div>
-            <span class="badge" id="badgeExp">—</span>
-          </div>
-          <div class="tab" data-tab="categories">
-            <div class="label">🎨 Categories</div>
-            <span class="badge" id="badgeCat">—</span>
-          </div>
-          <div class="tab" data-tab="summary">
-            <div class="label">📊 Summary</div>
-            <span class="badge">Totals</span>
-          </div>
-          <div class="tab" data-tab="settings">
-            <div class="label">⚙️ Settings</div>
-            <span class="badge">Local</span>
-          </div>
-          <div class="tab" data-tab="diagnostics">
-            <div class="label">🧪 Diagnostics</div>
-            <span class="badge" id="badgeDiag">Ready</span>
-          </div>
+        <div class="sectionTitle" style="margin-top:14px">Tabs</div>
+        <div class="tabsRow" id="tabs">
+          <div class="tabBtn active" data-tab="fuel">⛽ Fuel</div>
+          <div class="tabBtn" data-tab="charging">⚡ Charging</div>
+          <div class="tabBtn" data-tab="expenses">Expenses</div>
+          <div class="tabBtn" data-tab="categories">Categories</div>
+          <div class="tabBtn" data-tab="summary">Summary</div>
+          <div class="tabBtn" data-tab="settings">⚙️ Settings</div>
+          <div class="tabBtn" data-tab="help">❓ Help</div>
+          <div class="tabBtn" data-tab="diagnostics">🧪 Tests</div>
         </div>
 
         <div class="hint">
-          Tip: In Chrome you can install this as an app. Data stays on this device unless you export it.
+          Works offline after first load. Data lives in <b>localStorage</b> on this device.
+          Use <b>Settings → Export</b> to back up regularly, especially before clearing browser data.
         </div>
       </div>
 
@@ -381,7 +408,7 @@
     </div>
 
     <div class="footer">
-      Built for Aussie road trippers • No account • No cloud • No tracking
+      LogMyJourney AU — unified app build • export/import friendly • privacy-first by design
     </div>
   </div>
 </div>
@@ -395,87 +422,163 @@
     <button id="tripDlgClose">✕</button>
   </div>
   <div class="dlgBody">
+    <div class="sectionTitle">Trip basics</div>
     <div class="grid2">
-      <label>Trip name * <input id="tripName" placeholder="e.g., Cape York 2026" /></label>
+      <label>Trip name * <input id="tripName" placeholder="e.g., Aviation Tour 2026" /></label>
       <label>Start date <input id="tripStart" type="date" /></label>
       <label>End date (optional) <input id="tripEnd" type="date" /></label>
       <label>Start odometer (km) <input id="tripOdoStart" type="number" step="0.1" /></label>
       <label>Budget (optional) <input id="tripBudget" type="number" step="0.01" /></label>
-      <label>Notes <textarea id="tripNotes" placeholder="Anything important…"></textarea></label>
+      <label>Powertrain for this trip
+        <select id="tripPowertrain">
+          <option value="ICE">⛽ ICE</option>
+          <option value="PHEV">⛽⚡ PHEV</option>
+          <option value="EV">⚡ EV</option>
+        </select>
+      </label>
+      <label style="grid-column:1/-1">Trip notes <textarea id="tripNotes" placeholder="Anything important…"></textarea></label>
     </div>
+
+    <div style="margin-top:14px" class="sectionTitle">Vehicle details</div>
+    <div class="grid2">
+      <label>Make <input id="vehMake" placeholder="e.g., Ford" /></label>
+      <label>Model <input id="vehModel" placeholder="e.g., Ranger" /></label>
+      <label>Year <input id="vehYear" type="number" step="1" /></label>
+      <label>Registration / Rego <input id="vehRego" placeholder="e.g., ABC123" /></label>
+      <label>Colour <input id="vehColour" placeholder="e.g., Grey" /></label>
+      <label>Fuel Type
+        <select id="vehFuelType">
+          <option value="Unleaded (91)">Unleaded (91)</option>
+          <option value="Premium Unleaded (95)">Premium Unleaded (95)</option>
+          <option value="E10 (94)">E10 (94)</option>
+          <option value="Diesel">Diesel</option>
+          <option value="LPG">LPG</option>
+          <option value="Electric (kWh)">Electric (kWh)</option>
+          <option value="Hybrid">Hybrid</option>
+        </select>
+      </label>
+      <label>Fuel Tank Capacity (L) <input id="vehTankL" type="number" step="0.1" /></label>
+      <label>Battery Usable (kWh) <input id="vehBattKwh" type="number" step="0.1" /></label>
+      <label style="grid-column:1/-1">Engine / Notes <input id="vehNotes" placeholder="Tyres, lift, tune, payload, etc." /></label>
+    </div>
+
+    <div style="margin-top:14px" class="sectionTitle">Trip configuration</div>
+    <div class="grid2">
+      <label>Setup Type
+        <select id="setupType">
+          <option value="Car Only">Car Only</option>
+          <option value="Car & Caravan">Car & Caravan</option>
+          <option value="Motorhome / Campervan">Motorhome / Campervan</option>
+          <option value="Car & Trailer">Car & Trailer</option>
+          <option value="Multi-Vehicle Convoy">Multi-Vehicle Convoy</option>
+          <option value="Motorcycle">Motorcycle</option>
+        </select>
+      </label>
+      <label>Setup notes <input id="setupNotes" placeholder="Optional notes about the setup" /></label>
+    </div>
+
+    <div style="margin-top:14px" class="sectionTitle">Towed vehicle / trailer details (optional)</div>
+    <div class="grid2">
+      <label>Make / Brand <input id="towMake" placeholder="e.g., Lotus" /></label>
+      <label>Model / Name <input id="towModel" placeholder="e.g., Trooper" /></label>
+      <label>Year <input id="towYear" type="number" step="1" /></label>
+      <label>Length (m) <input id="towLen" type="number" step="0.1" /></label>
+      <label>ATM (kg) <input id="towAtm" type="number" step="1" /></label>
+      <label>Tow Ball Weight (kg) <input id="towBall" type="number" step="1" /></label>
+      <label>Rego / ID <input id="towRego" placeholder="Optional" /></label>
+      <label style="grid-column:1/-1">Notes <input id="towNotes" placeholder="Suspension, tyres, water, etc." /></label>
+    </div>
+
+    <div style="margin-top:14px" class="sectionTitle">Emergency & insurance (optional)</div>
+    <div class="grid2">
+      <label>Emergency Contact Name <input id="emName" /></label>
+      <label>Emergency Contact Phone <input id="emPhone" /></label>
+      <label>Insurance Provider <input id="insProvider" /></label>
+      <label>Policy Number <input id="insPolicy" /></label>
+    </div>
+
     <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:12px; flex-wrap:wrap">
-      <button id="tripDeleteBtn" class="danger" style="display:none">Delete</button>
+      <button id="tripDeleteBtn2" class="danger" style="display:none">Delete</button>
       <button id="tripSaveBtn" class="primary">Save</button>
     </div>
   </div>
 </dialog>
 
-<!-- Import dialog -->
-<dialog id="importDialog">
+<!-- Export/Import dialog -->
+<dialog id="dataDialog">
   <div class="dlgHead">
-    <h3>Import backup</h3>
-    <button id="importDlgClose">✕</button>
+    <h3 id="dataDlgTitle">Export / Import</h3>
+    <button id="dataDlgClose">✕</button>
   </div>
   <div class="dlgBody">
-    <div class="muted" style="font-size:12px; margin-bottom:10px">
-      Supports: JourneyLedger native exports, RoadLog/TripLog exports, and Portable exports.
-    </div>
     <div class="grid2">
-      <label>Mode
-        <select id="importMode">
-          <option value="merge">Merge (add trips)</option>
-          <option value="replace">Replace (wipe then import)</option>
+      <label>Action
+        <select id="dataAction">
+          <option value="export">Export</option>
+          <option value="import">Import</option>
         </select>
       </label>
-      <label>Backup file
+      <label>Format
+        <select id="dataFormat">
+          <option value="native">Full Backup (Native JSON)</option>
+          <option value="roadlog">RoadLog/TripLog compatible JSON</option>
+          <option value="portable">Portable JSON (friend standard)</option>
+          <option value="fuelcsv">Fuel Log (CSV — current trip)</option>
+          <option value="chargecsv">Charging Log (CSV — current trip)</option>
+          <option value="expcsv">Expenses (CSV — current trip)</option>
+          <option value="sumcsv">Full Trip Report (CSV — all trips)</option>
+        </select>
+      </label>
+      <label id="importModeWrap" style="display:none">Import mode
+        <select id="importMode">
+          <option value="merge">➕ Merge — add to existing data</option>
+          <option value="replace">Replace — overwrite everything</option>
+        </select>
+      </label>
+      <label id="fileWrap" style="display:none">Choose file (.json)
         <input id="importFile" type="file" accept=".json,application/json" />
       </label>
     </div>
-    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:12px">
-      <button id="importDoBtn" class="primary">Import</button>
-    </div>
-  </div>
-</dialog>
 
-<!-- Export dialog -->
-<dialog id="exportDialog">
-  <div class="dlgHead">
-    <h3>Export backup</h3>
-    <button id="exportDlgClose">✕</button>
-  </div>
-  <div class="dlgBody">
-    <div class="grid2">
-      <label>Format
-        <select id="exportFormat">
-          <option value="native">JourneyLedger (native)</option>
-          <option value="roadlog">RoadLog/TripLog compatible</option>
-          <option value="portable">Portable (friend standard)</option>
-        </select>
-      </label>
-      <label>Filename (optional)
-        <input id="exportName" placeholder="Leave blank for auto name" />
-      </label>
+    <div id="dropzone" class="dropzone" style="display:none">
+      Drop your backup file here<br/>
+      <span style="font-size:12px">or click to browse — accepts .json files only</span>
     </div>
-    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:12px">
-      <button id="exportDoBtn" class="primary">Export</button>
+
+    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:12px; flex-wrap:wrap">
+      <button id="dataGoBtn" class="primary">Go</button>
+      <button id="dataCancelBtn" class="ghost">Cancel</button>
+    </div>
+
+    <div class="hint" style="margin-top:12px">
+      Merge adds imported trips alongside your existing ones. Replace clears all current data first — export a backup before replacing.
     </div>
   </div>
 </dialog>
 
 <script>
-(function(){
+(() => {
   "use strict";
 
-  // ===== App + State =====
-  const STORAGE_KEY = "journeyledger_state_v3";
-  const APP = { schema: 3, app: "JourneyLedger", currency: "$", distUnit: "km" };
-
+  // ========= Helpers =========
   const $ = (sel, root=document) => root.querySelector(sel);
   const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
-  const esc = (str) => String(str ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const today = () => new Date().toISOString().slice(0,10);
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : ("id_" + Math.random().toString(16).slice(2) + Date.now()));
-  const fmtMoney = (n) => (n===null||n===undefined||Number.isNaN(n)) ? "—" : `${APP.currency}${Number(n).toFixed(2)}`;
+  const safeFile = (name) => String(name||"export").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
+  const downloadText = (text, filename, mime="application/json") => {
+    const blob = new Blob([text], {type:mime});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+  const fmtMoney = (sym, n) => (n===null||n===undefined||Number.isNaN(n)) ? "—" : `${sym}${Number(n).toFixed(2)}`;
   const fmtNum = (n, dp=1) => (n===null||n===undefined||Number.isNaN(n)) ? "—" : Number(n).toFixed(dp);
 
   const toastEl = $("#toast");
@@ -486,333 +589,589 @@
     toastEl._t = setTimeout(()=>toastEl.classList.remove("show"), 1400);
   }
 
-  function safeFile(name){
-    return String(name||"export").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
-  }
-  function downloadText(text, filename, mime){
-    const blob = new Blob([text], {type:mime});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
+  // ========= Data model =========
+  const STORAGE_KEY = "logmyjourney_unified_v1";
 
-  function defaultCategories(){
-    return [
-      { id:"fuel", name:"Fuel", colour:"#46b3ff", locked:true },
-      { id:"uncat", name:"Uncategorised", colour:"#a9b2d6", locked:true },
-      { id:"cat_food", name:"Food & Drink", colour:"#C75B00" },
-      { id:"cat_acc",  name:"Accommodation", colour:"#1A5276" },
-      { id:"cat_toll", name:"Tolls & Fees", colour:"#991A1A" },
-      { id:"cat_act",  name:"Activities", colour:"#1A6B38" },
-      { id:"cat_misc", name:"Miscellaneous", colour:"#5B2C8A" },
-      { id:"cat_maint",name:"Maintenance", colour:"#ff4d4d" },
-      { id:"cat_camp", name:"Camping Fees", colour:"#7b5cff" },
-    ];
-  }
+  const defaultCategories = () => ([
+    { id:"fuel", name:"Fuel", colour:"#46b3ff", locked:true },
+    { id:"charge", name:"Charging", colour:"#7b5cff", locked:true },
+    { id:"uncat", name:"Uncategorised", colour:"#a9b2d6", locked:true },
+    { id:"cat_food", name:"Food & Drink", colour:"#C75B00" },
+    { id:"cat_acc",  name:"Accommodation", colour:"#1A5276" },
+    { id:"cat_toll", name:"Tolls & Fees", colour:"#991A1A" },
+    { id:"cat_act",  name:"Activities", colour:"#1A6B38" },
+    { id:"cat_misc", name:"Miscellaneous", colour:"#5B2C8A" },
+    { id:"cat_maint",name:"Maintenance", colour:"#ff4d4d" },
+    { id:"cat_camp", name:"Camping Fees", colour:"#7b5cff" },
+  ]);
 
-  function emptyState(){
-    return {
-      schema: APP.schema,
-      app: APP.app,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      settings: { currency:"$", distUnit:"km", effTarget:10 },
-      categories: defaultCategories(),
-      trips: [],
-      activeTripId: null,
-      lastBackupAt: null
-    };
-  }
+  const emptyTrip = () => ({
+    id: uid(),
+    name: "New Trip",
+    startDate: today(),
+    endDate: "",
+    odoStart: 0,
+    budget: 0,
+    notes: "",
+    powertrain: "ICE", // ICE | PHEV | EV
+    vehicle: {
+      make:"", model:"", year:null, rego:"", colour:"",
+      fuelType:"Diesel", tankL:null, battKwh:null, notes:""
+    },
+    config: { setupType:"Car Only", setupNotes:"" },
+    towed: { make:"", model:"", year:null, lengthM:null, atmKg:null, ballKg:null, rego:"", notes:"" },
+    emergency: { name:"", phone:"", insurance:"", policy:"" },
+
+    fuelStops: [],        // {id,date,location,odo,litres,ppl,total,notes}
+    chargeSessions: [],   // {id,date,location,odo,kwh,ppkwh,total,chargerType,socStart,socEnd,notes}
+    expenses: [],         // {id,date,catId,desc,amount,notes}
+  });
+
+  const emptyState = () => ({
+    schema: 1,
+    app: "LogMyJourneyUnified",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    lastBackupAt: null,
+    lastBackupNagAt: null,
+    settings: {
+      currencySymbol: "$",
+      distUnit: "km",
+      fuelEffTarget: 10,   // L/100km
+      evEffTarget: 18      // kWh/100km
+    },
+    categories: defaultCategories(),
+    trips: [],
+    activeTripId: null,
+    ui: {
+      tab: "fuel",
+      powerFilter: "ALL"
+    }
+  });
+
+  let state = loadState();
+  ensureMinimums();
+  renderAll();
+  checkBackupBanner();
 
   function loadState(){
     try{
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return emptyState();
-      const parsed = JSON.parse(raw);
-      if (!parsed || !parsed.schema || !Array.isArray(parsed.trips)) return emptyState();
-      return parsed;
-    }catch{
+      const s = JSON.parse(raw);
+      if (!s || !Array.isArray(s.trips)) return emptyState();
+      return s;
+    } catch {
       return emptyState();
     }
   }
-
   function saveState(){
     state.updatedAt = new Date().toISOString();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    checkBackupBanner();
   }
-
-  let state = loadState();
-  applySettings();
-  ensureMinimums();
-
-  function applySettings(){
-    APP.currency = state.settings?.currency || "$";
-    APP.distUnit = state.settings?.distUnit || "km";
-  }
-
   function ensureMinimums(){
+    if (!state.settings) state.settings = emptyState().settings;
     if (!Array.isArray(state.categories)) state.categories = defaultCategories();
-    if (!state.categories.some(c=>c.id==="fuel")) state.categories.unshift({ id:"fuel", name:"Fuel", colour:"#46b3ff", locked:true });
-    if (!state.categories.some(c=>c.id==="uncat")) state.categories.unshift({ id:"uncat", name:"Uncategorised", colour:"#a9b2d6", locked:true });
+    if (!state.categories.some(c=>c.id==="fuel")) state.categories.unshift({id:"fuel",name:"Fuel",colour:"#46b3ff",locked:true});
+    if (!state.categories.some(c=>c.id==="charge")) state.categories.unshift({id:"charge",name:"Charging",colour:"#7b5cff",locked:true});
+    if (!state.categories.some(c=>c.id==="uncat")) state.categories.unshift({id:"uncat",name:"Uncategorised",colour:"#a9b2d6",locked:true});
+
+    // Backfill missing fields for older data
+    for (const t of state.trips){
+      if (!t.powertrain) t.powertrain = "ICE";
+      if (!t.vehicle) t.vehicle = emptyTrip().vehicle;
+      if (!t.config) t.config = emptyTrip().config;
+      if (!t.towed) t.towed = emptyTrip().towed;
+      if (!t.emergency) t.emergency = emptyTrip().emergency;
+      if (!Array.isArray(t.fuelStops)) t.fuelStops = [];
+      if (!Array.isArray(t.chargeSessions)) t.chargeSessions = [];
+      if (!Array.isArray(t.expenses)) t.expenses = [];
+    }
     if (!state.activeTripId && state.trips.length) state.activeTripId = state.trips[0].id;
+    if (!state.ui) state.ui = { tab:"fuel", powerFilter:"ALL" };
   }
 
-  function getActiveTrip(){ return state.trips.find(t => t.id === state.activeTripId) || null; }
+  function getActiveTrip(){
+    return state.trips.find(t => t.id === state.activeTripId) || null;
+  }
+
+  function tripMatchesPowerFilter(trip){
+    const f = state.ui.powerFilter || "ALL";
+    if (f === "ALL") return true;
+    return (trip.powertrain || "ICE") === f;
+  }
+
+  function visibleTrips(){
+    return state.trips.filter(tripMatchesPowerFilter);
+  }
+
   function sortByDate(a,b){ return String(a?.date||"").localeCompare(String(b?.date||"")); }
 
   function calcTripTotals(trip){
-    const fuelStops = (trip.fuelStops ?? []).slice().sort(sortByDate);
-    const expenses = (trip.expenses ?? []).slice().sort(sortByDate);
+    const fuel = (trip.fuelStops||[]).slice().sort(sortByDate);
+    const charge = (trip.chargeSessions||[]).slice().sort(sortByDate);
+    const exp = (trip.expenses||[]).slice().sort(sortByDate);
 
-    let totalFuelLitres=0, totalFuelCost=0;
-    for (const f of fuelStops){ totalFuelLitres += Number(f.litres||0); totalFuelCost += Number(f.totalCost||0); }
-    let totalExpense=0;
-    for (const e of expenses){ totalExpense += Number(e.amount||0); }
+    let fuelL=0, fuelCost=0, kwh=0, chargeCost=0, other=0;
+    for (const f of fuel){ fuelL += Number(f.litres||0); fuelCost += Number(f.total||0); }
+    for (const c of charge){ kwh += Number(c.kwh||0); chargeCost += Number(c.total||0); }
+    for (const e of exp){ other += Number(e.amount||0); }
 
+    // distance: prefer latest odometer across both streams
     const startOdo = Number(trip.odoStart||0);
-    const endOdo = fuelStops.length ? Number(fuelStops[fuelStops.length-1].odo||startOdo) : startOdo;
+    const lastFuelOdo = fuel.length ? Number(fuel[fuel.length-1].odo||startOdo) : startOdo;
+    const lastChargeOdo = charge.length ? Number(charge[charge.length-1].odo||startOdo) : startOdo;
+    const endOdo = Math.max(lastFuelOdo, lastChargeOdo, startOdo);
     const distance = Math.max(0, endOdo - startOdo);
-    const eff = distance>0 ? (totalFuelLitres/distance)*100 : null;
-    const spend = totalFuelCost + totalExpense;
 
-    return { distance, totalFuelLitres, eff, spend, totalFuelCost, totalExpense, fuelStops, expenses };
+    const lPer100 = distance>0 ? (fuelL/distance)*100 : null;
+    const kwhPer100 = distance>0 ? (kwh/distance)*100 : null;
+
+    const spend = fuelCost + chargeCost + other;
+    const budget = Number(trip.budget||0);
+    const budgetLeft = budget>0 ? (budget - spend) : null;
+
+    return { fuel, charge, exp, fuelL, fuelCost, kwh, chargeCost, other, spend, distance, lPer100, kwhPer100, budgetLeft };
   }
 
-  function effPill(eff){
-    if (eff === null || eff === undefined || Number.isNaN(eff)) return `<span class="pill">—</span>`;
-    const tgt = Number(state.settings?.effTarget ?? 10);
-    const klass = eff <= tgt ? "good" : (eff <= tgt*1.2 ? "warn" : "bad");
-    return `<span class="pill ${klass}">${fmtNum(eff,1)} L/100km</span>`;
+  function effPillFuel(lper100){
+    if (lper100==null || Number.isNaN(lper100)) return `<span class="pill">—</span>`;
+    const tgt = Number(state.settings.fuelEffTarget ?? 10);
+    const klass = lper100 <= tgt ? "good" : (lper100 <= tgt*1.2 ? "warn" : "bad");
+    return `<span class="pill ${klass}">${fmtNum(lper100,1)} L/100km</span>`;
+  }
+  function effPillEV(kwhper100){
+    if (kwhper100==null || Number.isNaN(kwhper100)) return `<span class="pill">—</span>`;
+    const tgt = Number(state.settings.evEffTarget ?? 18);
+    const klass = kwhper100 <= tgt ? "good" : (kwhper100 <= tgt*1.2 ? "warn" : "bad");
+    return `<span class="pill ${klass}">${fmtNum(kwhper100,1)} kWh/100km</span>`;
   }
 
-  // ===== Friends formats (Native / RoadLog / Portable) =====
-  function toPortableFromNative(native){
-    const cats = (native.categories||[]).map(c => ({ id:c.id, name:c.name, color:c.colour || c.color || "#a9b2d6" }));
-    const trips = (native.trips||[]).map(t => ({
-      id: t.id, name:t.name, startDate:t.startDate||"", startOdo:Number(t.odoStart||0),
-      fuel: (t.fuelStops||[]).map(f => ({ id:f.id, date:f.date||"", location:f.station||"", odo:Number(f.odo||0), litres:Number(f.litres||0), cost:Number(f.totalCost||0), ppl:(f.pricePerL==null?null:Number(f.pricePerL)), notes:f.notes||"" })),
-      expenses: (t.expenses||[]).map(e => ({ id:e.id, date:e.date||"", categoryId:e.catId||"uncat", desc:e.desc||"", amount:Number(e.amount||0), notes:e.notes||"" }))
-    }));
-    return { format:"portable-trip-ledger", version:1, exportedAt:new Date().toISOString(), settings:{...native.settings}, categories:cats, trips };
-  }
-
-  function nativeFromPortable(port){
-    const categories = (port.categories||[]).map(c => ({ id:c.id, name:c.name, colour:c.color || "#a9b2d6" }));
-    if (!categories.some(c=>c.id==="fuel")) categories.unshift({ id:"fuel", name:"Fuel", colour:"#46b3ff", locked:true });
-    if (!categories.some(c=>c.id==="uncat")) categories.unshift({ id:"uncat", name:"Uncategorised", colour:"#a9b2d6", locked:true });
-
-    const trips = (port.trips||[]).map(t => ({
-      id: t.id || uid(), name: t.name || "Imported trip",
+  // ========= Export/import (native / roadlog / portable) =========
+  function toPortable(){
+    const cats = state.categories.map(c => ({ id:c.id, name:c.name, color:c.colour || c.color || "#a9b2d6" }));
+    const trips = state.trips.map(t => ({
+      id: t.id, name: t.name,
       startDate: t.startDate || "", endDate: t.endDate || "",
-      odoStart: Number(t.startOdo || 0), budget: Number(t.budget || 0), notes: t.notes || "",
-      fuelStops: (t.fuel||[]).map(f => ({ id:f.id||uid(), date:f.date||"", station:f.location||"", odo:Number(f.odo||0), litres:Number(f.litres||0), pricePerL:(f.ppl==null?null:Number(f.ppl)), totalCost:Number(f.cost||0), notes:f.notes||"" })),
-      expenses: (t.expenses||[]).map(e => ({ id:e.id||uid(), date:e.date||"", catId:e.categoryId||"uncat", desc:e.desc||"", amount:Number(e.amount||0), notes:e.notes||"" }))
+      startOdo: Number(t.odoStart||0),
+      budget: Number(t.budget||0),
+      notes: t.notes||"",
+      powertrain: t.powertrain || "ICE",
+      vehicle: JSON.parse(JSON.stringify(t.vehicle||{})),
+      config: JSON.parse(JSON.stringify(t.config||{})),
+      towed: JSON.parse(JSON.stringify(t.towed||{})),
+      emergency: JSON.parse(JSON.stringify(t.emergency||{})),
+      fuel: (t.fuelStops||[]).map(f => ({
+        id:f.id, date:f.date||"", location:f.location||"", odo:Number(f.odo||0),
+        litres:Number(f.litres||0), ppl:(f.ppl==null?null:Number(f.ppl)), cost:Number(f.total||0), notes:f.notes||""
+      })),
+      charging: (t.chargeSessions||[]).map(c => ({
+        id:c.id, date:c.date||"", location:c.location||"", odo:Number(c.odo||0),
+        kwh:Number(c.kwh||0), ppkwh:(c.ppkwh==null?null:Number(c.ppkwh)), cost:Number(c.total||0),
+        chargerType:c.chargerType||"", socStart:(c.socStart==null?null:Number(c.socStart)),
+        socEnd:(c.socEnd==null?null:Number(c.socEnd)), notes:c.notes||""
+      })),
+      expenses: (t.expenses||[]).map(e => ({
+        id:e.id, date:e.date||"", categoryId:e.catId||"uncat", desc:e.desc||"", amount:Number(e.amount||0), notes:e.notes||""
+      }))
     }));
-
     return {
-      schema: APP.schema, app: APP.app,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      settings: { ...(port.settings||{}) },
-      categories, trips,
-      activeTripId: trips[0]?.id || null,
-      lastBackupAt: port.exportedAt || null
+      format:"portable-trip-ledger",
+      version:2,
+      exportedAt:new Date().toISOString(),
+      settings: { ...state.settings },
+      categories: cats,
+      trips
     };
   }
 
-  function toRoadLogFromNative(native){
-    const cats = (native.categories||[]).filter(c=>c.id!=="fuel").map(c=>({ id:c.id, name:c.name, color:c.colour || "#a9b2d6" }));
-    const trips = (native.trips||[]).map(t => ({
-      id:t.id, name:t.name, startDate:t.startDate||"", startOdo:Number(t.odoStart||0),
-      fuel:(t.fuelStops||[]).map(f=>({ id:f.id, date:f.date||"", location:f.station||"", odo:Number(f.odo||0), litres:Number(f.litres||0), cost:Number(f.totalCost||0), ppl:(f.pricePerL==null?null:Number(f.pricePerL)), notes:f.notes||"" })),
-      expenses:(t.expenses||[]).map(e=>({ id:e.id, date:e.date||"", categoryId:e.catId||"uncat", desc:e.desc||"", amount:Number(e.amount||0), notes:e.notes||"" }))
+  function toRoadLog(){
+    // Keep it close to what your current app indicates (state:{trips,currentTripId,categories}, settings, _meta)
+    const cats = state.categories.filter(c=>!c.locked).map(c=>({ id:c.id, name:c.name, color:c.colour||"#a9b2d6" }));
+    const trips = state.trips.map(t => ({
+      id: t.id, name: t.name,
+      startDate: t.startDate||"", endDate: t.endDate||"",
+      startOdo: Number(t.odoStart||0),
+      budget: Number(t.budget||0),
+      notes: t.notes||"",
+      powertrain: t.powertrain || "ICE",
+      vehicle: JSON.parse(JSON.stringify(t.vehicle||{})),
+      config: JSON.parse(JSON.stringify(t.config||{})),
+      towed: JSON.parse(JSON.stringify(t.towed||{})),
+      emergency: JSON.parse(JSON.stringify(t.emergency||{})),
+      fuel: (t.fuelStops||[]).map(f => ({
+        id:f.id, date:f.date||"", location:f.location||"", odo:Number(f.odo||0),
+        litres:Number(f.litres||0), ppl:(f.ppl==null?null:Number(f.ppl)), cost:Number(f.total||0), notes:f.notes||""
+      })),
+      charging: (t.chargeSessions||[]).map(c => ({
+        id:c.id, date:c.date||"", location:c.location||"", odo:Number(c.odo||0),
+        kwh:Number(c.kwh||0), ppkwh:(c.ppkwh==null?null:Number(c.ppkwh)), cost:Number(c.total||0),
+        chargerType:c.chargerType||"", socStart:(c.socStart==null?null:Number(c.socStart)),
+        socEnd:(c.socEnd==null?null:Number(c.socEnd)), notes:c.notes||""
+      })),
+      expenses: (t.expenses||[]).map(e => ({
+        id:e.id, date:e.date||"", categoryId:e.catId||"uncat", desc:e.desc||"", amount:Number(e.amount||0), notes:e.notes||""
+      }))
     }));
-    const totalFuelStops = trips.reduce((n,t)=> n+(t.fuel?.length||0),0);
-    const totalExpenses = trips.reduce((n,t)=> n+(t.expenses?.length||0),0);
-    let totalKm=0; for (const t of native.trips||[]) totalKm += (calcTripTotals(t).distance||0);
-
+    let totalKm = 0, totalFuelStops = 0, totalCharge = 0, totalExpenses = 0;
+    for (const t of state.trips){
+      const tot = calcTripTotals(t);
+      totalKm += tot.distance || 0;
+      totalFuelStops += (t.fuelStops||[]).length;
+      totalCharge += (t.chargeSessions||[]).length;
+      totalExpenses += (t.expenses||[]).length;
+    }
     return {
-      _meta:{ app:"RoadLog", version:"2.x-compatible", exported:new Date().toISOString(), tripCount:trips.length, totalFuelStops, totalExpenses, totalKm },
-      settings:{ ...(native.settings||{}), effTarget:Number(native.settings?.effTarget ?? 10), distUnit:native.settings?.distUnit||"km", currency:native.settings?.currency||"$" },
-      state:{ trips, currentTripId:native.activeTripId || (trips[0]?.id||null), categories:cats }
+      _meta: { app:"RoadLog", version:"2.x-compatible", exported:new Date().toISOString(), tripCount:trips.length, totalFuelStops, totalCharge, totalExpenses, totalKm },
+      settings: { ...state.settings },
+      state: { trips, currentTripId: state.activeTripId, categories: cats }
     };
   }
 
   function normaliseToNative(obj){
-    if (obj && obj.state && obj.state.schema && Array.isArray(obj.state.trips)) return obj.state; // wrapped native
-    if (obj && obj.schema && Array.isArray(obj.trips)) return obj; // raw native
-    if (obj && obj.format==="portable-trip-ledger" && obj.version===1 && Array.isArray(obj.trips)) return nativeFromPortable(obj);
+    // Native
+    if (obj && obj.schema===1 && obj.app==="LogMyJourneyUnified" && Array.isArray(obj.trips)) return obj;
 
-    // RoadLog/TripLog shape
-    if (obj && obj._meta && typeof obj._meta.app==="string" && obj.state && Array.isArray(obj.state.trips)) {
-      const cats = Array.isArray(obj.state.categories) ? obj.state.categories : [];
-      const catIdSet = new Set(cats.map(c=>c.id));
-      const categories = [
-        { id:"fuel", name:"Fuel", colour:"#46b3ff", locked:true },
-        { id:"uncat", name:"Uncategorised", colour:"#a9b2d6", locked:true },
-        ...cats.map(c=>({ id:c.id, name:c.name, colour:c.color || "#a9b2d6" }))
-      ];
+    // Wrapped native { exportedAt, state }
+    if (obj && obj.state && obj.state.app==="LogMyJourneyUnified" && Array.isArray(obj.state.trips)) return obj.state;
 
-      const trips = obj.state.trips.map(rt => ({
-        id: rt.id || uid(),
-        name: rt.name || "Imported trip",
-        startDate: rt.startDate || "",
-        endDate: rt.endDate || "",
-        odoStart: Number(rt.startOdo || 0),
-        budget: Number(rt.budget || 0),
-        notes: rt.notes || "",
-        fuelStops: (rt.fuel || []).map(f => ({
-          id: f.id || uid(),
-          date: f.date || "",
-          station: f.location || "",
-          odo: Number(f.odo || 0),
-          litres: Number(f.litres || 0),
-          pricePerL: (f.ppl==null) ? null : Number(f.ppl),
-          totalCost: Number(f.cost || 0),
-          notes: f.notes || ""
-        })),
-        expenses: (rt.expenses || []).map(e => ({
-          id: e.id || uid(),
-          date: e.date || "",
-          catId: (e.categoryId && (catIdSet.has(e.categoryId) || e.categoryId==="uncat")) ? e.categoryId : "uncat",
-          desc: e.desc || "",
-          amount: Number(e.amount || 0),
-          notes: e.notes || ""
-        }))
+    // Portable
+    if (obj && obj.format==="portable-trip-ledger" && Array.isArray(obj.trips)) {
+      const incoming = emptyState();
+      incoming.settings = { ...incoming.settings, ...(obj.settings||{}) };
+      incoming.categories = (obj.categories||[]).map(c => ({ id:c.id, name:c.name, colour:c.color||"#a9b2d6" }));
+      // ensure locked
+      for (const lock of defaultCategories().filter(c=>c.locked)){
+        if (!incoming.categories.some(x=>x.id===lock.id)) incoming.categories.unshift(lock);
+      }
+      incoming.trips = (obj.trips||[]).map(t => ({
+        ...emptyTrip(),
+        id: t.id || uid(),
+        name: t.name || "Imported trip",
+        startDate: t.startDate || "",
+        endDate: t.endDate || "",
+        odoStart: Number(t.startOdo || 0),
+        budget: Number(t.budget || 0),
+        notes: t.notes || "",
+        powertrain: t.powertrain || "ICE",
+        vehicle: t.vehicle || emptyTrip().vehicle,
+        config: t.config || emptyTrip().config,
+        towed: t.towed || emptyTrip().towed,
+        emergency: t.emergency || emptyTrip().emergency,
+        fuelStops: (t.fuel||[]).map(f => ({ id:f.id||uid(), date:f.date||"", location:f.location||"", odo:Number(f.odo||0), litres:Number(f.litres||0), ppl:(f.ppl==null?null:Number(f.ppl)), total:Number(f.cost||0), notes:f.notes||"" })),
+        chargeSessions: (t.charging||[]).map(c => ({ id:c.id||uid(), date:c.date||"", location:c.location||"", odo:Number(c.odo||0), kwh:Number(c.kwh||0), ppkwh:(c.ppkwh==null?null:Number(c.ppkwh)), total:Number(c.cost||0), chargerType:c.chargerType||"", socStart:(c.socStart==null?null:Number(c.socStart)), socEnd:(c.socEnd==null?null:Number(c.socEnd)), notes:c.notes||"" })),
+        expenses: (t.expenses||[]).map(e => ({ id:e.id||uid(), date:e.date||"", catId:e.categoryId||"uncat", desc:e.desc||"", amount:Number(e.amount||0), notes:e.notes||"" })),
       }));
+      incoming.activeTripId = incoming.trips[0]?.id || null;
+      return incoming;
+    }
 
-      return {
-        schema: APP.schema, app: APP.app,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        settings: { ...state.settings, ...(obj.settings||{}) },
-        categories,
-        trips,
-        activeTripId: obj.state.currentTripId || trips[0]?.id || null,
-        lastBackupAt: obj._meta?.exported || null
-      };
+    // RoadLog/TripLog compatible-ish
+    if (obj && obj._meta && obj.state && Array.isArray(obj.state.trips)) {
+      const incoming = emptyState();
+      incoming.settings = { ...incoming.settings, ...(obj.settings||{}) };
+      // categories
+      const cats = Array.isArray(obj.state.categories) ? obj.state.categories : [];
+      incoming.categories = defaultCategories().map(c=>({ ...c }));
+      for (const c of cats){
+        if (!incoming.categories.some(x=>x.id===c.id)){
+          incoming.categories.push({ id:c.id, name:c.name, colour:c.color||"#a9b2d6" });
+        }
+      }
+      // trips
+      incoming.trips = obj.state.trips.map(t => ({
+        ...emptyTrip(),
+        id: t.id || uid(),
+        name: t.name || "Imported trip",
+        startDate: t.startDate || "",
+        endDate: t.endDate || "",
+        odoStart: Number(t.startOdo || 0),
+        budget: Number(t.budget || 0),
+        notes: t.notes || "",
+        powertrain: t.powertrain || "ICE",
+        vehicle: t.vehicle || emptyTrip().vehicle,
+        config: t.config || emptyTrip().config,
+        towed: t.towed || emptyTrip().towed,
+        emergency: t.emergency || emptyTrip().emergency,
+        fuelStops: (t.fuel||[]).map(f => ({ id:f.id||uid(), date:f.date||"", location:f.location||"", odo:Number(f.odo||0), litres:Number(f.litres||0), ppl:(f.ppl==null?null:Number(f.ppl)), total:Number(f.cost||0), notes:f.notes||"" })),
+        chargeSessions: (t.charging||[]).map(c => ({ id:c.id||uid(), date:c.date||"", location:c.location||"", odo:Number(c.odo||0), kwh:Number(c.kwh||0), ppkwh:(c.ppkwh==null?null:Number(c.ppkwh)), total:Number(c.cost||0), chargerType:c.chargerType||"", socStart:(c.socStart==null?null:Number(c.socStart)), socEnd:(c.socEnd==null?null:Number(c.socEnd)), notes:c.notes||"" })),
+        expenses: (t.expenses||[]).map(e => ({ id:e.id||uid(), date:e.date||"", catId:e.categoryId||"uncat", desc:e.desc||"", amount:Number(e.amount||0), notes:e.notes||"" })),
+      }));
+      incoming.activeTripId = obj.state.currentTripId || incoming.trips[0]?.id || null;
+      return incoming;
     }
 
     return null;
   }
 
-  // ===== UI =====
-  const panel = $("#panel");
+  // ========= UI wiring =========
   const tripSelect = $("#tripSelect");
-  const tabs = $("#tabs");
+  const powerFilter = $("#powerFilter");
+  const panel = $("#panel");
   const title = $("#title");
   const subtitle = $("#subtitle");
   const toolbarActions = $("#toolbarActions");
-  let activeTab = "fuel";
+  const tabs = $("#tabs");
 
-  function setHeaderForTab(){
+  function setTab(tab){
+    state.ui.tab = tab;
+    $$(".tabBtn", tabs).forEach(b => b.classList.toggle("active", b.dataset.tab===tab));
+    renderMain();
+  }
+
+  function setPowerFilter(val){
+    state.ui.powerFilter = val;
+    saveState();
+    renderTripSelect();
+    renderAll();
+  }
+
+  powerFilter.value = state.ui.powerFilter || "ALL";
+  powerFilter.addEventListener("change", () => setPowerFilter(powerFilter.value));
+
+  $$(".tabBtn", tabs).forEach(b => b.addEventListener("click", ()=>setTab(b.dataset.tab)));
+
+  $("#newTripBtn").addEventListener("click", ()=>openTripDialog(null));
+  $("#editTripBtn").addEventListener("click", ()=>{
     const t = getActiveTrip();
-    const name = t ? t.name : "No trip";
+    if (!t) return;
+    openTripDialog(t.id);
+  });
+  $("#deleteTripBtn").addEventListener("click", ()=>{
+    const t = getActiveTrip();
+    if (!t) return;
+    deleteTrip(t.id);
+  });
+
+  tripSelect.addEventListener("change", ()=>{
+    state.activeTripId = tripSelect.value;
+    saveState();
+    renderAll();
+  });
+
+  // ========= Backup banner =========
+  const backupBanner = $("#backupBanner");
+  $("#backupNowBtn").addEventListener("click", ()=>{
+    doExport("native");
+    state.lastBackupAt = new Date().toISOString();
+    state.lastBackupNagAt = null;
+    saveState();
+    toast("Backup downloaded");
+  });
+  $("#backupLaterBtn").addEventListener("click", ()=>{
+    state.lastBackupNagAt = new Date().toISOString();
+    saveState();
+    toast("Will remind later");
+  });
+  $("#backupCloseBtn").addEventListener("click", ()=>{
+    state.lastBackupNagAt = new Date().toISOString();
+    saveState();
+  });
+
+  function checkBackupBanner(){
+    // Show if entries exist and lastBackupAt is missing OR updates occurred since last backup,
+    // and user hasn't nag-dismissed recently (within 6 hours).
+    const hasEntries = state.trips.some(t => (t.fuelStops?.length||0) + (t.chargeSessions?.length||0) + (t.expenses?.length||0) > 0);
+    if (!hasEntries){ backupBanner.style.display="none"; return; }
+
+    const lastBackup = state.lastBackupAt ? Date.parse(state.lastBackupAt) : 0;
+    const updated = state.updatedAt ? Date.parse(state.updatedAt) : Date.now();
+    const sinceBackup = !lastBackup || updated > lastBackup;
+
+    const nagAt = state.lastBackupNagAt ? Date.parse(state.lastBackupNagAt) : 0;
+    const recentlyDismissed = nagAt && (Date.now() - nagAt) < (6*60*60*1000);
+
+    backupBanner.style.display = (sinceBackup && !recentlyDismissed) ? "block" : "none";
+  }
+
+  // ========= Rendering =========
+  function renderTripSelect(){
+    const trips = visibleTrips();
+    tripSelect.innerHTML = "";
+    if (!trips.length){
+      tripSelect.disabled = true;
+      const o = document.createElement("option");
+      o.value = "";
+      o.textContent = state.trips.length ? "No trips match filter" : "No trips yet";
+      tripSelect.appendChild(o);
+      return;
+    }
+    tripSelect.disabled = false;
+
+    // If current active trip is filtered out, switch to first visible.
+    if (!trips.some(t => t.id === state.activeTripId)){
+      state.activeTripId = trips[0].id;
+      saveState();
+    }
+
+    for (const t of trips){
+      const o = document.createElement("option");
+      o.value = t.id;
+      o.textContent = `${t.name}`;
+      if (t.id === state.activeTripId) o.selected = true;
+      tripSelect.appendChild(o);
+    }
+  }
+
+  function renderStats(){
+    const t = getActiveTrip();
+    const sym = state.settings.currencySymbol || "$";
+    if (!t){
+      $("#statDistance").textContent = "—";
+      $("#statFuel").textContent = "—";
+      $("#statEnergy").textContent = "—";
+      $("#statEff").textContent = "—";
+      $("#statSpend").textContent = "—";
+      $("#statBudget").textContent = "—";
+      return;
+    }
+    const tot = calcTripTotals(t);
+    const unit = state.settings.distUnit || "km";
+
+    $("#statDistance").textContent = `${fmtNum(tot.distance,0)} ${unit}`;
+    $("#statFuel").textContent = `${fmtNum(tot.fuelL,1)} L`;
+    $("#statEnergy").textContent = `${fmtNum(tot.kwh,1)} kWh`;
+
+    if ((t.powertrain||"ICE") === "EV"){
+      $("#statEff").textContent = tot.kwhPer100==null ? "—" : `${fmtNum(tot.kwhPer100,1)} kWh/100km`;
+    } else if ((t.powertrain||"ICE") === "PHEV"){
+      // show both (compact)
+      const a = tot.lPer100==null ? "—" : `${fmtNum(tot.lPer100,1)} L/100`;
+      const b = tot.kwhPer100==null ? "—" : `${fmtNum(tot.kwhPer100,1)} kWh/100`;
+      $("#statEff").textContent = `${a} • ${b}`;
+    } else {
+      $("#statEff").textContent = tot.lPer100==null ? "—" : `${fmtNum(tot.lPer100,1)} L/100km`;
+    }
+
+    $("#statSpend").textContent = fmtMoney(sym, tot.spend);
+    if (tot.budgetLeft == null){
+      $("#statBudget").textContent = "—";
+    } else {
+      const left = tot.budgetLeft;
+      const label = fmtMoney(sym, left);
+      $("#statBudget").textContent = left >= 0 ? label : `-${fmtMoney(sym, Math.abs(left)).replace(sym, sym)}`;
+    }
+  }
+
+  function renderHeaderForTab(){
+    const tab = state.ui.tab || "fuel";
+    const t = getActiveTrip();
+    const tripName = t ? t.name : "No trip";
     toolbarActions.innerHTML = "";
 
-    if (activeTab === "fuel"){ title.textContent="Fuel"; subtitle.textContent=`${name} • log fuel stops and track efficiency`; }
-    if (activeTab === "expenses"){ title.textContent="Expenses"; subtitle.textContent=`${name} • log costs beyond fuel`; }
-    if (activeTab === "categories"){ title.textContent="Categories"; subtitle.textContent="Manage categories used by expenses"; }
-    if (activeTab === "summary"){ title.textContent="Summary"; subtitle.textContent=`${name} • totals and breakdown`; }
-    if (activeTab === "settings"){ title.textContent="Settings"; subtitle.textContent="Local settings only"; }
-    if (activeTab === "diagnostics"){ title.textContent="Diagnostics"; subtitle.textContent="Regression tests for this single-file build"; }
+    if (tab==="fuel"){
+      title.textContent = "⛽ Fuel";
+      subtitle.textContent = `${tripName} — log fuel stops`;
+    }
+    if (tab==="charging"){
+      title.textContent = "⚡ Charging";
+      subtitle.textContent = `${tripName} — log charging sessions`;
+    }
+    if (tab==="expenses"){
+      title.textContent = "Expenses";
+      subtitle.textContent = `${tripName} — meals, accom, tolls, repairs…`;
+    }
+    if (tab==="categories"){
+      title.textContent = "Categories";
+      subtitle.textContent = `Manage expense categories`;
+    }
+    if (tab==="summary"){
+      title.textContent = "Summary";
+      subtitle.textContent = `${tripName} — totals and breakdown`;
+    }
+    if (tab==="settings"){
+      title.textContent = "⚙️ Settings";
+      subtitle.textContent = `Local settings + export/import`;
+    }
+    if (tab==="help"){
+      title.textContent = "❓ Help";
+      subtitle.textContent = `How to use LogMyJourney AU`;
+    }
+    if (tab==="diagnostics"){
+      title.textContent = "🧪 Regression Tests";
+      subtitle.textContent = `Single-file build self-check`;
+    }
 
-    if (t && activeTab !== "diagnostics"){
-      const edit = document.createElement("button");
-      edit.className = "ghost";
-      edit.textContent = "Edit Trip";
-      edit.addEventListener("click", ()=>openTripDialog(t.id));
-      toolbarActions.appendChild(edit);
+    // quick export button (except diagnostics)
+    if (tab !== "diagnostics"){
+      const btn = document.createElement("button");
+      btn.className = "ghost";
+      btn.textContent = "Export/Import";
+      btn.addEventListener("click", ()=>openDataDialog());
+      toolbarActions.appendChild(btn);
     }
   }
 
-  function renderTripSelect(){
-    tripSelect.innerHTML="";
-    if (!state.trips.length){
-      tripSelect.disabled=true;
-      const opt=document.createElement("option"); opt.value=""; opt.textContent="No trips yet";
-      tripSelect.appendChild(opt);
-      return;
-    }
-    tripSelect.disabled=false;
-    for (const t of state.trips){
-      const opt=document.createElement("option");
-      opt.value=t.id; opt.textContent=t.name;
-      if (t.id===state.activeTripId) opt.selected=true;
-      tripSelect.appendChild(opt);
-    }
+  function renderAll(){
+    renderTripSelect();
+    renderStats();
+    renderHeaderForTab();
+    renderMain();
   }
 
-  function setStats(){
+  function renderMain(){
+    renderHeaderForTab();
+    const tab = state.ui.tab || "fuel";
     const t = getActiveTrip();
     if (!t){
-      $("#statDistance").textContent="—";
-      $("#statFuel").textContent="—";
-      $("#statEff").textContent="—";
-      $("#statSpend").textContent="—";
-      $("#badgeFuel").textContent="—";
-      $("#badgeExp").textContent="—";
-      $("#badgeCat").textContent=String((state.categories||[]).filter(c=>!c.locked).length);
+      panel.innerHTML = `
+        <div class="empty">
+          <b>Welcome.</b><br/>
+          Create your first trip to start logging fuel, charging and expenses — offline and private.
+          <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap">
+            <button class="primary" id="startTrip">＋ New Trip</button>
+            <button class="ghost" id="startImport">Import</button>
+            <button class="ghost" id="startTests">Run tests</button>
+          </div>
+        </div>
+      `;
+      $("#startTrip").addEventListener("click", ()=>openTripDialog(null));
+      $("#startImport").addEventListener("click", ()=>openDataDialog("import"));
+      $("#startTests").addEventListener("click", ()=>{ setTab("diagnostics"); runRegressionTests(); });
       return;
     }
-    const totals = calcTripTotals(t);
-    $("#statDistance").textContent=`${fmtNum(totals.distance,0)} ${APP.distUnit}`;
-    $("#statFuel").textContent=`${fmtNum(totals.totalFuelLitres,1)} L`;
-    $("#statEff").textContent = totals.eff===null ? "—" : `${fmtNum(totals.eff,1)} L/100km`;
-    $("#statSpend").textContent=fmtMoney(totals.spend);
-    $("#badgeFuel").textContent=String((t.fuelStops||[]).length);
-    $("#badgeExp").textContent=String((t.expenses||[]).length);
-    $("#badgeCat").textContent=String((state.categories||[]).filter(c=>!c.locked).length);
+
+    if (tab==="fuel") panel.innerHTML = fuelPanel(t);
+    if (tab==="charging") panel.innerHTML = chargingPanel(t);
+    if (tab==="expenses") panel.innerHTML = expensesPanel(t);
+    if (tab==="categories") panel.innerHTML = categoriesPanel();
+    if (tab==="summary") panel.innerHTML = summaryPanel(t);
+    if (tab==="settings") panel.innerHTML = settingsPanel(t);
+    if (tab==="help") panel.innerHTML = helpPanel();
+    if (tab==="diagnostics") panel.innerHTML = diagnosticsPanel();
+
+    bindPanelHandlers();
+    renderStats();
   }
 
-  function render(){
-    ensureMinimums();
-    renderTripSelect();
-    setStats();
-    setHeaderForTab();
-    renderPanel();
-  }
-
-  function emptyMain(){
-    panel.innerHTML = `
-      <div class="empty">
-        <b>Welcome.</b><br/>
-        Create your first trip to start tracking fuel, expenses and totals — offline and private.
-        <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap">
-          <button class="primary" id="startTrip">+ New Trip</button>
-          <button class="ghost" id="startImport">Import</button>
-          <button class="ghost" id="startDiag">Run regression tests</button>
-        </div>
-      </div>
-    `;
-    $("#startTrip").addEventListener("click", ()=>openTripDialog(null));
-    $("#startImport").addEventListener("click", ()=>$("#importDialog").showModal());
-    $("#startDiag").addEventListener("click", ()=>{
-      setTab("diagnostics");
-      runRegressionTests();
-    });
-  }
-
+  // ========= Panels =========
   function fuelPanel(trip){
-    const { fuelStops } = calcTripTotals(trip);
-    const list = fuelStops.map((s, idx) => {
+    const sym = state.settings.currencySymbol || "$";
+    const tot = calcTripTotals(trip);
+    const mode = trip.powertrain || "ICE";
+
+    const showHint = (mode === "EV")
+      ? `<div class="empty">⚡ This trip is set to <b>EV</b>. You can still log fuel, but most people use the Charging tab. (Change trip powertrain in Edit Trip.)</div>`
+      : (mode === "ICE")
+        ? (tot.charge.length ? `<div class="empty">⚡ This trip has <b>${tot.charge.length}</b> charging session(s) totalling <b>${fmtMoney(sym, tot.chargeCost)}</b> — switch to EV/PHEV to focus on Charging.</div>` : ``)
+        : (mode === "PHEV")
+          ? `<div class="empty">⛽⚡ PHEV mode: log both fuel and charging. Summary shows combined spend.</div>`
+          : ``;
+
+    const list = tot.fuel.map((s, idx) => {
       let seg = `<span class="pill">—</span>`;
       if (idx>0){
-        const prev=fuelStops[idx-1];
+        const prev=tot.fuel[idx-1];
         const d=Math.max(0, Number(s.odo||0)-Number(prev.odo||0));
         const l=Number(s.litres||0);
-        seg = effPill(d>0 ? (l/d)*100 : null);
+        seg = effPillFuel(d>0 ? (l/d)*100 : null);
       }
       return `
         <div class="item">
           <div class="meta">
-            <b>${s.station ? esc(s.station) : "Fuel stop"}</b>
-            <span>${esc(s.date||"")} • Odo ${fmtNum(s.odo,0)} • ${fmtNum(s.litres,1)} L • ${fmtMoney(s.totalCost)}</span>
+            <b>${s.location ? esc(s.location) : "Fuel stop"}</b>
+            <span>${esc(s.date||"")} • Odo ${fmtNum(s.odo,0)} • ${fmtNum(s.litres,1)} L • ${fmtMoney(sym, s.total)}</span>
             ${s.notes ? `<span class="note">${esc(s.notes)}</span>` : ""}
           </div>
           <div class="rightRow">
@@ -824,62 +1183,144 @@
     }).join("") || `<div class="empty">No fuel stops yet. Add your first fill to start tracking efficiency.</div>`;
 
     return `
+      ${showHint}
+      <div class="sectionTitle" style="margin-top:${showHint?10:0}px">⛽ Log Fuel Stop</div>
       <div class="grid2">
-        <label>Date <input id="fuelDate" type="date" value="${today()}"/></label>
-        <label>Location / Station <input id="fuelStation" placeholder="e.g., Caltex Roma"/></label>
-        <label>Odometer (${APP.distUnit}) * <input id="fuelOdo" type="number" step="0.1" /></label>
-        <label>Litres * <input id="fuelLitres" type="number" step="0.01" /></label>
-        <label>Price per litre (${APP.currency}) <input id="fuelPPL" type="number" step="0.001" /></label>
-        <label>Total cost (${APP.currency}) <input id="fuelTotal" type="number" step="0.01" /></label>
+        <label>Date * <input id="fuelDate" type="date" value="${today()}"/></label>
+        <label>Station / Location <input id="fuelLoc" placeholder="e.g., Caltex Roma"/></label>
+        <label>Odometer (km) * <input id="fuelOdo" type="number" step="0.1" /></label>
+        <label>Litres filled * <input id="fuelLitres" type="number" step="0.01" /></label>
+        <label>Price per litre (${esc(sym)}) <input id="fuelPPL" type="number" step="0.001" /></label>
+        <label>Total cost (${esc(sym)}) <input id="fuelTotal" type="number" step="0.01" /></label>
         <label style="grid-column:1/-1">Notes <textarea id="fuelNotes"></textarea></label>
       </div>
       <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:10px; flex-wrap:wrap">
-        <button id="fuelClear" class="ghost">Clear</button>
-        <button id="fuelSave" class="primary">Save fuel stop</button>
+        <button id="fuelClear" class="ghost">Clear form</button>
+        <button id="fuelSave" class="primary">Log Fuel Stop</button>
       </div>
+
+      <div class="sectionTitle" style="margin-top:14px">Fuel History ${tot.fuel.length} stops</div>
       <div class="list">${list}</div>
     `;
   }
 
-  function expensePanel(trip){
-    const items = (trip.expenses ?? []).slice().sort(sortByDate);
+  function chargingPanel(trip){
+    const sym = state.settings.currencySymbol || "$";
+    const tot = calcTripTotals(trip);
+    const mode = trip.powertrain || "ICE";
+
+    const showHint = (mode === "ICE")
+      ? `<div class="empty">⛽ This trip is set to <b>ICE</b>. You can still log charging, but most people use the Fuel tab. (Change trip powertrain in Edit Trip.)</div>`
+      : (mode === "EV")
+        ? (tot.fuel.length ? `<div class="empty">⛽ This trip has <b>${tot.fuel.length}</b> fuel stop(s) totalling <b>${fmtMoney(sym, tot.fuelCost)}</b> — switch to ICE/PHEV to focus on Fuel.</div>` : ``)
+        : (mode === "PHEV")
+          ? `<div class="empty">⛽⚡ PHEV mode: log both fuel and charging. Summary shows combined spend.</div>`
+          : ``;
+
+    const list = tot.charge.map((c, idx) => {
+      let seg = `<span class="pill">—</span>`;
+      if (idx>0){
+        const prev=tot.charge[idx-1];
+        const d=Math.max(0, Number(c.odo||0)-Number(prev.odo||0));
+        const e=Number(c.kwh||0);
+        seg = effPillEV(d>0 ? (e/d)*100 : null);
+      }
+      const ct = c.chargerType ? ` • ${esc(c.chargerType)}` : "";
+      const soc = (c.socStart!=null || c.socEnd!=null) ? ` • SoC ${c.socStart??"—"}→${c.socEnd??"—"}%` : "";
+      return `
+        <div class="item">
+          <div class="meta">
+            <b>${c.location ? esc(c.location) : "Charging session"}</b>
+            <span>${esc(c.date||"")} • Odo ${fmtNum(c.odo,0)} • ${fmtNum(c.kwh,1)} kWh • ${fmtMoney(sym, c.total)}${ct}${soc}</span>
+            ${c.notes ? `<span class="note">${esc(c.notes)}</span>` : ""}
+          </div>
+          <div class="rightRow">
+            ${seg}
+            <button class="danger" data-act="delCharge" data-id="${c.id}">Delete</button>
+          </div>
+        </div>
+      `;
+    }).join("") || `<div class="empty">No charging sessions yet. Add your first charge to start tracking kWh/100km.</div>`;
+
+    return `
+      ${showHint}
+      <div class="sectionTitle" style="margin-top:${showHint?10:0}px">⚡ Log Charging Session</div>
+      <div class="grid2">
+        <label>Date <input id="chDate" type="date" value="${today()}"/></label>
+        <label>Charger / Location <input id="chLoc" placeholder="e.g., Chargefox / Tesla / Home"/></label>
+        <label>Odometer (km) * <input id="chOdo" type="number" step="0.1" /></label>
+        <label>Energy added (kWh) * <input id="chKwh" type="number" step="0.01" /></label>
+        <label>Price per kWh (${esc(sym)}) <input id="chPpkwh" type="number" step="0.001" /></label>
+        <label>Total Cost (${esc(sym)}) <input id="chTotal" type="number" step="0.01" /></label>
+
+        <label>Charger Type
+          <select id="chType">
+            <option value="">— select —</option>
+            <option value="AC Slow (<7kW)">AC Slow (&lt;7kW)</option>
+            <option value="AC Fast (7–22kW)">AC Fast (7–22kW)</option>
+            <option value="DC Fast (50–100kW)">DC Fast (50–100kW)</option>
+            <option value="DC Ultra (>100kW)">DC Ultra (&gt;100kW)</option>
+            <option value="Home">Home</option>
+          </select>
+        </label>
+
+        <label>State of Charge: Start % <input id="chSocS" type="number" step="1" min="0" max="100" /></label>
+        <label>State of Charge: End % <input id="chSocE" type="number" step="1" min="0" max="100" /></label>
+        <label style="grid-column:1/-1">Notes <textarea id="chNotes"></textarea></label>
+      </div>
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:10px; flex-wrap:wrap">
+        <button id="chClear" class="ghost">Clear</button>
+        <button id="chSave" class="primary">Add Session</button>
+      </div>
+
+      <div class="sectionTitle" style="margin-top:14px">Charge History ${tot.charge.length} sessions</div>
+      <div class="list">${list}</div>
+    `;
+  }
+
+  function expensesPanel(trip){
+    const sym = state.settings.currencySymbol || "$";
+    const items = (trip.expenses||[]).slice().sort(sortByDate);
     const catById = Object.fromEntries(state.categories.map(c=>[c.id,c]));
+    const catOptions = state.categories
+      .filter(c=>c.id!=="fuel" && c.id!=="charge")
+      .map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
+
     const list = items.map(e => `
       <div class="item">
         <div class="meta">
           <b>${esc(e.desc || "Expense")}</b>
-          <span>${esc(e.date||"")} • ${(catById[e.catId]?.name ?? "Uncategorised")} • ${fmtMoney(e.amount)}</span>
+          <span>${esc(e.date||"")} • ${(catById[e.catId]?.name ?? "Uncategorised")} • ${fmtMoney(sym, e.amount)}</span>
           ${e.notes ? `<span class="note">${esc(e.notes)}</span>` : ""}
         </div>
         <div class="rightRow">
           <button class="danger" data-act="delExp" data-id="${e.id}">Delete</button>
         </div>
       </div>
-    `).join("") || `<div class="empty">No expenses yet. Add accommodation, food, camping fees, maintenance… whatever matters.</div>`;
-
-    const catOptions = state.categories
-      .filter(c=>c.id!=="fuel")
-      .map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
+    `).join("") || `<div class="empty">No expenses yet. Add accommodation, food, tolls, camping fees, maintenance… whatever matters.</div>`;
 
     return `
+      <div class="sectionTitle">Log Expense</div>
       <div class="grid2">
-        <label>Date <input id="expDate" type="date" value="${today()}"/></label>
-        <label>Category <select id="expCat">${catOptions}</select></label>
+        <label>Date * <input id="expDate" type="date" value="${today()}"/></label>
+        <label>Category * <select id="expCat">${catOptions}</select></label>
         <label>Description * <input id="expDesc" placeholder="e.g., Caravan park / Lunch / Tolls"/></label>
-        <label>Amount (${APP.currency}) * <input id="expAmt" type="number" step="0.01"/></label>
+        <label>Amount (${esc(sym)}) * <input id="expAmt" type="number" step="0.01"/></label>
         <label style="grid-column:1/-1">Notes <textarea id="expNotes"></textarea></label>
       </div>
       <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:10px; flex-wrap:wrap">
-        <button id="expClear" class="ghost">Clear</button>
-        <button id="expSave" class="primary">Save expense</button>
+        <button id="expClear" class="ghost">Clear form</button>
+        <button id="expSave" class="primary">Log Expense</button>
       </div>
+
+      <div class="sectionTitle" style="margin-top:14px">Expense History ${items.length} items</div>
       <div class="list">${list}</div>
     `;
   }
 
   function categoriesPanel(){
     const list = state.categories
-      .filter(c=>!c.locked && c.id!=="fuel" && c.id!=="uncat")
+      .filter(c=>!c.locked && c.id!=="fuel" && c.id!=="charge" && c.id!=="uncat")
       .map(c => `
         <div class="item">
           <div class="meta">
@@ -894,523 +1335,103 @@
       `).join("") || `<div class="empty">No custom categories yet. Add ones that match your travel style.</div>`;
 
     return `
+      <div class="sectionTitle">Add Category</div>
       <div class="grid2">
         <label>Category name * <input id="catName" placeholder="e.g., Repairs"/></label>
         <label>Colour <input id="catColour" type="color" value="#46b3ff"/></label>
       </div>
       <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:10px">
-        <button class="primary" id="catAdd">Add category</button>
+        <button class="primary" id="catAdd">Add Category</button>
       </div>
+      <div class="sectionTitle" style="margin-top:14px">Your Categories</div>
       <div class="list">${list}</div>
-      <div class="muted" style="font-size:12px; margin-top:10px">
-        Deleting a category won’t delete expenses — they’ll show as “Uncategorised”.
+      <div class="hint" style="margin-top:12px">
+        Deleting a category won’t delete expenses — they will show as <b>Uncategorised</b>.
       </div>
     `;
   }
 
   function summaryPanel(trip){
-    const totals = calcTripTotals(trip);
+    const sym = state.settings.currencySymbol || "$";
+    const tot = calcTripTotals(trip);
+
+    // Spend by category (include fuel + charge as rows)
     const byCat = new Map();
-    byCat.set("fuel", totals.totalFuelCost);
-    for (const e of (trip.expenses ?? [])){
-      byCat.set(e.catId, (byCat.get(e.catId) || 0) + Number(e.amount || 0));
+    byCat.set("fuel", tot.fuelCost);
+    byCat.set("charge", tot.chargeCost);
+    for (const e of (trip.expenses||[])){
+      byCat.set(e.catId, (byCat.get(e.catId)||0) + Number(e.amount||0));
     }
     const catById = Object.fromEntries(state.categories.map(c=>[c.id,c]));
     const rows = Array.from(byCat.entries())
       .map(([catId, amt]) => ({ name: catById[catId]?.name ?? "Uncategorised", amt }))
+      .filter(r => r.amt > 0 || tot.spend === 0)
       .sort((a,b)=> b.amt - a.amt);
 
-    const spendTable = rows.map(r => {
-      const share = totals.spend > 0 ? (r.amt / totals.spend) * 100 : 0;
-      return `<tr>
-        <td>${esc(r.name)}</td>
-        <td style="text-align:right">${fmtMoney(r.amt)}</td>
-        <td style="text-align:right">${share.toFixed(0)}%</td>
-      </tr>`;
+    const spendRows = rows.map(r => {
+      const share = tot.spend > 0 ? (r.amt / tot.spend) * 100 : 0;
+      return `<tr><td>${esc(r.name)}</td><td style="text-align:right">${fmtMoney(sym, r.amt)}</td><td style="text-align:right">${share.toFixed(0)}%</td></tr>`;
     }).join("");
 
-    const budget = Number(trip.budget || 0);
-    const budgetNote = budget>0
-      ? `<div class="muted" style="font-size:12px; margin-top:10px">
-          Budget: ${fmtMoney(budget)} • Remaining: ${fmtMoney(Math.max(0, budget - totals.spend))}
-         </div>`
-      : `<div class="muted" style="font-size:12px; margin-top:10px">No budget set for this trip.</div>`;
+    // Vehicle overview
+    const v = trip.vehicle || {};
+    const cfg = trip.config || {};
+    const tow = trip.towed || {};
+    const em = trip.emergency || {};
+
+    const budget = Number(trip.budget||0);
+    const budgetLeft = tot.budgetLeft;
+
+    const budgetBlock = budget>0 ? `
+      <div class="empty" style="margin-top:12px">
+        <b>Budget:</b> ${fmtMoney(sym, budget)} • <b>Spent:</b> ${fmtMoney(sym, tot.spend)} •
+        <b>Remaining:</b> ${budgetLeft>=0 ? fmtMoney(sym, budgetLeft) : `-${fmtMoney(sym, Math.abs(budgetLeft)).replace(sym,sym)}`}
+        <div style="margin-top:10px; height:10px; border-radius:999px; border:1px solid rgba(255,255,255,.14); background:rgba(0,0,0,.16); overflow:hidden">
+          <div style="height:100%; width:${Math.min(100, (tot.spend/budget)*100).toFixed(0)}%; background:rgba(70,179,255,.45)"></div>
+        </div>
+        <div style="margin-top:8px; font-size:12px; color:var(--muted)">
+          Bar goes amber/red when you’re near/over budget (visual only in this build — easy to extend).
+        </div>
+      </div>
+    ` : "";
+
+    // Efficiency chart (simple table)
+    const fuelSeg = (tot.fuel||[]).slice().sort(sortByDate).map((s, i, arr) => {
+      if (i===0) return null;
+      const prev = arr[i-1];
+      const d = Math.max(0, Number(s.odo||0)-Number(prev.odo||0));
+      const eff = d>0 ? (Number(s.litres||0)/d)*100 : null;
+      return { date:s.date||"", eff };
+    }).filter(Boolean);
+
+    const chSeg = (tot.charge||[]).slice().sort(sortByDate).map((c, i, arr) => {
+      if (i===0) return null;
+      const prev = arr[i-1];
+      const d = Math.max(0, Number(c.odo||0)-Number(prev.odo||0));
+      const eff = d>0 ? (Number(c.kwh||0)/d)*100 : null;
+      return { date:c.date||"", eff };
+    }).filter(Boolean);
+
+    const effTableFuel = fuelSeg.length ? `
+      <div class="sectionTitle" style="margin-top:14px">Fuel Efficiency per Fill-up (L/100km)</div>
+      <table>
+        <thead><tr><th>Date</th><th style="text-align:right">L/100km</th></tr></thead>
+        <tbody>${fuelSeg.map(x=>`<tr><td>${esc(x.date)}</td><td style="text-align:right">${x.eff==null?"—":fmtNum(x.eff,1)}</td></tr>`).join("")}</tbody>
+      </table>
+    ` : `<div class="empty" style="margin-top:14px"><b>Fuel efficiency chart</b><br/>Log at least <b>2 fuel stops</b> to see per-segment L/100km.</div>`;
+
+    const effTableEV = chSeg.length ? `
+      <div class="sectionTitle" style="margin-top:14px">Energy Efficiency per Charge (kWh/100km)</div>
+      <table>
+        <thead><tr><th>Date</th><th style="text-align:right">kWh/100km</th></tr></thead>
+        <tbody>${chSeg.map(x=>`<tr><td>${esc(x.date)}</td><td style="text-align:right">${x.eff==null?"—":fmtNum(x.eff,1)}</td></tr>`).join("")}</tbody>
+      </table>
+    ` : `<div class="empty" style="margin-top:14px"><b>Charging efficiency chart</b><br/>Log at least <b>2 charging sessions</b> to see per-segment kWh/100km.</div>`;
 
     return `
       <div class="stats">
         <div class="stat"><div class="k">Trip</div><div class="v">${esc(trip.name)}</div></div>
-        <div class="stat"><div class="k">Distance</div><div class="v">${fmtNum(totals.distance,0)} ${APP.distUnit}</div></div>
-        <div class="stat"><div class="k">Fuel cost</div><div class="v">${fmtMoney(totals.totalFuelCost)}</div></div>
-        <div class="stat"><div class="k">Other expenses</div><div class="v">${fmtMoney(totals.totalExpense)}</div></div>
-      </div>
-      ${budgetNote}
-      <div style="margin-top:12px"></div>
-      <table>
-        <thead>
-          <tr><th>Category</th><th style="text-align:right">Amount</th><th style="text-align:right">Share</th></tr>
-        </thead>
-        <tbody>
-          ${spendTable || `<tr><td colspan="3" class="muted">No spend yet.</td></tr>`}
-        </tbody>
-      </table>
-    `;
-  }
-
-  function settingsPanel(){
-    const s = state.settings || {};
-    return `
-      <div class="grid2">
-        <label>Currency symbol <input id="setCurrency" value="${esc(s.currency || "$")}" /></label>
-        <label>Distance unit
-          <select id="setUnit">
-            <option value="km" ${s.distUnit==="km"?"selected":""}>Kilometres (km)</option>
-            <option value="mi" ${s.distUnit==="mi"?"selected":""}>Miles (mi)</option>
-          </select>
-        </label>
-        <label>Efficiency target (L/100km) <input id="setTarget" type="number" step="0.1" value="${esc(String(s.effTarget ?? 10))}"/></label>
-        <label>Notes (optional) <input id="setNote" value="${esc(s.note||"")}" placeholder="Anything you want to remember"/></label>
-      </div>
-      <div class="empty" style="margin-top:12px">
-        <b>Privacy-first.</b> Everything lives in localStorage on this browser. Use Export for backups or moving devices.
-      </div>
-    `;
-  }
-
-  function diagnosticsPanel(){
-    return `
-      <div class="empty">
-        <b>Regression tests</b><br/>
-        These tests create a temporary in-memory dataset, exercise the core functions, and verify import/export round-trips.
-        Your current saved data is restored afterwards.
-        <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap">
-          <button class="primary" id="runTestsBtn">Run tests</button>
-          <button class="ghost" id="copyReportBtn" disabled>Copy report</button>
-        </div>
-      </div>
-      <div style="margin-top:12px"></div>
-      <pre id="testReport">Ready.</pre>
-    `;
-  }
-
-  function renderPanel(){
-    const trip = getActiveTrip();
-
-    if (activeTab === "diagnostics"){
-      panel.innerHTML = diagnosticsPanel();
-      $("#runTestsBtn").addEventListener("click", runRegressionTests);
-      $("#copyReportBtn").addEventListener("click", () => {
-        const text = $("#testReport").textContent || "";
-        navigator.clipboard?.writeText(text);
-        toast("Copied");
-      });
-      return;
-    }
-
-    if (!trip){
-      emptyMain();
-      return;
-    }
-
-    if (activeTab === "fuel") panel.innerHTML = fuelPanel(trip);
-    if (activeTab === "expenses") panel.innerHTML = expensePanel(trip);
-    if (activeTab === "categories") panel.innerHTML = categoriesPanel();
-    if (activeTab === "summary") panel.innerHTML = summaryPanel(trip);
-    if (activeTab === "settings") panel.innerHTML = settingsPanel();
-
-    bindPanelHandlers();
-  }
-
-  function bindPanelHandlers(){
-    const trip = getActiveTrip();
-    if (!trip) return;
-
-    if ($("#fuelLitres") && $("#fuelPPL") && $("#fuelTotal")){
-      const recalc = () => {
-        const l = Number($("#fuelLitres").value || 0);
-        const p = Number($("#fuelPPL").value || 0);
-        if (l > 0 && p > 0) $("#fuelTotal").value = (l * p).toFixed(2);
-      };
-      $("#fuelLitres").addEventListener("input", recalc);
-      $("#fuelPPL").addEventListener("input", recalc);
-    }
-
-    $("#fuelSave") && $("#fuelSave").addEventListener("click", () => {
-      const odo = Number($("#fuelOdo").value);
-      const litres = Number($("#fuelLitres").value);
-      if (!Number.isFinite(odo) || !Number.isFinite(litres) || litres <= 0){
-        alert("Odometer and Litres are required.");
-        return;
-      }
-      const ppl = Number($("#fuelPPL").value || 0);
-      const total = Number($("#fuelTotal").value || (litres * ppl) || 0);
-
-      trip.fuelStops = trip.fuelStops || [];
-      trip.fuelStops.push({
-        id: uid(),
-        date: $("#fuelDate").value || today(),
-        station: $("#fuelStation").value.trim(),
-        odo,
-        litres,
-        pricePerL: ppl || null,
-        totalCost: total || 0,
-        notes: $("#fuelNotes").value.trim()
-      });
-
-      saveState(); toast("Fuel saved"); render();
-    });
-
-    $("#fuelClear") && $("#fuelClear").addEventListener("click", () => {
-      ["fuelStation","fuelOdo","fuelLitres","fuelPPL","fuelTotal","fuelNotes"].forEach(id => { const el=$("#"+id); if (el) el.value=""; });
-      $("#fuelDate").value = today();
-    });
-
-    $("#expSave") && $("#expSave").addEventListener("click", () => {
-      const desc = $("#expDesc").value.trim();
-      const amt = Number($("#expAmt").value);
-      if (!desc || !Number.isFinite(amt)){
-        alert("Description and Amount are required.");
-        return;
-      }
-      trip.expenses = trip.expenses || [];
-      trip.expenses.push({
-        id: uid(),
-        date: $("#expDate").value || today(),
-        catId: $("#expCat").value,
-        desc,
-        amount: amt,
-        notes: $("#expNotes").value.trim()
-      });
-
-      saveState(); toast("Expense saved"); render();
-    });
-
-    $("#expClear") && $("#expClear").addEventListener("click", () => {
-      ["expDesc","expAmt","expNotes"].forEach(id => { const el=$("#"+id); if (el) el.value=""; });
-      $("#expDate").value = today();
-    });
-
-    $("#catAdd") && $("#catAdd").addEventListener("click", () => {
-      const name = $("#catName").value.trim();
-      const colour = $("#catColour").value;
-      if (!name){ alert("Category name is required."); return; }
-      const id = "cat_" + safeFile(name) + "_" + Math.random().toString(16).slice(2,6);
-      state.categories.push({ id, name, colour });
-      saveState(); toast("Category added"); render();
-    });
-
-    $$("[data-act]").forEach(btn => btn.addEventListener("click", () => {
-      const act = btn.dataset.act, id = btn.dataset.id;
-      if (act==="delFuel"){
-        if (!confirm("Delete this fuel stop?")) return;
-        trip.fuelStops = (trip.fuelStops||[]).filter(x=>x.id!==id);
-        saveState(); toast("Fuel deleted"); render();
-      }
-      if (act==="delExp"){
-        if (!confirm("Delete this expense?")) return;
-        trip.expenses = (trip.expenses||[]).filter(x=>x.id!==id);
-        saveState(); toast("Expense deleted"); render();
-      }
-      if (act==="delCat"){
-        if (!confirm("Delete this category? Existing expenses will become Uncategorised.")) return;
-        state.categories = state.categories.filter(c=>c.id!==id);
-        for (const t of state.trips){
-          for (const e of (t.expenses||[])){
-            if (!state.categories.some(c=>c.id===e.catId)) e.catId="uncat";
-          }
-        }
-        saveState(); toast("Category deleted"); render();
-      }
-    }));
-
-    $("#setCurrency") && $("#setCurrency").addEventListener("input", (e)=>{
-      state.settings.currency = e.target.value || "$";
-      applySettings(); saveState(); toast("Saved"); render();
-    });
-    $("#setUnit") && $("#setUnit").addEventListener("change", (e)=>{
-      state.settings.distUnit = e.target.value;
-      applySettings(); saveState(); toast("Saved"); render();
-    });
-    $("#setTarget") && $("#setTarget").addEventListener("input", (e)=>{
-      state.settings.effTarget = Number(e.target.value||10);
-      saveState(); toast("Saved"); render();
-    });
-    $("#setNote") && $("#setNote").addEventListener("input", (e)=>{
-      state.settings.note = e.target.value||"";
-      saveState();
-    });
-  }
-
-  function setTab(tab){
-    activeTab = tab;
-    $$(".tab", tabs).forEach(x=>x.classList.toggle("active", x.dataset.tab===activeTab));
-    setHeaderForTab();
-    renderPanel();
-  }
-
-  // ===== Top actions =====
-  $("#newTripBtn").addEventListener("click", ()=>openTripDialog(null));
-  tripSelect.addEventListener("change", ()=>{
-    state.activeTripId = tripSelect.value;
-    saveState(); render();
-  });
-
-  $("#importBtn").addEventListener("click", ()=>$("#importDialog").showModal());
-  $("#importDlgClose").addEventListener("click", ()=>$("#importDialog").close());
-  $("#importDoBtn").addEventListener("click", async ()=>{
-    const file = $("#importFile").files && $("#importFile").files[0];
-    if (!file){ alert("Choose a backup JSON file."); return; }
-    let parsed; try{ parsed = JSON.parse(await file.text()); } catch { alert("Invalid JSON."); return; }
-
-    const incoming = normaliseToNative(parsed);
-    if (!incoming){ alert("Backup not recognised."); return; }
-
-    const mode = $("#importMode").value;
-    if (mode==="replace"){
-      state = incoming;
-    } else {
-      const existingTripIds = new Set((state.trips||[]).map(t=>t.id));
-      for (const t of (incoming.trips||[])) if (!existingTripIds.has(t.id)) state.trips.push(t);
-
-      const existingCatIds = new Set((state.categories||[]).map(c=>c.id));
-      for (const c of (incoming.categories||[])) if (!existingCatIds.has(c.id)) state.categories.push(c);
-
-      state.settings = { ...(incoming.settings||{}), ...(state.settings||{}) };
-      if (!state.activeTripId && state.trips.length) state.activeTripId = state.trips[0].id;
-    }
-    applySettings(); ensureMinimums(); saveState();
-    $("#importDialog").close();
-    toast("Imported");
-    render();
-  });
-
-  $("#exportBtn").addEventListener("click", ()=>{
-    $("#exportName").value="";
-    $("#exportDialog").showModal();
-  });
-  $("#exportDlgClose").addEventListener("click", ()=>$("#exportDialog").close());
-  $("#exportDoBtn").addEventListener("click", ()=>{
-    const fmt = $("#exportFormat").value;
-    const custom = $("#exportName").value.trim();
-    const base = custom ? safeFile(custom) : `journeyledger-${fmt}-${today()}`;
-    let payload;
-    if (fmt==="native") payload = { exportedAt:new Date().toISOString(), schema: state.schema, state };
-    else if (fmt==="roadlog") payload = toRoadLogFromNative(state);
-    else payload = toPortableFromNative(state);
-
-    state.lastBackupAt = new Date().toISOString();
-    saveState();
-    downloadText(JSON.stringify(payload,null,2), `${base}.json`, "application/json");
-    $("#exportDialog").close();
-    toast("Exported");
-  });
-
-  // ===== Tabs click =====
-  $$(".tab", tabs).forEach(el=>{
-    el.addEventListener("click", ()=> setTab(el.dataset.tab));
-  });
-
-  // ===== Trip dialog =====
-  const tripDialog = $("#tripDialog");
-  let editingTripId = null;
-
-  function openTripDialog(tripId){
-    editingTripId = tripId;
-    const t = tripId ? state.trips.find(x=>x.id===tripId) : null;
-
-    $("#tripDlgTitle").textContent = t ? "Edit Trip" : "New Trip";
-    $("#tripName").value = t?.name || "";
-    $("#tripStart").value = t?.startDate || today();
-    $("#tripEnd").value = t?.endDate || "";
-    $("#tripOdoStart").value = (t?.odoStart ?? "");
-    $("#tripBudget").value = (t?.budget ?? "");
-    $("#tripNotes").value = t?.notes || "";
-    $("#tripDeleteBtn").style.display = t ? "" : "none";
-    tripDialog.showModal();
-  }
-
-  $("#tripDlgClose").addEventListener("click", ()=>tripDialog.close());
-
-  $("#tripSaveBtn").addEventListener("click", ()=>{
-    const name = $("#tripName").value.trim();
-    if (!name){ alert("Trip name is required."); return; }
-
-    if (editingTripId){
-      const t = state.trips.find(x=>x.id===editingTripId);
-      if (!t) return;
-      t.name = name;
-      t.startDate = $("#tripStart").value;
-      t.endDate = $("#tripEnd").value;
-      t.odoStart = Number($("#tripOdoStart").value || 0);
-      t.budget = Number($("#tripBudget").value || 0);
-      t.notes = $("#tripNotes").value.trim();
-    } else {
-      const t = {
-        id:uid(), name,
-        startDate:$("#tripStart").value||today(),
-        endDate:$("#tripEnd").value,
-        odoStart:Number($("#tripOdoStart").value||0),
-        budget:Number($("#tripBudget").value||0),
-        notes:$("#tripNotes").value.trim(),
-        fuelStops:[], expenses:[]
-      };
-      state.trips.push(t);
-      state.activeTripId = t.id;
-    }
-
-    saveState();
-    tripDialog.close();
-    toast("Trip saved");
-    render();
-  });
-
-  $("#tripDeleteBtn").addEventListener("click", ()=>{
-    const t = state.trips.find(x=>x.id===editingTripId);
-    if (!t) return;
-    if (!confirm(`Delete "${t.name}"? This cannot be undone.`)) return;
-
-    state.trips = state.trips.filter(x=>x.id!==t.id);
-    state.activeTripId = state.trips[0]?.id || null;
-    saveState();
-    tripDialog.close();
-    toast("Trip deleted");
-    render();
-  });
-
-  // ===== Regression Tests =====
-  function deepClone(x){ return JSON.parse(JSON.stringify(x)); }
-
-  function assert(cond, msg){
-    if (!cond) throw new Error(msg);
-  }
-
-  function approxEqual(a, b, eps=1e-9){
-    return Math.abs(Number(a)-Number(b)) <= eps;
-  }
-
-  function runRegressionTests(){
-    setTab("diagnostics");
-    const reportEl = $("#testReport");
-    const copyBtn = $("#copyReportBtn");
-    const badge = $("#badgeDiag");
-
-    copyBtn.disabled = true;
-    badge.textContent = "Running…";
-    reportEl.textContent = "Running regression tests…\n";
-
-    const original = deepClone(state);
-
-    const lines = [];
-    const pass = (name) => lines.push(`✅ PASS  ${name}`);
-    const fail = (name, err) => lines.push(`❌ FAIL  ${name}\n    → ${err.message || String(err)}`);
-
-    const tests = [];
-
-    // Test 1: CSS present for select options (can’t verify OS popup, but can verify our rules exist and select computed styles)
-    tests.push(["Dropdown styling rules present", () => {
-      const sheets = Array.from(document.styleSheets);
-      // Some browsers may block cssRules access; so we check computed style on select itself.
-      const sel = $("#tripSelect");
-      const cs = getComputedStyle(sel);
-      assert(cs.color && cs.color !== "rgb(0, 0, 0)", "Select text colour looks wrong");
-      assert(cs.backgroundColor && cs.backgroundColor !== "rgb(255, 255, 255)", "Select background looks white");
-    }]);
-
-    // Test 2: Create trip + entries and totals
-    tests.push(["Create trip, add fuel + expense, totals calculate", () => {
-      state = emptyState();
-      applySettings(); ensureMinimums();
-
-      const trip = {
-        id:"t_test",
-        name:"Regression Trip",
-        startDate:"2026-02-01",
-        endDate:"",
-        odoStart:1000,
-        budget:200,
-        notes:"",
-        fuelStops:[],
-        expenses:[]
-      };
-      state.trips.push(trip);
-      state.activeTripId = trip.id;
-
-      trip.fuelStops.push({ id:"f1", date:"2026-02-02", station:"Servo A", odo:1100, litres:10, pricePerL:2.00, totalCost:20.00, notes:"" });
-      trip.fuelStops.push({ id:"f2", date:"2026-02-03", station:"Servo B", odo:1200, litres:12, pricePerL:2.10, totalCost:25.20, notes:"" });
-      trip.expenses.push({ id:"e1", date:"2026-02-03", catId:"cat_food", desc:"Lunch", amount:15.50, notes:"" });
-
-      const totals = calcTripTotals(trip);
-      assert(totals.distance === 200, "Distance should be 200");
-      assert(approxEqual(totals.totalFuelLitres, 22), "Fuel litres should be 22");
-      assert(approxEqual(totals.totalFuelCost, 45.2), "Fuel cost should be 45.2");
-      assert(approxEqual(totals.totalExpense, 15.5), "Other expense should be 15.5");
-      assert(approxEqual(totals.spend, 60.7), "Total spend should be 60.7");
-    }]);
-
-    // Test 3: Export native and re-import normalise
-    tests.push(["Export native → normaliseToNative returns same trip count", () => {
-      const nativeWrapped = { exportedAt:new Date().toISOString(), schema: state.schema, state: deepClone(state) };
-      const incoming = normaliseToNative(nativeWrapped);
-      assert(incoming && Array.isArray(incoming.trips), "Normalise failed");
-      assert(incoming.trips.length === state.trips.length, "Trip count mismatch");
-    }]);
-
-    // Test 4: Export portable → normaliseToNative (via nativeFromPortable)
-    tests.push(["Export portable → normaliseToNative returns same spend", () => {
-      const portable = toPortableFromNative(state);
-      const incoming = normaliseToNative(portable);
-      assert(incoming && incoming.trips && incoming.trips.length === 1, "Portable import failed");
-      const totals = calcTripTotals(incoming.trips[0]);
-      assert(approxEqual(totals.spend, 60.7), "Spend mismatch after portable round-trip");
-    }]);
-
-    // Test 5: Export roadlog → normaliseToNative
-    tests.push(["Export roadlog → normaliseToNative returns same spend", () => {
-      const road = toRoadLogFromNative(state);
-      const incoming = normaliseToNative(road);
-      assert(incoming && incoming.trips && incoming.trips.length === 1, "RoadLog import failed");
-      const totals = calcTripTotals(incoming.trips[0]);
-      assert(approxEqual(totals.spend, 60.7), "Spend mismatch after roadlog round-trip");
-    }]);
-
-    // Test 6: Merge mode logic sanity (no duplicate by id)
-    tests.push(["Merge import does not duplicate trips by id", () => {
-      const incoming = deepClone(state);
-      const before = state.trips.length;
-      // Merge the same set: should not increase when IDs match
-      const existingIds = new Set(state.trips.map(t=>t.id));
-      for (const t of incoming.trips) { if (!existingIds.has(t.id)) state.trips.push(t); }
-      assert(state.trips.length === before, "Trip duplicated during merge");
-    }]);
-
-    // Execute
-    let anyFail = false;
-    for (const [name, fn] of tests){
-      try { fn(); pass(name); }
-      catch (e) { anyFail = true; fail(name, e); }
-    }
-
-    // Restore user state
-    state = original;
-    applySettings(); ensureMinimums();
-    saveState();
-    renderTripSelect(); setStats();
-
-    const header = [
-      `JourneyLedger AU v0.3 — Regression Report`,
-      `Date: ${new Date().toISOString()}`,
-      `Result: ${anyFail ? "FAIL" : "PASS"}`,
-      ""
-    ].join("\n");
-
-    reportEl.textContent = header + lines.join("\n");
-    copyBtn.disabled = false;
-    badge.textContent = anyFail ? "FAIL" : "PASS";
-  }
-
-  // ===== Init =====
-  render();
-
-})();
-</script>
-</body>
-</html>
+        <div class="stat"><div class="k">Distance</div><div class="v">${fmtNum(tot.distance,0)} ${esc(state.settings.distUnit||"km")}</div></div>
+        <div class="stat"><div class="k">Fuel cost</div><div class="v">${fmtMoney(sym, tot.fuelCost)}</div></div>
+        <div class="stat"><div class="k">Charge cost</div><div class="v">${fmtMoney(sym, tot.chargeCost)}</div></div>
+        <div class="stat"><div class="k">Other expenses</div><div class="v">${fmtMoney(sym, tot.other
