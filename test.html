@@ -5,10 +5,9 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>JourneyLedger AU — Offline Trip Costs</title>
   <meta name="theme-color" content="#0b1020" />
-
   <style>
     :root{
-      --bg:#0b1020; --panel:#111a33; --panel2:#0f1730; --text:#e8ecff; --muted:#a9b2d6;
+      --bg:#0b1020; --panel:#111a33; --text:#e8ecff; --muted:#a9b2d6;
       --acc:#46b3ff; --good:#26d07c; --warn:#ffb020; --bad:#ff4d4d; --line:#253055;
       --radius:16px;
       --shadow: 0 10px 30px rgba(0,0,0,.35);
@@ -16,7 +15,6 @@
     }
     *{box-sizing:border-box}
     body{margin:0; font-family:var(--font); background:radial-gradient(1200px 600px at 20% 0%, #162456 0%, var(--bg) 55%); color:var(--text);}
-    a{color:inherit}
     .wrap{max-width:1100px; margin:0 auto; padding:18px;}
     .topbar{
       display:flex; gap:12px; align-items:center; justify-content:space-between;
@@ -43,6 +41,7 @@
       background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
       border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);
       padding:14px;
+      overflow:hidden;
     }
     .card h2{margin:0 0 10px 0; font-size:14px; color:var(--muted); font-weight:600; letter-spacing:.3px}
     .stats{display:grid; grid-template-columns: repeat(2,1fr); gap:10px}
@@ -66,7 +65,7 @@
     .item .meta{display:flex; flex-direction:column; gap:4px; min-width:0}
     .item .meta b{font-size:14px}
     .item .meta span{font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-    .pill{font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid var(--line); background:rgba(0,0,0,.18)}
+    .pill{font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid var(--line); background:rgba(0,0,0,.18); white-space:nowrap}
     .pill.good{border-color:rgba(38,208,124,.7)}
     .pill.warn{border-color:rgba(255,176,32,.7)}
     .pill.bad{border-color:rgba(255,77,77,.7)}
@@ -75,7 +74,6 @@
     .hr{height:1px; background:var(--line); margin:12px 0}
     .small{font-size:12px}
     .footer{margin-top:14px; text-align:center; color:var(--muted); font-size:12px}
-
     dialog{
       border:1px solid var(--line); border-radius:18px; background:linear-gradient(180deg, rgba(20,30,60,.95), rgba(10,15,35,.95));
       color:var(--text); box-shadow:var(--shadow); max-width:720px; width:calc(100% - 24px);
@@ -83,6 +81,19 @@
     dialog::backdrop{background:rgba(0,0,0,.55)}
     .dlgHead{display:flex; justify-content:space-between; align-items:center; gap:10px}
     .dlgHead h3{margin:0}
+    table{width:100%; border-collapse:collapse}
+    th, td{padding:8px; border-bottom:1px solid var(--line)}
+    th{text-align:left; color:var(--muted); font-size:12px; font-weight:600}
+    td{text-align:left; font-size:13px}
+    .toast{
+      position:fixed; bottom:18px; left:50%; transform:translateX(-50%);
+      background:rgba(10,15,35,.95); border:1px solid var(--line); border-radius:999px;
+      padding:10px 14px; box-shadow:var(--shadow); color:var(--text); font-size:13px;
+      opacity:0; pointer-events:none; transition:opacity .18s ease;
+    }
+    .toast.show{opacity:1}
+    .kbd{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size:12px; border:1px solid var(--line); padding:2px 6px; border-radius:8px; background:rgba(0,0,0,.18)}
   </style>
 </head>
 
@@ -91,7 +102,7 @@
   <div class="topbar">
     <div class="brand">
       <b>JourneyLedger AU</b>
-      <span>Offline trip costs • Your data stays on your device • v0.1</span>
+      <span>Offline trip costs • Your data stays on your device • v0.1.1 (single-file)</span>
     </div>
     <div class="actions">
       <select id="tripSelect" title="Active trip"></select>
@@ -124,19 +135,19 @@
 
       <div class="hr"></div>
       <div class="small muted">
-        Tip: Install this as an app (Chrome menu → “Install app” / “Add to Home Screen”).
+        Tip: In Chrome you can use <span class="kbd">⋮</span> → <b>Install app</b> / <b>Add to Home Screen</b>.
       </div>
     </div>
 
-    <div class="card" id="panel">
-      <!-- panels are rendered here -->
-    </div>
+    <div class="card" id="panel"></div>
   </div>
 
   <div class="footer">
     Built for Australian road trippers • No account • No cloud • No tracking
   </div>
 </div>
+
+<div class="toast" id="toast"></div>
 
 <!-- Trip dialog -->
 <dialog id="tripDialog">
@@ -167,7 +178,7 @@
     <button id="importDlgClose">✕</button>
   </div>
   <div class="hr"></div>
-  <p class="muted small">Choose a JSON backup exported by JourneyLedger AU.</p>
+  <p class="muted small">Choose a JSON backup exported by this app.</p>
   <div class="row">
     <label>Mode
       <select id="importMode">
@@ -186,808 +197,736 @@
 </dialog>
 
 <script>
-/**
- * JourneyLedger AU v0.1
- * Offline-first, privacy-first trip ledger.
- * Storage: IndexedDB (preferred) with a thin wrapper.
- */
+(function(){
+  "use strict";
 
-const APP = {
-  schema: 1,
-  dbName: "journeyledger_au",
-  dbVersion: 1,
-  store: "kv",
-  currency: "$",
-  distanceUnit: "km",
-};
+  const STORAGE_KEY = "journeyledger_state_v1";
+  const APP = { schema: 1, currency: "$", distanceUnit: "km" };
 
-const $ = (sel, root=document) => root.querySelector(sel);
-const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
-const fmtMoney = (n) => {
-  if (n === null || n === undefined || Number.isNaN(n)) return "—";
-  return `${APP.currency}${Number(n).toFixed(2)}`;
-};
-const fmtNum = (n, dp=1) => (n === null || n === undefined || Number.isNaN(n)) ? "—" : Number(n).toFixed(dp);
-const uid = () => crypto.randomUUID ? crypto.randomUUID() : ("id_" + Math.random().toString(16).slice(2) + Date.now());
+  const $ = (sel, root=document) => root.querySelector(sel);
+  const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+  const esc = (str) => String(str ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const today = () => new Date().toISOString().slice(0,10);
+  const uid = () => (crypto.randomUUID ? crypto.randomUUID() : ("id_" + Math.random().toString(16).slice(2) + Date.now()));
 
-/* ---------- IndexedDB KV wrapper ---------- */
-const idb = {
-  db: null,
-  async open(){
-    if (this.db) return this.db;
-    this.db = await new Promise((resolve, reject) => {
-      const req = indexedDB.open(APP.dbName, APP.dbVersion);
-      req.onupgradeneeded = () => {
-        const db = req.result;
-        if (!db.objectStoreNames.contains(APP.store)) db.createObjectStore(APP.store);
-      };
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-    return this.db;
-  },
-  async get(key){
-    const db = await this.open();
-    return await new Promise((resolve, reject) => {
-      const tx = db.transaction(APP.store, "readonly");
-      const st = tx.objectStore(APP.store);
-      const req = st.get(key);
-      req.onsuccess = () => resolve(req.result ?? null);
-      req.onerror = () => reject(req.error);
-    });
-  },
-  async set(key, value){
-    const db = await this.open();
-    return await new Promise((resolve, reject) => {
-      const tx = db.transaction(APP.store, "readwrite");
-      tx.oncomplete = () => resolve(true);
-      tx.onerror = () => reject(tx.error);
-      tx.objectStore(APP.store).put(value, key);
-    });
-  },
-  async del(key){
-    const db = await this.open();
-    return await new Promise((resolve, reject) => {
-      const tx = db.transaction(APP.store, "readwrite");
-      tx.oncomplete = () => resolve(true);
-      tx.onerror = () => reject(tx.error);
-      tx.objectStore(APP.store).delete(key);
-    });
-  }
-};
+  const fmtMoney = (n) => (n===null||n===undefined||Number.isNaN(n)) ? "—" : `${APP.currency}${Number(n).toFixed(2)}`;
+  const fmtNum = (n, dp=1) => (n===null||n===undefined||Number.isNaN(n)) ? "—" : Number(n).toFixed(dp);
 
-/* ---------- Data model ---------- */
-function emptyState(){
-  return {
-    schema: APP.schema,
-    settings: { currency:"$", distanceUnit:"km", effTarget: 10 },
-    categories: [
-      { id:"fuel", name:"Fuel", colour:"#46b3ff", locked:true },
-      { id:uid(), name:"Food & Drink", colour:"#ffb020" },
-      { id:uid(), name:"Accommodation", colour:"#26d07c" },
-      { id:uid(), name:"Tolls & Fees", colour:"#a9b2d6" },
-      { id:uid(), name:"Maintenance", colour:"#ff4d4d" },
-      { id:uid(), name:"Camping Fees", colour:"#7b5cff" },
-      { id:uid(), name:"Activities", colour:"#ffd166" },
-      { id:uid(), name:"Misc", colour:"#9aa5ff" },
-    ],
-    trips: [],
-    activeTripId: null,
-    lastBackupAt: null,
-  };
-}
-
-async function loadState(){
-  const saved = await idb.get("state");
-  if (saved && saved.schema) return saved;
-  const st = emptyState();
-  await idb.set("state", st);
-  return st;
-}
-async function saveState(){
-  await idb.set("state", state);
-}
-
-/* ---------- App state ---------- */
-let state = await loadState();
-applySettings();
-
-/* ---------- UI bindings ---------- */
-const panel = $("#panel");
-const tripSelect = $("#tripSelect");
-
-function applySettings(){
-  APP.currency = state.settings.currency || "$";
-  APP.distanceUnit = state.settings.distanceUnit || "km";
-}
-
-function getActiveTrip(){
-  return state.trips.find(t => t.id === state.activeTripId) || null;
-}
-
-function ensureTrip(){
-  if (!state.activeTripId && state.trips.length){
-    state.activeTripId = state.trips[0].id;
-  }
-}
-
-/* ---------- Rendering ---------- */
-function renderTripSelect(){
-  tripSelect.innerHTML = "";
-  if (!state.trips.length){
-    const opt = document.createElement("option");
-    opt.value = "";
-    opt.textContent = "No trips yet";
-    tripSelect.appendChild(opt);
-    tripSelect.disabled = true;
-    return;
-  }
-  tripSelect.disabled = false;
-  for (const t of state.trips){
-    const opt = document.createElement("option");
-    opt.value = t.id;
-    opt.textContent = t.name;
-    if (t.id === state.activeTripId) opt.selected = true;
-    tripSelect.appendChild(opt);
-  }
-}
-
-function calcTripTotals(trip){
-  const fuelStops = trip.fuelStops ?? [];
-  const expenses = trip.expenses ?? [];
-  let totalFuelLitres = 0;
-  let totalFuelCost = 0;
-  for (const f of fuelStops){
-    totalFuelLitres += Number(f.litres || 0);
-    totalFuelCost += Number(f.totalCost || 0);
-  }
-  let totalExpense = 0;
-  for (const e of expenses) totalExpense += Number(e.amount || 0);
-
-  const startOdo = Number(trip.odoStart || 0);
-  const endOdo = fuelStops.length ? Number(fuelStops[fuelStops.length - 1].odo || startOdo) : startOdo;
-  const distance = Math.max(0, endOdo - startOdo);
-
-  const eff = distance > 0 ? (totalFuelLitres / distance) * 100 : null;
-  const spend = totalFuelCost + totalExpense;
-
-  return { distance, totalFuelLitres, eff, spend, totalFuelCost, totalExpense };
-}
-
-function setStats(){
-  const trip = getActiveTrip();
-  if (!trip){
-    $("#statDistance").textContent = "—";
-    $("#statFuel").textContent = "—";
-    $("#statEff").textContent = "—";
-    $("#statSpend").textContent = "—";
-    return;
-  }
-  const t = calcTripTotals(trip);
-  $("#statDistance").textContent = `${fmtNum(t.distance, 0)} ${APP.distanceUnit}`;
-  $("#statFuel").textContent = `${fmtNum(t.totalFuelLitres, 1)} L`;
-  $("#statEff").textContent = t.eff === null ? "—" : `${fmtNum(t.eff, 1)} L/100km`;
-  $("#statSpend").textContent = fmtMoney(t.spend);
-}
-
-function tabBtn(name){
-  return $(`#tabs .tab[data-tab="${name}"]`);
-}
-let activeTab = "fuel";
-
-function render(){
-  ensureTrip();
-  renderTripSelect();
-  setStats();
-  renderPanel();
-}
-
-function renderPanel(){
-  const trip = getActiveTrip();
-
-  if (!trip){
-    panel.innerHTML = `
-      <h2>Welcome</h2>
-      <p class="muted">Create your first trip to start tracking fuel, expenses and totals — offline, private, and simple.</p>
-      <button class="primary" id="startTrip">+ New Trip</button>
-    `;
-    $("#startTrip")?.addEventListener("click", () => openTripDialog());
-    return;
+  const toastEl = $("#toast");
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastEl._t);
+    toastEl._t = setTimeout(()=>toastEl.classList.remove("show"), 1400);
   }
 
-  if (activeTab === "fuel") panel.innerHTML = fuelPanel(trip);
-  if (activeTab === "expenses") panel.innerHTML = expensePanel(trip);
-  if (activeTab === "categories") panel.innerHTML = categoriesPanel();
-  if (activeTab === "summary") panel.innerHTML = summaryPanel(trip);
-  if (activeTab === "settings") panel.innerHTML = settingsPanel();
+  function emptyState(){
+    return {
+      schema: APP.schema,
+      settings: { currency:"$", distanceUnit:"km", effTarget: 10 },
+      categories: [
+        { id:"fuel", name:"Fuel", colour:"#46b3ff", locked:true },
+        { id:uid(), name:"Food & Drink", colour:"#ffb020" },
+        { id:uid(), name:"Accommodation", colour:"#26d07c" },
+        { id:uid(), name:"Tolls & Fees", colour:"#a9b2d6" },
+        { id:uid(), name:"Maintenance", colour:"#ff4d4d" },
+        { id:uid(), name:"Camping Fees", colour:"#7b5cff" },
+        { id:uid(), name:"Activities", colour:"#ffd166" },
+        { id:uid(), name:"Misc", colour:"#9aa5ff" }
+      ],
+      trips: [],
+      activeTripId: null,
+      lastBackupAt: null
+    };
+  }
 
-  bindPanelHandlers();
-}
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return emptyState();
+      const parsed = JSON.parse(raw);
+      if (!parsed || !parsed.schema) return emptyState();
+      return parsed;
+    }catch{
+      return emptyState();
+    }
+  }
 
-/* ---------- Panels ---------- */
-function fuelPanel(trip){
-  const stops = (trip.fuelStops ?? []).slice().sort((a,b)=> (a.date||"").localeCompare(b.date||""));
-  const list = stops.map(s => {
-    const pill = effPillForStop(trip, s);
+  function saveState(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
+
+  let state = loadState();
+  applySettings();
+  ensureMinimums();
+
+  const panel = $("#panel");
+  const tripSelect = $("#tripSelect");
+  const tabsRoot = $("#tabs");
+  let activeTab = "fuel";
+
+  function applySettings(){
+    APP.currency = state.settings?.currency || "$";
+    APP.distanceUnit = state.settings?.distanceUnit || "km";
+  }
+
+  function ensureMinimums(){
+    // Ensure Uncategorised exists
+    if (!state.categories.some(c=>c.id==="uncat")){
+      state.categories.push({ id:"uncat", name:"Uncategorised", colour:"#a9b2d6", locked:true });
+    }
+    // Ensure active trip if trips exist
+    if (!state.activeTripId && state.trips.length){
+      state.activeTripId = state.trips[0].id;
+    }
+  }
+
+  function getActiveTrip(){
+    return state.trips.find(t => t.id === state.activeTripId) || null;
+  }
+
+  function renderTripSelect(){
+    tripSelect.innerHTML = "";
+    if (!state.trips.length){
+      tripSelect.disabled = true;
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "No trips yet";
+      tripSelect.appendChild(opt);
+      return;
+    }
+    tripSelect.disabled = false;
+    for (const t of state.trips){
+      const opt = document.createElement("option");
+      opt.value = t.id;
+      opt.textContent = t.name;
+      if (t.id === state.activeTripId) opt.selected = true;
+      tripSelect.appendChild(opt);
+    }
+  }
+
+  function calcTripTotals(trip){
+    const fuelStops = (trip.fuelStops ?? []).slice().sort((a,b)=> (a.date||"").localeCompare(b.date||""));
+    const expenses = trip.expenses ?? [];
+
+    let totalFuelLitres = 0;
+    let totalFuelCost = 0;
+    for (const f of fuelStops){
+      totalFuelLitres += Number(f.litres || 0);
+      totalFuelCost += Number(f.totalCost || 0);
+    }
+
+    let totalExpense = 0;
+    for (const e of expenses) totalExpense += Number(e.amount || 0);
+
+    const startOdo = Number(trip.odoStart || 0);
+    const endOdo = fuelStops.length ? Number(fuelStops[fuelStops.length - 1].odo || startOdo) : startOdo;
+    const distance = Math.max(0, endOdo - startOdo);
+
+    const eff = distance > 0 ? (totalFuelLitres / distance) * 100 : null;
+    const spend = totalFuelCost + totalExpense;
+
+    return { distance, totalFuelLitres, eff, spend, totalFuelCost, totalExpense, fuelStops };
+  }
+
+  function setStats(){
+    const trip = getActiveTrip();
+    if (!trip){
+      $("#statDistance").textContent = "—";
+      $("#statFuel").textContent = "—";
+      $("#statEff").textContent = "—";
+      $("#statSpend").textContent = "—";
+      return;
+    }
+    const t = calcTripTotals(trip);
+    $("#statDistance").textContent = `${fmtNum(t.distance, 0)} ${APP.distanceUnit}`;
+    $("#statFuel").textContent = `${fmtNum(t.totalFuelLitres, 1)} L`;
+    $("#statEff").textContent = t.eff === null ? "—" : `${fmtNum(t.eff, 1)} L/100km`;
+    $("#statSpend").textContent = fmtMoney(t.spend);
+  }
+
+  function effPill(eff){
+    if (eff === null || eff === undefined || Number.isNaN(eff)) return `<span class="pill">—</span>`;
+    const tgt = Number(state.settings?.effTarget ?? 10);
+    const klass = eff <= tgt ? "good" : (eff <= tgt*1.2 ? "warn" : "bad");
+    return `<span class="pill ${klass}">${fmtNum(eff,1)} L/100km</span>`;
+  }
+
+  function render(){
+    ensureMinimums();
+    renderTripSelect();
+    setStats();
+    renderPanel();
+  }
+
+  function renderPanel(){
+    const trip = getActiveTrip();
+
+    if (!trip){
+      panel.innerHTML = `
+        <h2>Welcome</h2>
+        <p class="muted">Create your first trip to start tracking fuel, expenses and totals — offline, private, and simple.</p>
+        <div class="right">
+          <button class="primary" id="startTrip">+ New Trip</button>
+        </div>
+        <div class="hr"></div>
+        <p class="muted small">Export backups if you want to move devices or protect against browser clears.</p>
+      `;
+      $("#startTrip").addEventListener("click", () => openTripDialog(null));
+      return;
+    }
+
+    if (activeTab === "fuel") panel.innerHTML = fuelPanel(trip);
+    if (activeTab === "expenses") panel.innerHTML = expensePanel(trip);
+    if (activeTab === "categories") panel.innerHTML = categoriesPanel();
+    if (activeTab === "summary") panel.innerHTML = summaryPanel(trip);
+    if (activeTab === "settings") panel.innerHTML = settingsPanel();
+
+    bindPanelHandlers();
+  }
+
+  function fuelPanel(trip){
+    const { fuelStops } = calcTripTotals(trip);
+    const list = fuelStops.map((s, idx) => {
+      let segPill = `<span class="pill">—</span>`;
+      if (idx > 0){
+        const prev = fuelStops[idx-1];
+        const d = Math.max(0, Number(s.odo||0) - Number(prev.odo||0));
+        const l = Number(s.litres||0);
+        const eff = d>0 ? (l/d)*100 : null;
+        segPill = effPill(eff);
+      }
+      return `
+        <div class="item">
+          <div class="meta">
+            <b>${s.station ? esc(s.station) : "Fuel stop"}</b>
+            <span>${esc(s.date || "")} • Odo ${fmtNum(s.odo,0)} • ${fmtNum(s.litres,1)} L • ${fmtMoney(s.totalCost)}</span>
+            ${s.notes ? `<span class="muted">${esc(s.notes)}</span>` : ""}
+          </div>
+          <div class="right">
+            ${segPill}
+            <button data-act="delFuel" data-id="${s.id}" class="danger">Delete</button>
+          </div>
+        </div>
+      `;
+    }).join("") || `<p class="muted">No fuel stops yet.</p>`;
+
     return `
+      <h2>⛽ Log Fuel Stop</h2>
+      <div class="row">
+        <label>Date <input id="fuelDate" type="date" value="${today()}"/></label>
+        <label>Station / Location <input id="fuelStation" placeholder="e.g., Caltex Roma"/></label>
+        <label>Odometer (km) * <input id="fuelOdo" type="number" step="0.1" /></label>
+        <label>Litres * <input id="fuelLitres" type="number" step="0.01" /></label>
+        <label>Price per litre (${APP.currency}) <input id="fuelPPL" type="number" step="0.001" /></label>
+        <label>Total cost (${APP.currency}) <input id="fuelTotal" type="number" step="0.01" /></label>
+        <label>Notes <textarea id="fuelNotes"></textarea></label>
+      </div>
+      <div class="right">
+        <button id="fuelClear">Clear</button>
+        <button class="primary" id="fuelSave">Save fuel stop</button>
+      </div>
+
+      <div class="hr"></div>
+      <h2>Fuel history</h2>
+      <div class="list">${list}</div>
+    `;
+  }
+
+  function expensePanel(trip){
+    const items = (trip.expenses ?? []).slice().sort((a,b)=> (a.date||"").localeCompare(b.date||""));
+    const catById = Object.fromEntries(state.categories.map(c=>[c.id,c]));
+    const list = items.map(e => `
       <div class="item">
         <div class="meta">
-          <b>${s.station ? esc(s.station) : "Fuel stop"}</b>
-          <span>${esc(s.date || "")} • Odo ${fmtNum(s.odo,0)} • ${fmtNum(s.litres,1)} L • ${fmtMoney(s.totalCost)}</span>
-          ${s.notes ? `<span class="muted">${esc(s.notes)}</span>` : ""}
+          <b>${esc(e.desc || "Expense")}</b>
+          <span>${esc(e.date||"")} • ${(catById[e.catId]?.name ?? "Uncategorised")} • ${fmtMoney(e.amount)}</span>
+          ${e.notes ? `<span class="muted">${esc(e.notes)}</span>` : ""}
         </div>
         <div class="right">
-          ${pill}
-          <button data-act="editFuel" data-id="${s.id}">Edit</button>
-          <button class="danger" data-act="delFuel" data-id="${s.id}">Delete</button>
+          <button class="danger" data-act="delExp" data-id="${e.id}">Delete</button>
         </div>
       </div>
+    `).join("") || `<p class="muted">No expenses yet.</p>`;
+
+    const catOptions = state.categories
+      .filter(c=>c.id!=="fuel")
+      .map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
+
+    return `
+      <h2>🧾 Log Expense</h2>
+      <div class="row">
+        <label>Date <input id="expDate" type="date" value="${today()}"/></label>
+        <label>Category
+          <select id="expCat">${catOptions}</select>
+        </label>
+        <label>Description * <input id="expDesc" placeholder="e.g., Caravan park / Lunch / Tolls"/></label>
+        <label>Amount (${APP.currency}) * <input id="expAmt" type="number" step="0.01"/></label>
+        <label>Notes <textarea id="expNotes"></textarea></label>
+      </div>
+      <div class="right">
+        <button id="expClear">Clear</button>
+        <button class="primary" id="expSave">Save expense</button>
+      </div>
+
+      <div class="hr"></div>
+      <h2>Expense history</h2>
+      <div class="list">${list}</div>
     `;
-  }).join("") || `<p class="muted">No fuel stops yet.</p>`;
-
-  return `
-    <h2>⛽ Log Fuel Stop</h2>
-    <div class="row">
-      <label>Date <input id="fuelDate" type="date"/></label>
-      <label>Station / Location <input id="fuelStation" placeholder="e.g., Caltex Roma"/></label>
-      <label>Odometer (km) * <input id="fuelOdo" type="number" step="0.1" /></label>
-      <label>Litres * <input id="fuelLitres" type="number" step="0.01" /></label>
-      <label>Price per litre (${APP.currency}) <input id="fuelPPL" type="number" step="0.001" /></label>
-      <label>Total cost (${APP.currency}) <input id="fuelTotal" type="number" step="0.01" /></label>
-      <label>Notes <textarea id="fuelNotes"></textarea></label>
-    </div>
-    <div class="right">
-      <button id="fuelClear">Clear</button>
-      <button class="primary" id="fuelSave">Save fuel stop</button>
-    </div>
-
-    <div class="hr"></div>
-    <h2>Fuel history</h2>
-    <div class="list">${list}</div>
-  `;
-}
-
-function expensePanel(trip){
-  const items = (trip.expenses ?? []).slice().sort((a,b)=> (a.date||"").localeCompare(b.date||""));
-  const catById = Object.fromEntries(state.categories.map(c=>[c.id,c]));
-  const list = items.map(e => `
-    <div class="item">
-      <div class="meta">
-        <b>${esc(e.desc || "Expense")}</b>
-        <span>${esc(e.date||"")} • ${(catById[e.catId]?.name ?? "Uncategorised")} • ${fmtMoney(e.amount)}</span>
-        ${e.notes ? `<span class="muted">${esc(e.notes)}</span>` : ""}
-      </div>
-      <div class="right">
-        <button data-act="editExp" data-id="${e.id}">Edit</button>
-        <button class="danger" data-act="delExp" data-id="${e.id}">Delete</button>
-      </div>
-    </div>
-  `).join("") || `<p class="muted">No expenses yet.</p>`;
-
-  const catOptions = state.categories.filter(c=>c.id!=="fuel").map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
-
-  return `
-    <h2>🧾 Log Expense</h2>
-    <div class="row">
-      <label>Date <input id="expDate" type="date"/></label>
-      <label>Category
-        <select id="expCat">${catOptions}</select>
-      </label>
-      <label>Description * <input id="expDesc" placeholder="e.g., Caravan park / Lunch / Tolls"/></label>
-      <label>Amount (${APP.currency}) * <input id="expAmt" type="number" step="0.01"/></label>
-      <label>Notes <textarea id="expNotes"></textarea></label>
-    </div>
-    <div class="right">
-      <button id="expClear">Clear</button>
-      <button class="primary" id="expSave">Save expense</button>
-    </div>
-
-    <div class="hr"></div>
-    <h2>Expense history</h2>
-    <div class="list">${list}</div>
-  `;
-}
-
-function categoriesPanel(){
-  const list = state.categories.filter(c=>c.id!=="fuel").map(c => `
-    <div class="item">
-      <div class="meta">
-        <b>${esc(c.name)}</b>
-        <span class="muted">Colour: ${esc(c.colour || "")}</span>
-      </div>
-      <div class="right">
-        <span class="pill" style="border-color:${esc(c.colour || "#fff")}">${esc(c.colour || "")}</span>
-        <button class="danger" data-act="delCat" data-id="${c.id}">Delete</button>
-      </div>
-    </div>
-  `).join("");
-
-  return `
-    <h2>🎨 Categories</h2>
-    <div class="row">
-      <label>Category name * <input id="catName" placeholder="e.g., Repairs"/></label>
-      <label>Colour <input id="catColour" type="color" value="#46b3ff"/></label>
-    </div>
-    <div class="right">
-      <button class="primary" id="catAdd">Add category</button>
-    </div>
-
-    <div class="hr"></div>
-    <h2>Your categories</h2>
-    <div class="list">${list || `<p class="muted">No custom categories yet.</p>`}</div>
-    <p class="muted small">Note: Deleting a category won’t delete expenses — they’ll show as “Uncategorised”.</p>
-  `;
-}
-
-function summaryPanel(trip){
-  const totals = calcTripTotals(trip);
-  const fuelStops = (trip.fuelStops ?? []).slice().sort((a,b)=> (a.date||"").localeCompare(b.date||""));
-
-  // spend by category
-  const byCat = new Map();
-  // fuel as its own bucket
-  byCat.set("fuel", totals.totalFuelCost);
-
-  for (const e of (trip.expenses ?? [])){
-    byCat.set(e.catId, (byCat.get(e.catId) || 0) + Number(e.amount || 0));
   }
 
-  const catById = Object.fromEntries(state.categories.map(c=>[c.id,c]));
-  const rows = Array.from(byCat.entries())
-    .map(([catId, amt]) => ({ catId, name: catById[catId]?.name ?? "Uncategorised", amt }))
-    .sort((a,b)=> b.amt - a.amt);
-
-  const spendTable = rows.map(r => {
-    const share = totals.spend > 0 ? (r.amt / totals.spend) * 100 : 0;
-    return `<tr>
-      <td>${esc(r.name)}</td>
-      <td style="text-align:right">${fmtMoney(r.amt)}</td>
-      <td style="text-align:right">${share.toFixed(0)}%</td>
-    </tr>`;
-  }).join("");
-
-  // efficiency list (segment-based)
-  const seg = [];
-  for (let i=1;i<fuelStops.length;i++){
-    const prev = fuelStops[i-1], cur = fuelStops[i];
-    const d = Math.max(0, Number(cur.odo||0) - Number(prev.odo||0));
-    const l = Number(cur.litres||0);
-    const eff = d>0 ? (l/d)*100 : null;
-    seg.push({ date: cur.date||"", dist:d, litres:l, eff });
-  }
-  const effList = seg.map(s => `
-    <div class="item">
-      <div class="meta">
-        <b>${esc(s.date || "Segment")}</b>
-        <span>${fmtNum(s.dist,0)} km • ${fmtNum(s.litres,1)} L • ${s.eff===null?"—":fmtNum(s.eff,1)+" L/100km"}</span>
-      </div>
-      <div class="right">${effPill(s.eff)}</div>
-    </div>
-  `).join("") || `<p class="muted">Log at least 2 fuel stops to see segment efficiency.</p>`;
-
-  // budget
-  const budget = Number(trip.budget || 0);
-  let budgetHtml = `<p class="muted">No budget set.</p>`;
-  if (budget > 0){
-    const pct = Math.min(150, (totals.spend / budget) * 100);
-    const colour = totals.spend > budget ? "var(--bad)" : (pct >= 80 ? "var(--warn)" : "var(--good)");
-    budgetHtml = `
-      <div class="stat" style="grid-column: 1 / -1">
-        <div class="k">Budget</div>
-        <div class="v">${fmtMoney(Math.max(0, budget - totals.spend))} left of ${fmtMoney(budget)} (${Math.min(999, (totals.spend / budget)*100).toFixed(0)}% used)</div>
-        <div style="height:10px; border:1px solid var(--line); border-radius:999px; overflow:hidden; margin-top:10px; background:rgba(0,0,0,.18)">
-          <div style="height:100%; width:${pct}%; background:${colour}"></div>
+  function categoriesPanel(){
+    const list = state.categories
+      .filter(c=>!c.locked && c.id!=="fuel" && c.id!=="uncat")
+      .map(c => `
+        <div class="item">
+          <div class="meta">
+            <b>${esc(c.name)}</b>
+            <span class="muted">Colour: ${esc(c.colour || "")}</span>
+          </div>
+          <div class="right">
+            <span class="pill" style="border-color:${esc(c.colour || "#fff")}">${esc(c.colour || "")}</span>
+            <button class="danger" data-act="delCat" data-id="${c.id}">Delete</button>
+          </div>
         </div>
+      `).join("");
+
+    return `
+      <h2>🎨 Categories</h2>
+      <div class="row">
+        <label>Category name * <input id="catName" placeholder="e.g., Repairs"/></label>
+        <label>Colour <input id="catColour" type="color" value="#46b3ff"/></label>
+      </div>
+      <div class="right">
+        <button class="primary" id="catAdd">Add category</button>
+      </div>
+
+      <div class="hr"></div>
+      <h2>Your categories</h2>
+      <div class="list">${list || `<p class="muted">No custom categories yet.</p>`}</div>
+      <p class="muted small">Deleting a category won’t delete expenses — they’ll show as “Uncategorised”.</p>
+    `;
+  }
+
+  function summaryPanel(trip){
+    const totals = calcTripTotals(trip);
+
+    // Spend by category (including fuel bucket)
+    const byCat = new Map();
+    byCat.set("fuel", totals.totalFuelCost);
+    for (const e of (trip.expenses ?? [])){
+      byCat.set(e.catId, (byCat.get(e.catId) || 0) + Number(e.amount || 0));
+    }
+    const catById = Object.fromEntries(state.categories.map(c=>[c.id,c]));
+    const rows = Array.from(byCat.entries())
+      .map(([catId, amt]) => ({ name: catById[catId]?.name ?? "Uncategorised", amt }))
+      .sort((a,b)=> b.amt - a.amt);
+
+    const spendTable = rows.map(r => {
+      const share = totals.spend > 0 ? (r.amt / totals.spend) * 100 : 0;
+      return `<tr>
+        <td>${esc(r.name)}</td>
+        <td style="text-align:right">${fmtMoney(r.amt)}</td>
+        <td style="text-align:right">${share.toFixed(0)}%</td>
+      </tr>`;
+    }).join("");
+
+    // Budget
+    const budget = Number(trip.budget || 0);
+    let budgetBlock = `<p class="muted">No budget set.</p>`;
+    if (budget > 0){
+      const pct = Math.min(150, (totals.spend / budget) * 100);
+      const over = totals.spend > budget;
+      const colour = over ? "var(--bad)" : (pct >= 80 ? "var(--warn)" : "var(--good)");
+      budgetBlock = `
+        <div class="stat" style="grid-column: 1 / -1">
+          <div class="k">Budget</div>
+          <div class="v">${fmtMoney(Math.max(0, budget - totals.spend))} left of ${fmtMoney(budget)} (${Math.min(999, (totals.spend / budget)*100).toFixed(0)}% used)</div>
+          <div style="height:10px; border:1px solid var(--line); border-radius:999px; overflow:hidden; margin-top:10px; background:rgba(0,0,0,.18)">
+            <div style="height:100%; width:${pct}%; background:${colour}"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    return `
+      <h2>📊 Summary</h2>
+      <div class="stats">
+        <div class="stat"><div class="k">Trip</div><div class="v">${esc(trip.name)}</div></div>
+        <div class="stat"><div class="k">Distance</div><div class="v">${fmtNum(totals.distance,0)} ${APP.distanceUnit}</div></div>
+        <div class="stat"><div class="k">Fuel cost</div><div class="v">${fmtMoney(totals.totalFuelCost)}</div></div>
+        <div class="stat"><div class="k">Other expenses</div><div class="v">${fmtMoney(totals.totalExpense)}</div></div>
+        ${budgetBlock}
+      </div>
+
+      <div class="hr"></div>
+
+      <h2>Spend by category</h2>
+      <div style="overflow:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th style="text-align:right">Amount</th>
+              <th style="text-align:right">Share</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${spendTable || `<tr><td colspan="3" class="muted">No spend yet.</td></tr>`}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="right">
+        <button id="csvFuel">Export Fuel CSV</button>
+        <button id="csvExp">Export Expenses CSV</button>
+        <button id="csvTrips">Export Trips CSV</button>
       </div>
     `;
   }
 
-  return `
-    <h2>📊 Summary</h2>
+  function settingsPanel(){
+    const s = state.settings;
+    return `
+      <h2>⚙️ Settings</h2>
+      <div class="row">
+        <label>Currency symbol <input id="setCurrency" value="${esc(s.currency || "$")}" /></label>
+        <label>Distance unit
+          <select id="setUnit">
+            <option value="km" ${s.distanceUnit==="km"?"selected":""}>Kilometres (km)</option>
+            <option value="mi" ${s.distanceUnit==="mi"?"selected":""}>Miles (mi)</option>
+          </select>
+        </label>
+        <label>Efficiency target (L/100km) <input id="setTarget" type="number" step="0.1" value="${esc(String(s.effTarget ?? 10))}"/></label>
+      </div>
 
-    <div class="stats">
-      <div class="stat"><div class="k">Trip</div><div class="v">${esc(trip.name)}</div></div>
-      <div class="stat"><div class="k">Distance</div><div class="v">${fmtNum(totals.distance,0)} ${APP.distanceUnit}</div></div>
-      <div class="stat"><div class="k">Fuel cost</div><div class="v">${fmtMoney(totals.totalFuelCost)}</div></div>
-      <div class="stat"><div class="k">Other expenses</div><div class="v">${fmtMoney(totals.totalExpense)}</div></div>
-      ${budgetHtml}
-    </div>
+      <div class="hr"></div>
 
-    <div class="hr"></div>
-
-    <h2>Fuel efficiency (per segment)</h2>
-    <div class="list">${effList}</div>
-
-    <div class="hr"></div>
-
-    <h2>Spend by category</h2>
-    <div style="overflow:auto">
-      <table style="width:100%; border-collapse:collapse">
-        <thead>
-          <tr>
-            <th style="text-align:left; padding:8px; border-bottom:1px solid var(--line)">Category</th>
-            <th style="text-align:right; padding:8px; border-bottom:1px solid var(--line)">Amount</th>
-            <th style="text-align:right; padding:8px; border-bottom:1px solid var(--line)">Share</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${spendTable || `<tr><td colspan="3" class="muted" style="padding:10px">No spend yet.</td></tr>`}
-        </tbody>
-      </table>
-    </div>
-
-    <div class="hr"></div>
-
-    <div class="right">
-      <button id="csvFuel">Export Fuel CSV</button>
-      <button id="csvExp">Export Expenses CSV</button>
-      <button id="csvTrips">Export Trips CSV</button>
-    </div>
-  `;
-}
-
-function settingsPanel(){
-  const s = state.settings;
-  return `
-    <h2>⚙️ Settings</h2>
-    <div class="row">
-      <label>Currency symbol <input id="setCurrency" value="${esc(s.currency || "$")}" /></label>
-      <label>Distance unit
-        <select id="setUnit">
-          <option value="km" ${s.distanceUnit==="km"?"selected":""}>Kilometres (km)</option>
-          <option value="mi" ${s.distanceUnit==="mi"?"selected":""}>Miles (mi)</option>
-        </select>
-      </label>
-      <label>Efficiency target (L/100km) <input id="setTarget" type="number" step="0.1" value="${esc(String(s.effTarget ?? 10))}"/></label>
-    </div>
-    <div class="hr"></div>
-    <p class="muted small">
-      Everything is stored locally on your device. Export backups regularly if you want to move devices or protect against browser clears.
-    </p>
-  `;
-}
-
-/* ---------- Helpers ---------- */
-function esc(str){ return String(str ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-
-function effPill(eff){
-  if (eff === null || eff === undefined || Number.isNaN(eff)) return `<span class="pill">—</span>`;
-  const tgt = Number(state.settings.effTarget ?? 10);
-  const klass = eff <= tgt ? "good" : (eff <= tgt*1.2 ? "warn" : "bad");
-  return `<span class="pill ${klass}">${fmtNum(eff,1)} L/100km</span>`;
-}
-function effPillForStop(trip, stop){
-  const stops = (trip.fuelStops ?? []).slice().sort((a,b)=> (a.date||"").localeCompare(b.date||""));
-  const idx = stops.findIndex(s => s.id === stop.id);
-  if (idx <= 0) return `<span class="pill">—</span>`;
-  const prev = stops[idx-1];
-  const d = Math.max(0, Number(stop.odo||0) - Number(prev.odo||0));
-  const l = Number(stop.litres||0);
-  const eff = d>0 ? (l/d)*100 : null;
-  return effPill(eff);
-}
-
-/* ---------- Event binding ---------- */
-function bindTabs(){
-  $$("#tabs .tab").forEach(b => b.addEventListener("click", () => {
-    activeTab = b.dataset.tab;
-    $$("#tabs .tab").forEach(x => x.classList.toggle("active", x.dataset.tab === activeTab));
-    renderPanel();
-  }));
-}
-
-function bindPanelHandlers(){
-  const trip = getActiveTrip();
-  if (!trip) return;
-
-  // Fuel auto calc
-  if ($("#fuelLitres") && $("#fuelPPL") && $("#fuelTotal")){
-    const recalc = () => {
-      const l = Number($("#fuelLitres").value || 0);
-      const p = Number($("#fuelPPL").value || 0);
-      if (l > 0 && p > 0) $("#fuelTotal").value = (l * p).toFixed(2);
-    };
-    $("#fuelLitres").addEventListener("input", recalc);
-    $("#fuelPPL").addEventListener("input", recalc);
+      <div class="item">
+        <div class="meta">
+          <b>Data safety</b>
+          <span class="muted">Everything is stored locally in your browser. Export backups if you want to move devices or protect against clearing browser data.</span>
+        </div>
+      </div>
+    `;
   }
 
-  $("#fuelSave")?.addEventListener("click", async () => {
-    const odo = Number($("#fuelOdo").value);
-    const litres = Number($("#fuelLitres").value);
-    if (!Number.isFinite(odo) || !Number.isFinite(litres) || litres <= 0){
-      alert("Odometer and Litres are required.");
-      return;
+  function bindTabs(){
+    $$("#tabs .tab").forEach(b => b.addEventListener("click", () => {
+      activeTab = b.dataset.tab;
+      $$("#tabs .tab").forEach(x => x.classList.toggle("active", x.dataset.tab === activeTab));
+      renderPanel();
+    }));
+  }
+
+  function bindPanelHandlers(){
+    const trip = getActiveTrip();
+    if (!trip) return;
+
+    // Fuel auto-calc
+    if ($("#fuelLitres") && $("#fuelPPL") && $("#fuelTotal")){
+      const recalc = () => {
+        const l = Number($("#fuelLitres").value || 0);
+        const p = Number($("#fuelPPL").value || 0);
+        if (l > 0 && p > 0) $("#fuelTotal").value = (l * p).toFixed(2);
+      };
+      $("#fuelLitres").addEventListener("input", recalc);
+      $("#fuelPPL").addEventListener("input", recalc);
     }
-    const ppl = Number($("#fuelPPL").value || 0);
-    const total = Number($("#fuelTotal").value || (litres * ppl) || 0);
 
-    const stop = {
-      id: uid(),
-      date: $("#fuelDate").value || new Date().toISOString().slice(0,10),
-      station: $("#fuelStation").value.trim(),
-      odo,
-      litres,
-      pricePerL: ppl || null,
-      totalCost: total || 0,
-      notes: $("#fuelNotes").value.trim(),
-    };
-    trip.fuelStops = trip.fuelStops ?? [];
-    trip.fuelStops.push(stop);
-    await saveState();
-    render();
-  });
+    $("#fuelSave") && $("#fuelSave").addEventListener("click", () => {
+      const odo = Number($("#fuelOdo").value);
+      const litres = Number($("#fuelLitres").value);
+      if (!Number.isFinite(odo) || !Number.isFinite(litres) || litres <= 0){
+        alert("Odometer and Litres are required.");
+        return;
+      }
+      const ppl = Number($("#fuelPPL").value || 0);
+      const total = Number($("#fuelTotal").value || (litres * ppl) || 0);
 
-  $("#fuelClear")?.addEventListener("click", () => {
-    ["fuelDate","fuelStation","fuelOdo","fuelLitres","fuelPPL","fuelTotal","fuelNotes"].forEach(id => { const el = $("#"+id); if (el) el.value=""; });
-  });
+      trip.fuelStops = trip.fuelStops || [];
+      trip.fuelStops.push({
+        id: uid(),
+        date: $("#fuelDate").value || today(),
+        station: $("#fuelStation").value.trim(),
+        odo,
+        litres,
+        pricePerL: ppl || null,
+        totalCost: total || 0,
+        notes: $("#fuelNotes").value.trim()
+      });
 
-  $("#expSave")?.addEventListener("click", async () => {
-    const desc = $("#expDesc").value.trim();
-    const amt = Number($("#expAmt").value);
-    if (!desc || !Number.isFinite(amt)){
-      alert("Description and Amount are required.");
-      return;
-    }
-    const exp = {
-      id: uid(),
-      date: $("#expDate").value || new Date().toISOString().slice(0,10),
-      catId: $("#expCat").value,
-      desc,
-      amount: amt,
-      notes: $("#expNotes").value.trim(),
-    };
-    trip.expenses = trip.expenses ?? [];
-    trip.expenses.push(exp);
-    await saveState();
-    render();
-  });
+      saveState();
+      toast("Fuel saved");
+      render();
+    });
 
-  $("#expClear")?.addEventListener("click", () => {
-    ["expDate","expDesc","expAmt","expNotes"].forEach(id => { const el = $("#"+id); if (el) el.value=""; });
-  });
+    $("#fuelClear") && $("#fuelClear").addEventListener("click", () => {
+      ["fuelStation","fuelOdo","fuelLitres","fuelPPL","fuelTotal","fuelNotes"].forEach(id => { const el = $("#"+id); if (el) el.value=""; });
+      $("#fuelDate").value = today();
+    });
 
-  // Category add/delete
-  $("#catAdd")?.addEventListener("click", async () => {
-    const name = $("#catName").value.trim();
-    const colour = $("#catColour").value;
-    if (!name){ alert("Category name is required."); return; }
-    state.categories.push({ id: uid(), name, colour });
-    $("#catName").value = "";
-    await saveState();
-    renderPanel();
-  });
+    $("#expSave") && $("#expSave").addEventListener("click", () => {
+      const desc = $("#expDesc").value.trim();
+      const amt = Number($("#expAmt").value);
+      if (!desc || !Number.isFinite(amt)){
+        alert("Description and Amount are required.");
+        return;
+      }
+      trip.expenses = trip.expenses || [];
+      trip.expenses.push({
+        id: uid(),
+        date: $("#expDate").value || today(),
+        catId: $("#expCat").value,
+        desc,
+        amount: amt,
+        notes: $("#expNotes").value.trim()
+      });
+      saveState();
+      toast("Expense saved");
+      render();
+    });
 
-  $$("[data-act]").forEach(btn => btn.addEventListener("click", async () => {
-    const act = btn.dataset.act;
-    const id = btn.dataset.id;
+    $("#expClear") && $("#expClear").addEventListener("click", () => {
+      ["expDesc","expAmt","expNotes"].forEach(id => { const el = $("#"+id); if (el) el.value=""; });
+      $("#expDate").value = today();
+    });
 
-    if (act === "delFuel"){
-      if (!confirm("Delete this fuel stop?")) return;
-      trip.fuelStops = (trip.fuelStops ?? []).filter(x => x.id !== id);
-      await saveState(); render();
-    }
-    if (act === "delExp"){
-      if (!confirm("Delete this expense?")) return;
-      trip.expenses = (trip.expenses ?? []).filter(x => x.id !== id);
-      await saveState(); render();
-    }
-    if (act === "delCat"){
-      if (!confirm("Delete this category? Existing expenses will become Uncategorised.")) return;
-      state.categories = state.categories.filter(c => c.id !== id);
-      // orphan cat refs
-      for (const t of state.trips){
-        for (const e of (t.expenses ?? [])){
-          if (!state.categories.some(c=>c.id===e.catId)) e.catId = "uncat";
+    $("#catAdd") && $("#catAdd").addEventListener("click", () => {
+      const name = $("#catName").value.trim();
+      const colour = $("#catColour").value;
+      if (!name){ alert("Category name is required."); return; }
+      state.categories.push({ id: uid(), name, colour });
+      saveState();
+      toast("Category added");
+      renderPanel();
+    });
+
+    // Deletes
+    $$("[data-act]").forEach(btn => btn.addEventListener("click", () => {
+      const act = btn.dataset.act;
+      const id = btn.dataset.id;
+
+      if (act === "delFuel"){
+        if (!confirm("Delete this fuel stop?")) return;
+        trip.fuelStops = (trip.fuelStops || []).filter(x => x.id !== id);
+        saveState(); toast("Fuel deleted"); render();
+      }
+      if (act === "delExp"){
+        if (!confirm("Delete this expense?")) return;
+        trip.expenses = (trip.expenses || []).filter(x => x.id !== id);
+        saveState(); toast("Expense deleted"); render();
+      }
+      if (act === "delCat"){
+        if (!confirm("Delete this category? Existing expenses will become Uncategorised.")) return;
+        state.categories = state.categories.filter(c => c.id !== id);
+        for (const t of state.trips){
+          for (const e of (t.expenses || [])){
+            if (!state.categories.some(c=>c.id===e.catId)) e.catId = "uncat";
+          }
         }
+        saveState(); toast("Category deleted"); renderPanel();
       }
-      if (!state.categories.some(c=>c.id==="uncat")){
-        state.categories.push({ id:"uncat", name:"Uncategorised", colour:"#a9b2d6", locked:true });
-      }
-      await saveState(); renderPanel();
-    }
-  }));
+    }));
 
-  // Summary exports
-  $("#csvFuel")?.addEventListener("click", () => downloadText(csvFuel(trip), `${safeFile(trip.name)}-fuel.csv`, "text/csv"));
-  $("#csvExp")?.addEventListener("click", () => downloadText(csvExpenses(trip), `${safeFile(trip.name)}-expenses.csv`, "text/csv"));
-  $("#csvTrips")?.addEventListener("click", () => downloadText(csvTrips(state.trips), `journeyledger-trips.csv`, "text/csv"));
+    // Summary CSV exports
+    $("#csvFuel") && $("#csvFuel").addEventListener("click", () => downloadText(csvFuel(trip), `${safeFile(trip.name)}-fuel.csv`, "text/csv"));
+    $("#csvExp") && $("#csvExp").addEventListener("click", () => downloadText(csvExpenses(trip), `${safeFile(trip.name)}-expenses.csv`, "text/csv"));
+    $("#csvTrips") && $("#csvTrips").addEventListener("click", () => downloadText(csvTrips(state.trips), `journeyledger-trips.csv`, "text/csv"));
 
-  // Settings changes
-  $("#setCurrency")?.addEventListener("input", async (e) => {
-    state.settings.currency = e.target.value || "$";
-    applySettings();
-    await saveState();
-    setStats();
-  });
-  $("#setUnit")?.addEventListener("change", async (e) => {
-    state.settings.distanceUnit = e.target.value;
-    applySettings();
-    await saveState();
-    setStats();
-  });
-  $("#setTarget")?.addEventListener("input", async (e) => {
-    state.settings.effTarget = Number(e.target.value || 10);
-    await saveState();
-    render();
-  });
-}
-
-/* ---------- Top actions: trips/export/import ---------- */
-$("#newTripBtn").addEventListener("click", () => openTripDialog());
-tripSelect.addEventListener("change", async () => {
-  state.activeTripId = tripSelect.value;
-  await saveState();
-  render();
-});
-
-$("#exportBtn").addEventListener("click", async () => {
-  const payload = {
-    exportedAt: new Date().toISOString(),
-    schema: state.schema,
-    state,
-  };
-  state.lastBackupAt = payload.exportedAt;
-  await saveState();
-  downloadText(JSON.stringify(payload, null, 2), `journeyledger-backup-${new Date().toISOString().slice(0,10)}.json`, "application/json");
-});
-
-$("#importBtn").addEventListener("click", () => $("#importDialog").showModal());
-
-$("#importDoBtn").addEventListener("click", async () => {
-  const file = $("#importFile").files?.[0];
-  if (!file){ alert("Choose a backup JSON file."); return; }
-  const txt = await file.text();
-  let parsed;
-  try { parsed = JSON.parse(txt); } catch { alert("Invalid JSON."); return; }
-  const incoming = parsed.state ?? parsed;
-  if (!incoming || !incoming.schema){ alert("Backup not recognised."); return; }
-
-  const mode = $("#importMode").value;
-  if (mode === "replace"){
-    state = incoming;
-  } else {
-    // merge trips by id
-    const existingIds = new Set(state.trips.map(t=>t.id));
-    for (const t of (incoming.trips ?? [])){
-      if (!existingIds.has(t.id)) state.trips.push(t);
-    }
-    // merge categories (by name as a simple heuristic)
-    const existingNames = new Set(state.categories.map(c=>c.name.toLowerCase()));
-    for (const c of (incoming.categories ?? [])){
-      if (!existingNames.has(c.name.toLowerCase())) state.categories.push(c);
-    }
-    // keep current settings (or merge if blank)
-    state.settings = { ...incoming.settings, ...state.settings };
+    // Settings
+    $("#setCurrency") && $("#setCurrency").addEventListener("input", (e) => {
+      state.settings.currency = e.target.value || "$";
+      applySettings(); saveState(); setStats(); toast("Saved");
+      // update visible currency labels by rerendering tab
+      renderPanel();
+    });
+    $("#setUnit") && $("#setUnit").addEventListener("change", (e) => {
+      state.settings.distanceUnit = e.target.value;
+      applySettings(); saveState(); setStats(); toast("Saved");
+      renderPanel();
+    });
+    $("#setTarget") && $("#setTarget").addEventListener("input", (e) => {
+      state.settings.effTarget = Number(e.target.value || 10);
+      saveState(); toast("Saved");
+      renderPanel();
+    });
   }
 
-  await idb.set("state", state);
-  applySettings();
-  $("#importDialog").close();
-  render();
-});
+  // Export / Import / Trips
+  $("#newTripBtn").addEventListener("click", () => openTripDialog(null));
 
-$("#importDlgClose").addEventListener("click", () => $("#importDialog").close());
+  tripSelect.addEventListener("change", () => {
+    state.activeTripId = tripSelect.value;
+    saveState();
+    render();
+  });
 
-/* ---------- Trip dialog ---------- */
-const tripDialog = $("#tripDialog");
-let editingTripId = null;
+  $("#exportBtn").addEventListener("click", () => {
+    const payload = { exportedAt: new Date().toISOString(), schema: state.schema, state };
+    state.lastBackupAt = payload.exportedAt;
+    saveState();
+    downloadText(JSON.stringify(payload, null, 2), `journeyledger-backup-${today()}.json`, "application/json");
+    toast("Exported");
+  });
 
-function openTripDialog(tripId=null){
-  editingTripId = tripId;
-  const t = tripId ? state.trips.find(x=>x.id===tripId) : null;
+  $("#importBtn").addEventListener("click", () => $("#importDialog").showModal());
+  $("#importDlgClose").addEventListener("click", () => $("#importDialog").close());
 
-  $("#tripDlgTitle").textContent = t ? "Edit Trip" : "New Trip";
-  $("#tripName").value = t?.name ?? "";
-  $("#tripStart").value = t?.startDate ?? "";
-  $("#tripEnd").value = t?.endDate ?? "";
-  $("#tripOdoStart").value = t?.odoStart ?? "";
-  $("#tripBudget").value = t?.budget ?? "";
-  $("#tripNotes").value = t?.notes ?? "";
-  $("#tripDeleteBtn").style.display = t ? "" : "none";
+  $("#importDoBtn").addEventListener("click", async () => {
+    const file = $("#importFile").files && $("#importFile").files[0];
+    if (!file){ alert("Choose a backup JSON file."); return; }
+    const txt = await file.text();
+    let parsed;
+    try { parsed = JSON.parse(txt); } catch { alert("Invalid JSON."); return; }
+    const incoming = parsed.state || parsed;
+    if (!incoming || !incoming.schema){ alert("Backup not recognised."); return; }
 
-  tripDialog.showModal();
-}
-$("#tripDlgClose").addEventListener("click", () => tripDialog.close());
+    const mode = $("#importMode").value;
+    if (mode === "replace"){
+      state = incoming;
+    } else {
+      const existingIds = new Set(state.trips.map(t=>t.id));
+      for (const t of (incoming.trips || [])){
+        if (!existingIds.has(t.id)) state.trips.push(t);
+      }
+      const existingNames = new Set(state.categories.map(c=>c.name.toLowerCase()));
+      for (const c of (incoming.categories || [])){
+        if (!existingNames.has(c.name.toLowerCase())) state.categories.push(c);
+      }
+      state.settings = { ...incoming.settings, ...state.settings };
+    }
 
-$("#tripSaveBtn").addEventListener("click", async () => {
-  const name = $("#tripName").value.trim();
-  if (!name){ alert("Trip name is required."); return; }
+    applySettings();
+    ensureMinimums();
+    saveState();
+    $("#importDialog").close();
+    toast("Imported");
+    render();
+  });
 
-  if (editingTripId){
+  // Trip dialog logic
+  const tripDialog = $("#tripDialog");
+  let editingTripId = null;
+
+  function openTripDialog(tripId){
+    editingTripId = tripId;
+    const t = tripId ? state.trips.find(x=>x.id===tripId) : null;
+
+    $("#tripDlgTitle").textContent = t ? "Edit Trip" : "New Trip";
+    $("#tripName").value = t?.name || "";
+    $("#tripStart").value = t?.startDate || today();
+    $("#tripEnd").value = t?.endDate || "";
+    $("#tripOdoStart").value = (t?.odoStart ?? "");
+    $("#tripBudget").value = (t?.budget ?? "");
+    $("#tripNotes").value = t?.notes || "";
+    $("#tripDeleteBtn").style.display = t ? "" : "none";
+
+    tripDialog.showModal();
+  }
+
+  $("#tripDlgClose").addEventListener("click", () => tripDialog.close());
+
+  $("#tripSaveBtn").addEventListener("click", () => {
+    const name = $("#tripName").value.trim();
+    if (!name){ alert("Trip name is required."); return; }
+
+    if (editingTripId){
+      const t = state.trips.find(x=>x.id===editingTripId);
+      if (!t) return;
+      t.name = name;
+      t.startDate = $("#tripStart").value;
+      t.endDate = $("#tripEnd").value;
+      t.odoStart = Number($("#tripOdoStart").value || 0);
+      t.budget = Number($("#tripBudget").value || 0);
+      t.notes = $("#tripNotes").value.trim();
+    } else {
+      const t = {
+        id: uid(),
+        name,
+        startDate: $("#tripStart").value || today(),
+        endDate: $("#tripEnd").value,
+        odoStart: Number($("#tripOdoStart").value || 0),
+        budget: Number($("#tripBudget").value || 0),
+        notes: $("#tripNotes").value.trim(),
+        fuelStops: [],
+        expenses: []
+      };
+      state.trips.push(t);
+      state.activeTripId = t.id;
+    }
+
+    saveState();
+    tripDialog.close();
+    toast("Trip saved");
+    render();
+  });
+
+  $("#tripDeleteBtn").addEventListener("click", () => {
     const t = state.trips.find(x=>x.id===editingTripId);
     if (!t) return;
-    t.name = name;
-    t.startDate = $("#tripStart").value;
-    t.endDate = $("#tripEnd").value;
-    t.odoStart = Number($("#tripOdoStart").value || 0);
-    t.budget = Number($("#tripBudget").value || 0);
-    t.notes = $("#tripNotes").value.trim();
-  } else {
-    const t = {
-      id: uid(),
-      name,
-      startDate: $("#tripStart").value,
-      endDate: $("#tripEnd").value,
-      odoStart: Number($("#tripOdoStart").value || 0),
-      budget: Number($("#tripBudget").value || 0),
-      notes: $("#tripNotes").value.trim(),
-      fuelStops: [],
-      expenses: [],
-    };
-    state.trips.push(t);
-    state.activeTripId = t.id;
-  }
+    if (!confirm(`Delete "${t.name}"? This cannot be undone.`)) return;
 
-  await saveState();
-  tripDialog.close();
-  render();
-});
+    state.trips = state.trips.filter(x=>x.id!==t.id);
+    state.activeTripId = state.trips[0]?.id || null;
 
-$("#tripDeleteBtn").addEventListener("click", async () => {
-  const t = state.trips.find(x=>x.id===editingTripId);
-  if (!t) return;
-  if (!confirm(`Delete "${t.name}"? This cannot be undone.`)) return;
-  state.trips = state.trips.filter(x=>x.id!==t.id);
-  if (state.activeTripId === t.id) state.activeTripId = state.trips[0]?.id ?? null;
-  await saveState();
-  tripDialog.close();
-  render();
-});
-
-/* ---------- CSV ---------- */
-function csvEscape(v){
-  const s = String(v ?? "");
-  if (/[",\n]/.test(s)) return `"${s.replaceAll('"','""')}"`;
-  return s;
-}
-function csvFuel(trip){
-  const rows = [["date","station","odometer_km","litres","price_per_l","total_cost","notes"]];
-  for (const f of (trip.fuelStops ?? [])){
-    rows.push([f.date, f.station, f.odo, f.litres, f.pricePerL, f.totalCost, f.notes]);
-  }
-  return rows.map(r=>r.map(csvEscape).join(",")).join("\n");
-}
-function csvExpenses(trip){
-  const catById = Object.fromEntries(state.categories.map(c=>[c.id,c]));
-  const rows = [["date","category","description","amount","notes"]];
-  for (const e of (trip.expenses ?? [])){
-    rows.push([e.date, (catById[e.catId]?.name ?? "Uncategorised"), e.desc, e.amount, e.notes]);
-  }
-  return rows.map(r=>r.map(csvEscape).join(",")).join("\n");
-}
-function csvTrips(trips){
-  const rows = [["trip_name","start_date","end_date","distance_km","fuel_litres","fuel_cost","expense_cost","total_spend"]];
-  for (const t of trips){
-    const tot = calcTripTotals(t);
-    rows.push([t.name, t.startDate, t.endDate, tot.distance, tot.totalFuelLitres, tot.totalFuelCost, tot.totalExpense, tot.spend]);
-  }
-  return rows.map(r=>r.map(csvEscape).join(",")).join("\n");
-}
-
-/* ---------- Download helper ---------- */
-function safeFile(name){ return String(name||"trip").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,""); }
-function downloadText(text, filename, mime){
-  const blob = new Blob([text], {type:mime});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
-}
-
-/* ---------- Service worker registration ---------- */
-if ("serviceWorker" in navigator){
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch(()=>{});
+    saveState();
+    tripDialog.close();
+    toast("Trip deleted");
+    render();
   });
-}
 
-/* ---------- Init ---------- */
-bindTabs();
-render();
+  // CSV + download helpers
+  function csvEscape(v){
+    const s = String(v ?? "");
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
+  }
+  function csvFuel(trip){
+    const rows = [["date","station","odometer_km","litres","price_per_l","total_cost","notes"]];
+    for (const f of (trip.fuelStops || [])){
+      rows.push([f.date, f.station, f.odo, f.litres, f.pricePerL, f.totalCost, f.notes]);
+    }
+    return rows.map(r=>r.map(csvEscape).join(",")).join("\n");
+  }
+  function csvExpenses(trip){
+    const catById = Object.fromEntries(state.categories.map(c=>[c.id,c]));
+    const rows = [["date","category","description","amount","notes"]];
+    for (const e of (trip.expenses || [])){
+      rows.push([e.date, (catById[e.catId]?.name ?? "Uncategorised"), e.desc, e.amount, e.notes]);
+    }
+    return rows.map(r=>r.map(csvEscape).join(",")).join("\n");
+  }
+  function csvTrips(trips){
+    const rows = [["trip_name","start_date","end_date","distance_km","fuel_litres","fuel_cost","expense_cost","total_spend"]];
+    for (const t of trips){
+      const tot = calcTripTotals(t);
+      rows.push([t.name, t.startDate, t.endDate, tot.distance, tot.totalFuelLitres, tot.totalFuelCost, tot.totalExpense, tot.spend]);
+    }
+    return rows.map(r=>r.map(csvEscape).join(",")).join("\n");
+  }
+
+  function safeFile(name){
+    return String(name||"trip").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
+  }
+  function downloadText(text, filename, mime){
+    const blob = new Blob([text], {type:mime});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  // Initialise
+  bindTabs();
+  render();
+
+})();
 </script>
 </body>
 </html>
