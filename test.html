@@ -7,143 +7,366 @@
   <meta name="theme-color" content="#0b1020" />
   <style>
     :root{
-      --bg:#0b1020; --text:#e8ecff; --muted:#a9b2d6;
-      --acc:#46b3ff; --good:#26d07c; --warn:#ffb020; --bad:#ff4d4d; --line:#253055;
-      --radius:16px;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --bg0:#070b18;
+      --bg1:#0b1020;
+      --panel:#0e1630;
+      --panel2:#0b1328;
+      --card:#0f1a3a;
+      --stroke:rgba(255,255,255,.10);
+      --stroke2:rgba(70,179,255,.22);
+      --text:#eaf0ff;
+      --muted:rgba(234,240,255,.70);
+      --muted2:rgba(234,240,255,.55);
+      --acc:#46b3ff;
+      --acc2:rgba(70,179,255,.18);
+      --good:#26d07c;
+      --warn:#ffb020;
+      --bad:#ff4d4d;
+      --radius:18px;
+      --radius2:14px;
+      --shadow: 0 14px 34px rgba(0,0,0,.45);
+      --shadow2: 0 8px 24px rgba(0,0,0,.35);
       --font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
     }
+
     *{box-sizing:border-box}
-    body{margin:0; font-family:var(--font); background:radial-gradient(1200px 600px at 20% 0%, #162456 0%, var(--bg) 55%); color:var(--text);}
-    .wrap{max-width:1100px; margin:0 auto; padding:18px;}
-    .topbar{
-      display:flex; gap:12px; align-items:center; justify-content:space-between;
-      padding:14px 16px; background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);
-      position:sticky; top:12px; z-index:10; backdrop-filter: blur(10px);
+    body{
+      margin:0;
+      font-family:var(--font);
+      color:var(--text);
+      background:
+        radial-gradient(900px 500px at 20% 0%, rgba(70,179,255,.20) 0%, transparent 55%),
+        radial-gradient(900px 500px at 80% 0%, rgba(123,92,255,.12) 0%, transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      min-height:100vh;
     }
+
+    .app{
+      max-width:1180px;
+      margin:0 auto;
+      padding:18px;
+    }
+
+    .shell{
+      border:1px solid var(--stroke);
+      border-radius:24px;
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding:16px 18px;
+      border-bottom:1px solid var(--stroke);
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    }
+
     .brand{display:flex; flex-direction:column; gap:2px}
     .brand b{font-size:18px; letter-spacing:.2px}
     .brand span{font-size:12px; color:var(--muted)}
-    .actions{display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end}
-    button, select, input, textarea{
-      background:rgba(255,255,255,.06); color:var(--text);
-      border:1px solid var(--line); border-radius:12px; padding:10px 12px; font:inherit;
+    .header .right{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end;
+    }
+
+    select, input, textarea, button{
+      font:inherit;
+      color:var(--text);
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--stroke);
+      border-radius:12px;
+      padding:10px 12px;
       outline:none;
     }
+    select{min-width:240px}
     button{cursor:pointer}
-    button.primary{background:linear-gradient(180deg, rgba(70,179,255,.35), rgba(70,179,255,.12)); border-color:rgba(70,179,255,.55)}
-    button.danger{background:linear-gradient(180deg, rgba(255,77,77,.35), rgba(255,77,77,.12)); border-color:rgba(255,77,77,.55)}
-    button:disabled{opacity:.5; cursor:not-allowed}
-    .grid{display:grid; grid-template-columns: 1fr; gap:14px; margin-top:14px}
-    @media (min-width: 980px){ .grid{grid-template-columns: 340px 1fr;} }
-    .card{
-      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);
+    button.primary{
+      background:linear-gradient(180deg, rgba(70,179,255,.35), rgba(70,179,255,.10));
+      border-color:rgba(70,179,255,.45);
+    }
+    button.ghost{
+      background:rgba(255,255,255,.04);
+    }
+    button.danger{
+      background:linear-gradient(180deg, rgba(255,77,77,.32), rgba(255,77,77,.10));
+      border-color:rgba(255,77,77,.45);
+    }
+    button:disabled{opacity:.55; cursor:not-allowed}
+
+    .layout{
+      display:grid;
+      grid-template-columns: 320px 1fr;
+      gap:14px;
       padding:14px;
+    }
+    @media (max-width: 980px){
+      .layout{grid-template-columns:1fr}
+      select{min-width:200px}
+    }
+
+    .panel{
+      background:linear-gradient(180deg, rgba(15,26,58,.85), rgba(10,18,40,.85));
+      border:1px solid var(--stroke);
+      border-radius:22px;
+      box-shadow:var(--shadow2);
       overflow:hidden;
     }
-    .card h2{margin:0 0 10px 0; font-size:14px; color:var(--muted); font-weight:600; letter-spacing:.3px}
-    .stats{display:grid; grid-template-columns: repeat(2,1fr); gap:10px}
-    @media (min-width: 520px){ .stats{grid-template-columns: repeat(4,1fr);} }
-    .stat{padding:10px; border:1px solid var(--line); border-radius:14px; background:rgba(0,0,0,.14)}
-    .stat .k{font-size:12px; color:var(--muted)}
-    .stat .v{font-size:18px; font-weight:700; margin-top:4px}
-    .tabs{display:flex; gap:8px; flex-wrap:wrap}
-    .tab{padding:10px 12px; border-radius:999px; border:1px solid var(--line); background:rgba(0,0,0,.14)}
-    .tab.active{border-color:rgba(70,179,255,.7); box-shadow:0 0 0 3px rgba(70,179,255,.12) inset}
-    .row{display:grid; grid-template-columns: 1fr; gap:10px}
-    @media (min-width: 720px){ .row{grid-template-columns: repeat(2,1fr);} }
+
+    .sidebar{padding:14px}
+    .main{padding:14px}
+
+    .sectionTitle{
+      font-size:12px;
+      color:var(--muted);
+      letter-spacing:.35px;
+      font-weight:700;
+      text-transform:uppercase;
+      margin:2px 0 10px;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns: repeat(2,1fr);
+      gap:10px;
+    }
+    .stat{
+      padding:12px;
+      border-radius:16px;
+      border:1px solid var(--stroke);
+      background:linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.08));
+    }
+    .stat .k{font-size:12px; color:var(--muted2)}
+    .stat .v{font-size:18px; font-weight:800; margin-top:4px}
+
+    .tabs{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top:12px;
+    }
+    .tab{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:12px 12px;
+      border-radius:16px;
+      border:1px solid var(--stroke);
+      background:rgba(0,0,0,.18);
+      cursor:pointer;
+      user-select:none;
+    }
+    .tab.active{
+      border-color:rgba(70,179,255,.55);
+      box-shadow:0 0 0 3px rgba(70,179,255,.12) inset;
+      background:rgba(70,179,255,.08);
+    }
+    .tab .label{display:flex; gap:10px; align-items:center; font-weight:700}
+    .badge{
+      font-size:12px;
+      padding:4px 10px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      color:var(--muted);
+      background:rgba(0,0,0,.18);
+      white-space:nowrap;
+    }
+
+    .hint{
+      margin-top:12px;
+      font-size:12px;
+      color:var(--muted);
+      border-top:1px solid var(--stroke);
+      padding-top:12px;
+      line-height:1.45;
+    }
+
+    .toolbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:12px 12px;
+      border-bottom:1px solid var(--stroke);
+      background:rgba(0,0,0,.12);
+    }
+    .toolbar h1{
+      font-size:16px;
+      margin:0;
+      letter-spacing:.2px;
+    }
+    .toolbar .sub{
+      font-size:12px;
+      color:var(--muted);
+      margin-top:2px;
+    }
+    .toolbar .tleft{display:flex; flex-direction:column}
+    .toolbar .tright{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
+
+    .content{padding:12px}
+    .grid2{display:grid; grid-template-columns:1fr; gap:10px}
+    @media (min-width: 860px){ .grid2{grid-template-columns:repeat(2,1fr)} }
+
     label{display:flex; flex-direction:column; gap:6px; font-size:12px; color:var(--muted)}
-    input, textarea, select{width:100%}
-    textarea{min-height:80px; resize:vertical}
-    .list{display:flex; flex-direction:column; gap:10px}
+    textarea{min-height:86px; resize:vertical}
+
+    .list{display:flex; flex-direction:column; gap:10px; margin-top:10px}
     .item{
-      border:1px solid var(--line); border-radius:14px; padding:10px; background:rgba(0,0,0,.14);
-      display:flex; gap:10px; align-items:flex-start; justify-content:space-between;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px;
+      border:1px solid var(--stroke);
+      border-radius:18px;
+      background:linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.08));
     }
-    .item .meta{display:flex; flex-direction:column; gap:4px; min-width:0}
-    .item .meta b{font-size:14px}
-    .item .meta span{font-size:12px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-    .pill{font-size:12px; padding:6px 10px; border-radius:999px; border:1px solid var(--line); background:rgba(0,0,0,.18); white-space:nowrap}
-    .pill.good{border-color:rgba(38,208,124,.7)}
-    .pill.warn{border-color:rgba(255,176,32,.7)}
-    .pill.bad{border-color:rgba(255,77,77,.7)}
-    .right{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
-    .muted{color:var(--muted)}
-    .hr{height:1px; background:var(--line); margin:12px 0}
-    .small{font-size:12px}
-    .footer{margin-top:14px; text-align:center; color:var(--muted); font-size:12px}
+    .meta{min-width:0}
+    .meta b{display:block; font-size:14px}
+    .meta span{display:block; font-size:12px; color:var(--muted); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+    .meta .note{white-space:normal; overflow:visible; text-overflow:clip}
+
+    .pill{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background:rgba(0,0,0,.18);
+      white-space:nowrap;
+    }
+    .pill.good{border-color:rgba(38,208,124,.6)}
+    .pill.warn{border-color:rgba(255,176,32,.6)}
+    .pill.bad{border-color:rgba(255,77,77,.6)}
+    .rightRow{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
+
+    .empty{
+      padding:18px;
+      border-radius:22px;
+      border:1px dashed rgba(255,255,255,.18);
+      background:rgba(0,0,0,.10);
+      color:var(--muted);
+      line-height:1.5;
+    }
+    .empty b{color:var(--text)}
+
+    table{width:100%; border-collapse:collapse; overflow:hidden; border-radius:18px; border:1px solid var(--stroke); background:rgba(0,0,0,.10)}
+    th, td{padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.08)}
+    th{font-size:12px; color:var(--muted); text-align:left}
+    td{font-size:13px}
+    tr:last-child td{border-bottom:none}
+
+    .footer{
+      padding:12px 16px;
+      border-top:1px solid var(--stroke);
+      color:var(--muted);
+      font-size:12px;
+      text-align:center;
+      background:rgba(0,0,0,.10);
+    }
+
     dialog{
-      border:1px solid var(--line); border-radius:18px; background:linear-gradient(180deg, rgba(20,30,60,.95), rgba(10,15,35,.95));
-      color:var(--text); box-shadow:var(--shadow); max-width:760px; width:calc(100% - 24px);
+      border:1px solid rgba(255,255,255,.16);
+      border-radius:20px;
+      background:linear-gradient(180deg, rgba(15,26,58,.96), rgba(10,18,40,.96));
+      color:var(--text);
+      box-shadow:var(--shadow);
+      max-width:780px;
+      width:calc(100% - 24px);
     }
-    dialog::backdrop{background:rgba(0,0,0,.55)}
-    .dlgHead{display:flex; justify-content:space-between; align-items:center; gap:10px}
-    .dlgHead h3{margin:0}
-    table{width:100%; border-collapse:collapse}
-    th, td{padding:8px; border-bottom:1px solid var(--line)}
-    th{text-align:left; color:var(--muted); font-size:12px; font-weight:600}
-    td{text-align:left; font-size:13px}
+    dialog::backdrop{background:rgba(0,0,0,.60)}
+    .dlgHead{display:flex; justify-content:space-between; align-items:center; gap:10px; padding:12px 12px; border-bottom:1px solid rgba(255,255,255,.10)}
+    .dlgHead h3{margin:0; font-size:15px}
+    .dlgBody{padding:12px}
     .toast{
       position:fixed; bottom:18px; left:50%; transform:translateX(-50%);
-      background:rgba(10,15,35,.95); border:1px solid var(--line); border-radius:999px;
-      padding:10px 14px; box-shadow:var(--shadow); color:var(--text); font-size:13px;
+      background:rgba(10,15,35,.95);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:999px;
+      padding:10px 14px;
+      box-shadow:var(--shadow2);
+      color:var(--text);
+      font-size:13px;
       opacity:0; pointer-events:none; transition:opacity .18s ease;
     }
     .toast.show{opacity:1}
-    .kbd{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      font-size:12px; border:1px solid var(--line); padding:2px 6px; border-radius:8px; background:rgba(0,0,0,.18)}
   </style>
 </head>
-
 <body>
-<div class="wrap">
-  <div class="topbar">
-    <div class="brand">
-      <b>JourneyLedger AU</b>
-      <span>Single-file • Local-only • Friend format import/export • v0.2</span>
-    </div>
-    <div class="actions">
-      <select id="tripSelect" title="Active trip"></select>
-      <button class="primary" id="newTripBtn">+ New Trip</button>
-      <button id="exportBtn">Export</button>
-      <button id="importBtn">Import</button>
-    </div>
-  </div>
 
-  <div class="grid">
-    <div class="card">
-      <h2>At a glance</h2>
-      <div class="stats">
-        <div class="stat"><div class="k">Distance</div><div class="v" id="statDistance">—</div></div>
-        <div class="stat"><div class="k">Fuel used</div><div class="v" id="statFuel">—</div></div>
-        <div class="stat"><div class="k">Efficiency</div><div class="v" id="statEff">—</div></div>
-        <div class="stat"><div class="k">Total spend</div><div class="v" id="statSpend">—</div></div>
+<div class="app">
+  <div class="shell">
+    <div class="header">
+      <div class="brand">
+        <b>JourneyLedger AU</b>
+        <span>Offline trip costs • Your data stays on your device • v0.2 (friend formats)</span>
       </div>
-
-      <div class="hr"></div>
-
-      <h2>Tabs</h2>
-      <div class="tabs" id="tabs">
-        <button class="tab active" data-tab="fuel">⛽ Fuel</button>
-        <button class="tab" data-tab="expenses">🧾 Expenses</button>
-        <button class="tab" data-tab="categories">🎨 Categories</button>
-        <button class="tab" data-tab="summary">📊 Summary</button>
-        <button class="tab" data-tab="settings">⚙️ Settings</button>
-      </div>
-
-      <div class="hr"></div>
-      <div class="small muted">
-        Tip: Chrome <span class="kbd">⋮</span> → <b>Install app</b> / <b>Add to Home Screen</b>.
+      <div class="right">
+        <select id="tripSelect" title="Active trip"></select>
+        <button class="primary" id="newTripBtn">+ New Trip</button>
+        <button class="ghost" id="exportBtn">Export</button>
+        <button class="ghost" id="importBtn">Import</button>
       </div>
     </div>
 
-    <div class="card" id="panel"></div>
-  </div>
+    <div class="layout">
+      <!-- Sidebar -->
+      <div class="panel sidebar">
+        <div class="sectionTitle">At a glance</div>
+        <div class="stats">
+          <div class="stat"><div class="k">Distance</div><div class="v" id="statDistance">—</div></div>
+          <div class="stat"><div class="k">Fuel used</div><div class="v" id="statFuel">—</div></div>
+          <div class="stat"><div class="k">Efficiency</div><div class="v" id="statEff">—</div></div>
+          <div class="stat"><div class="k">Total spend</div><div class="v" id="statSpend">—</div></div>
+        </div>
 
-  <div class="footer">
-    No account • No cloud • No tracking • Exports stay on your device
+        <div style="margin-top:14px" class="sectionTitle">Tabs</div>
+        <div class="tabs" id="tabs">
+          <div class="tab active" data-tab="fuel">
+            <div class="label">⛽ Fuel</div>
+            <span class="badge" id="badgeFuel">—</span>
+          </div>
+          <div class="tab" data-tab="expenses">
+            <div class="label">🧾 Expenses</div>
+            <span class="badge" id="badgeExp">—</span>
+          </div>
+          <div class="tab" data-tab="categories">
+            <div class="label">🎨 Categories</div>
+            <span class="badge" id="badgeCat">—</span>
+          </div>
+          <div class="tab" data-tab="summary">
+            <div class="label">📊 Summary</div>
+            <span class="badge">Totals</span>
+          </div>
+          <div class="tab" data-tab="settings">
+            <div class="label">⚙️ Settings</div>
+            <span class="badge">Local</span>
+          </div>
+        </div>
+
+        <div class="hint">
+          Tip: In Chrome you can install this as an app. Data stays on this device unless you export it.
+        </div>
+      </div>
+
+      <!-- Main -->
+      <div class="panel">
+        <div class="toolbar">
+          <div class="tleft">
+            <h1 id="title">Fuel</h1>
+            <div class="sub" id="subtitle">Log fuel stops and track efficiency</div>
+          </div>
+          <div class="tright" id="toolbarActions"></div>
+        </div>
+        <div class="content" id="panel"></div>
+      </div>
+    </div>
+
+    <div class="footer">
+      Built for Aussie road trippers • No account • No cloud • No tracking
+    </div>
   </div>
 </div>
 
@@ -155,19 +378,19 @@
     <h3 id="tripDlgTitle">New Trip</h3>
     <button id="tripDlgClose">✕</button>
   </div>
-  <div class="hr"></div>
-  <div class="row">
-    <label>Trip name * <input id="tripName" placeholder="e.g., Cape York 2026" /></label>
-    <label>Start date <input id="tripStart" type="date" /></label>
-    <label>End date (optional) <input id="tripEnd" type="date" /></label>
-    <label>Start odometer (km) <input id="tripOdoStart" type="number" step="0.1" /></label>
-    <label>Budget (optional) <input id="tripBudget" type="number" step="0.01" /></label>
-    <label>Notes <textarea id="tripNotes" placeholder="Anything important…"></textarea></label>
-  </div>
-  <div class="hr"></div>
-  <div class="right">
-    <button id="tripDeleteBtn" class="danger" style="display:none">Delete</button>
-    <button id="tripSaveBtn" class="primary">Save</button>
+  <div class="dlgBody">
+    <div class="grid2">
+      <label>Trip name * <input id="tripName" placeholder="e.g., Cape York 2026" /></label>
+      <label>Start date <input id="tripStart" type="date" /></label>
+      <label>End date (optional) <input id="tripEnd" type="date" /></label>
+      <label>Start odometer (km) <input id="tripOdoStart" type="number" step="0.1" /></label>
+      <label>Budget (optional) <input id="tripBudget" type="number" step="0.01" /></label>
+      <label>Notes <textarea id="tripNotes" placeholder="Anything important…"></textarea></label>
+    </div>
+    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:12px; flex-wrap:wrap">
+      <button id="tripDeleteBtn" class="danger" style="display:none">Delete</button>
+      <button id="tripSaveBtn" class="primary">Save</button>
+    </div>
   </div>
 </dialog>
 
@@ -177,24 +400,24 @@
     <h3>Import backup</h3>
     <button id="importDlgClose">✕</button>
   </div>
-  <div class="hr"></div>
-  <p class="muted small">
-    Supports: <b>JourneyLedger</b> exports, <b>RoadLog/TripLog</b> exports, and <b>Portable</b> exports.
-  </p>
-  <div class="row">
-    <label>Mode
-      <select id="importMode">
-        <option value="merge">Merge (add trips)</option>
-        <option value="replace">Replace (wipe then import)</option>
-      </select>
-    </label>
-    <label>Backup file
-      <input id="importFile" type="file" accept=".json,application/json" />
-    </label>
-  </div>
-  <div class="hr"></div>
-  <div class="right">
-    <button id="importDoBtn" class="primary">Import</button>
+  <div class="dlgBody">
+    <div class="muted" style="font-size:12px; margin-bottom:10px">
+      Supports: JourneyLedger native exports, RoadLog/TripLog exports, and Portable exports.
+    </div>
+    <div class="grid2">
+      <label>Mode
+        <select id="importMode">
+          <option value="merge">Merge (add trips)</option>
+          <option value="replace">Replace (wipe then import)</option>
+        </select>
+      </label>
+      <label>Backup file
+        <input id="importFile" type="file" accept=".json,application/json" />
+      </label>
+    </div>
+    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:12px">
+      <button id="importDoBtn" class="primary">Import</button>
+    </div>
   </div>
 </dialog>
 
@@ -204,22 +427,22 @@
     <h3>Export backup</h3>
     <button id="exportDlgClose">✕</button>
   </div>
-  <div class="hr"></div>
-  <div class="row">
-    <label>Format
-      <select id="exportFormat">
-        <option value="native">JourneyLedger (native)</option>
-        <option value="roadlog">RoadLog/TripLog compatible</option>
-        <option value="portable">Portable (friend standard)</option>
-      </select>
-    </label>
-    <label>Filename (optional)
-      <input id="exportName" placeholder="Leave blank for auto name" />
-    </label>
-  </div>
-  <div class="hr"></div>
-  <div class="right">
-    <button id="exportDoBtn" class="primary">Export</button>
+  <div class="dlgBody">
+    <div class="grid2">
+      <label>Format
+        <select id="exportFormat">
+          <option value="native">JourneyLedger (native)</option>
+          <option value="roadlog">RoadLog/TripLog compatible</option>
+          <option value="portable">Portable (friend standard)</option>
+        </select>
+      </label>
+      <label>Filename (optional)
+        <input id="exportName" placeholder="Leave blank for auto name" />
+      </label>
+    </div>
+    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:12px">
+      <button id="exportDoBtn" class="primary">Export</button>
+    </div>
   </div>
 </dialog>
 
@@ -227,7 +450,6 @@
 (function(){
   "use strict";
 
-  // ===== Core =====
   const STORAGE_KEY = "journeyledger_state_v2";
   const APP = { schema: 2, app: "JourneyLedger", currency: "$", distUnit: "km" };
 
@@ -236,7 +458,6 @@
   const esc = (str) => String(str ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   const today = () => new Date().toISOString().slice(0,10);
   const uid = () => (crypto.randomUUID ? crypto.randomUUID() : ("id_" + Math.random().toString(16).slice(2) + Date.now()));
-
   const fmtMoney = (n) => (n===null||n===undefined||Number.isNaN(n)) ? "—" : `${APP.currency}${Number(n).toFixed(2)}`;
   const fmtNum = (n, dp=1) => (n===null||n===undefined||Number.isNaN(n)) ? "—" : Number(n).toFixed(dp);
 
@@ -263,7 +484,6 @@
     URL.revokeObjectURL(url);
   }
 
-  // ===== Native State Model (JourneyLedger) =====
   function defaultCategories(){
     return [
       { id:"fuel", name:"Fuel", colour:"#46b3ff", locked:true },
@@ -284,14 +504,7 @@
       app: APP.app,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      settings: {
-        currency: "$",
-        distUnit: "km",
-        effTarget: 10,
-        // vehicle/tow are optional metadata, kept for compatibility
-        vehMake:"", vehModel:"", vehYear:"", vehRego:"", vehFuelType:"",
-        towMake:"", towModel:"", towYear:"", towLength:"", towATM:"", towTBW:"", towRego:""
-      },
+      settings: { currency:"$", distUnit:"km", effTarget:10 },
       categories: defaultCategories(),
       trips: [],
       activeTripId: null,
@@ -310,7 +523,6 @@
       return emptyState();
     }
   }
-
   function saveState(){
     state.updatedAt = new Date().toISOString();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -324,7 +536,6 @@
     APP.currency = state.settings?.currency || "$";
     APP.distUnit = state.settings?.distUnit || "km";
   }
-
   function ensureMinimums(){
     if (!Array.isArray(state.categories)) state.categories = defaultCategories();
     if (!state.categories.some(c=>c.id==="fuel")) state.categories.unshift({ id:"fuel", name:"Fuel", colour:"#46b3ff", locked:true });
@@ -335,28 +546,21 @@
   function getActiveTrip(){
     return state.trips.find(t => t.id === state.activeTripId) || null;
   }
-
-  function sortByDate(a,b){
-    return String(a?.date||"").localeCompare(String(b?.date||""));
-  }
+  function sortByDate(a,b){ return String(a?.date||"").localeCompare(String(b?.date||"")); }
 
   function calcTripTotals(trip){
     const fuelStops = (trip.fuelStops ?? []).slice().sort(sortByDate);
     const expenses = (trip.expenses ?? []).slice().sort(sortByDate);
 
-    let totalFuelLitres = 0;
-    let totalFuelCost = 0;
-    for (const f of fuelStops){
-      totalFuelLitres += Number(f.litres || 0);
-      totalFuelCost += Number(f.totalCost || 0);
-    }
-    let totalExpense = 0;
-    for (const e of expenses) totalExpense += Number(e.amount || 0);
+    let totalFuelLitres=0, totalFuelCost=0;
+    for (const f of fuelStops){ totalFuelLitres += Number(f.litres||0); totalFuelCost += Number(f.totalCost||0); }
+    let totalExpense=0;
+    for (const e of expenses){ totalExpense += Number(e.amount||0); }
 
-    const startOdo = Number(trip.odoStart || 0);
-    const endOdo = fuelStops.length ? Number(fuelStops[fuelStops.length - 1].odo || startOdo) : startOdo;
+    const startOdo = Number(trip.odoStart||0);
+    const endOdo = fuelStops.length ? Number(fuelStops[fuelStops.length-1].odo||startOdo) : startOdo;
     const distance = Math.max(0, endOdo - startOdo);
-    const eff = distance > 0 ? (totalFuelLitres / distance) * 100 : null;
+    const eff = distance>0 ? (totalFuelLitres/distance)*100 : null;
     const spend = totalFuelCost + totalExpense;
 
     return { distance, totalFuelLitres, eff, spend, totalFuelCost, totalExpense, fuelStops, expenses };
@@ -369,125 +573,136 @@
     return `<span class="pill ${klass}">${fmtNum(eff,1)} L/100km</span>`;
   }
 
-  // ===== UI =====
+  // ===== UI wiring =====
   const panel = $("#panel");
   const tripSelect = $("#tripSelect");
-  const tabsRoot = $("#tabs");
+  const tabs = $("#tabs");
+  const title = $("#title");
+  const subtitle = $("#subtitle");
+  const toolbarActions = $("#toolbarActions");
+
   let activeTab = "fuel";
 
+  function setHeaderForTab(){
+    const t = getActiveTrip();
+    const name = t ? t.name : "No trip";
+    if (activeTab === "fuel"){ title.textContent="Fuel"; subtitle.textContent=`${name} • log fuel stops and track efficiency`; }
+    if (activeTab === "expenses"){ title.textContent="Expenses"; subtitle.textContent=`${name} • log costs beyond fuel`; }
+    if (activeTab === "categories"){ title.textContent="Categories"; subtitle.textContent="Manage categories used by expenses"; }
+    if (activeTab === "summary"){ title.textContent="Summary"; subtitle.textContent=`${name} • totals and breakdown`; }
+    if (activeTab === "settings"){ title.textContent="Settings"; subtitle.textContent="Local settings only"; }
+
+    toolbarActions.innerHTML = "";
+    if (t){
+      const edit = document.createElement("button");
+      edit.className = "ghost";
+      edit.textContent = "Edit Trip";
+      edit.addEventListener("click", ()=>openTripDialog(t.id));
+      toolbarActions.appendChild(edit);
+    }
+  }
+
   function renderTripSelect(){
-    tripSelect.innerHTML = "";
+    tripSelect.innerHTML="";
     if (!state.trips.length){
-      tripSelect.disabled = true;
-      const opt = document.createElement("option");
-      opt.value = "";
-      opt.textContent = "No trips yet";
+      tripSelect.disabled=true;
+      const opt=document.createElement("option"); opt.value=""; opt.textContent="No trips yet";
       tripSelect.appendChild(opt);
       return;
     }
-    tripSelect.disabled = false;
+    tripSelect.disabled=false;
     for (const t of state.trips){
-      const opt = document.createElement("option");
-      opt.value = t.id;
-      opt.textContent = t.name;
-      if (t.id === state.activeTripId) opt.selected = true;
+      const opt=document.createElement("option");
+      opt.value=t.id; opt.textContent=t.name;
+      if (t.id===state.activeTripId) opt.selected=true;
       tripSelect.appendChild(opt);
     }
   }
 
   function setStats(){
-    const trip = getActiveTrip();
-    if (!trip){
-      $("#statDistance").textContent = "—";
-      $("#statFuel").textContent = "—";
-      $("#statEff").textContent = "—";
-      $("#statSpend").textContent = "—";
+    const t = getActiveTrip();
+    if (!t){
+      $("#statDistance").textContent="—";
+      $("#statFuel").textContent="—";
+      $("#statEff").textContent="—";
+      $("#statSpend").textContent="—";
+      $("#badgeFuel").textContent="—";
+      $("#badgeExp").textContent="—";
+      $("#badgeCat").textContent=String((state.categories||[]).filter(c=>!c.locked).length);
       return;
     }
-    const t = calcTripTotals(trip);
-    $("#statDistance").textContent = `${fmtNum(t.distance, 0)} ${APP.distUnit}`;
-    $("#statFuel").textContent = `${fmtNum(t.totalFuelLitres, 1)} L`;
-    $("#statEff").textContent = t.eff === null ? "—" : `${fmtNum(t.eff, 1)} L/100km`;
-    $("#statSpend").textContent = fmtMoney(t.spend);
+    const totals = calcTripTotals(t);
+    $("#statDistance").textContent=`${fmtNum(totals.distance,0)} ${APP.distUnit}`;
+    $("#statFuel").textContent=`${fmtNum(totals.totalFuelLitres,1)} L`;
+    $("#statEff").textContent = totals.eff===null ? "—" : `${fmtNum(totals.eff,1)} L/100km`;
+    $("#statSpend").textContent=fmtMoney(totals.spend);
+    $("#badgeFuel").textContent=String((t.fuelStops||[]).length);
+    $("#badgeExp").textContent=String((t.expenses||[]).length);
+    $("#badgeCat").textContent=String((state.categories||[]).filter(c=>!c.locked).length);
   }
 
   function render(){
     ensureMinimums();
     renderTripSelect();
     setStats();
+    setHeaderForTab();
     renderPanel();
   }
 
-  function renderPanel(){
-    const trip = getActiveTrip();
-
-    if (!trip){
-      panel.innerHTML = `
-        <h2>Welcome</h2>
-        <p class="muted">Create your first trip to start tracking fuel, expenses and totals — offline, private, and simple.</p>
-        <div class="right">
+  function emptyMain(){
+    panel.innerHTML = `
+      <div class="empty">
+        <b>Welcome.</b><br/>
+        Create your first trip to start tracking fuel, expenses and totals — offline and private.
+        <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap">
           <button class="primary" id="startTrip">+ New Trip</button>
+          <button class="ghost" id="startImport">Import</button>
         </div>
-        <div class="hr"></div>
-        <p class="muted small">This build can import RoadLog/TripLog exports as well as its own exports.</p>
-      `;
-      $("#startTrip").addEventListener("click", () => openTripDialog(null));
-      return;
-    }
-
-    if (activeTab === "fuel") panel.innerHTML = fuelPanel(trip);
-    if (activeTab === "expenses") panel.innerHTML = expensePanel(trip);
-    if (activeTab === "categories") panel.innerHTML = categoriesPanel();
-    if (activeTab === "summary") panel.innerHTML = summaryPanel(trip);
-    if (activeTab === "settings") panel.innerHTML = settingsPanel();
-
-    bindPanelHandlers();
+      </div>
+    `;
+    $("#startTrip").addEventListener("click", ()=>openTripDialog(null));
+    $("#startImport").addEventListener("click", ()=>$("#importDialog").showModal());
   }
 
   function fuelPanel(trip){
     const { fuelStops } = calcTripTotals(trip);
     const list = fuelStops.map((s, idx) => {
-      let segPill = `<span class="pill">—</span>`;
-      if (idx > 0){
-        const prev = fuelStops[idx-1];
-        const d = Math.max(0, Number(s.odo||0) - Number(prev.odo||0));
-        const l = Number(s.litres||0);
-        const eff = d>0 ? (l/d)*100 : null;
-        segPill = effPill(eff);
+      let seg = `<span class="pill">—</span>`;
+      if (idx>0){
+        const prev=fuelStops[idx-1];
+        const d=Math.max(0, Number(s.odo||0)-Number(prev.odo||0));
+        const l=Number(s.litres||0);
+        seg = effPill(d>0 ? (l/d)*100 : null);
       }
       return `
         <div class="item">
           <div class="meta">
             <b>${s.station ? esc(s.station) : "Fuel stop"}</b>
-            <span>${esc(s.date || "")} • Odo ${fmtNum(s.odo,0)} • ${fmtNum(s.litres,1)} L • ${fmtMoney(s.totalCost)}</span>
-            ${s.notes ? `<span class="muted">${esc(s.notes)}</span>` : ""}
+            <span>${esc(s.date||"")} • Odo ${fmtNum(s.odo,0)} • ${fmtNum(s.litres,1)} L • ${fmtMoney(s.totalCost)}</span>
+            ${s.notes ? `<span class="note">${esc(s.notes)}</span>` : ""}
           </div>
-          <div class="right">
-            ${segPill}
-            <button data-act="delFuel" data-id="${s.id}" class="danger">Delete</button>
+          <div class="rightRow">
+            ${seg}
+            <button class="danger" data-act="delFuel" data-id="${s.id}">Delete</button>
           </div>
         </div>
       `;
-    }).join("") || `<p class="muted">No fuel stops yet.</p>`;
+    }).join("") || `<div class="empty">No fuel stops yet. Add your first fill to start tracking efficiency.</div>`;
 
     return `
-      <h2>⛽ Log Fuel Stop</h2>
-      <div class="row">
+      <div class="grid2">
         <label>Date <input id="fuelDate" type="date" value="${today()}"/></label>
         <label>Location / Station <input id="fuelStation" placeholder="e.g., Caltex Roma"/></label>
         <label>Odometer (${APP.distUnit}) * <input id="fuelOdo" type="number" step="0.1" /></label>
         <label>Litres * <input id="fuelLitres" type="number" step="0.01" /></label>
         <label>Price per litre (${APP.currency}) <input id="fuelPPL" type="number" step="0.001" /></label>
         <label>Total cost (${APP.currency}) <input id="fuelTotal" type="number" step="0.01" /></label>
-        <label>Notes <textarea id="fuelNotes"></textarea></label>
+        <label style="grid-column:1/-1">Notes <textarea id="fuelNotes"></textarea></label>
       </div>
-      <div class="right">
-        <button id="fuelClear">Clear</button>
-        <button class="primary" id="fuelSave">Save fuel stop</button>
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:10px; flex-wrap:wrap">
+        <button id="fuelClear" class="ghost">Clear</button>
+        <button id="fuelSave" class="primary">Save fuel stop</button>
       </div>
-
-      <div class="hr"></div>
-      <h2>Fuel history</h2>
       <div class="list">${list}</div>
     `;
   }
@@ -500,36 +715,30 @@
         <div class="meta">
           <b>${esc(e.desc || "Expense")}</b>
           <span>${esc(e.date||"")} • ${(catById[e.catId]?.name ?? "Uncategorised")} • ${fmtMoney(e.amount)}</span>
-          ${e.notes ? `<span class="muted">${esc(e.notes)}</span>` : ""}
+          ${e.notes ? `<span class="note">${esc(e.notes)}</span>` : ""}
         </div>
-        <div class="right">
+        <div class="rightRow">
           <button class="danger" data-act="delExp" data-id="${e.id}">Delete</button>
         </div>
       </div>
-    `).join("") || `<p class="muted">No expenses yet.</p>`;
+    `).join("") || `<div class="empty">No expenses yet. Add accommodation, food, camping fees, maintenance… whatever matters.</div>`;
 
     const catOptions = state.categories
       .filter(c=>c.id!=="fuel")
       .map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
 
     return `
-      <h2>🧾 Log Expense</h2>
-      <div class="row">
+      <div class="grid2">
         <label>Date <input id="expDate" type="date" value="${today()}"/></label>
-        <label>Category
-          <select id="expCat">${catOptions}</select>
-        </label>
+        <label>Category <select id="expCat">${catOptions}</select></label>
         <label>Description * <input id="expDesc" placeholder="e.g., Caravan park / Lunch / Tolls"/></label>
         <label>Amount (${APP.currency}) * <input id="expAmt" type="number" step="0.01"/></label>
-        <label>Notes <textarea id="expNotes"></textarea></label>
+        <label style="grid-column:1/-1">Notes <textarea id="expNotes"></textarea></label>
       </div>
-      <div class="right">
-        <button id="expClear">Clear</button>
-        <button class="primary" id="expSave">Save expense</button>
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:10px; flex-wrap:wrap">
+        <button id="expClear" class="ghost">Clear</button>
+        <button id="expSave" class="primary">Save expense</button>
       </div>
-
-      <div class="hr"></div>
-      <h2>Expense history</h2>
       <div class="list">${list}</div>
     `;
   }
@@ -541,35 +750,32 @@
         <div class="item">
           <div class="meta">
             <b>${esc(c.name)}</b>
-            <span class="muted">Colour: ${esc(c.colour || "")}</span>
+            <span>Colour: ${esc(c.colour || "")}</span>
           </div>
-          <div class="right">
+          <div class="rightRow">
             <span class="pill" style="border-color:${esc(c.colour || "#fff")}">${esc(c.colour || "")}</span>
             <button class="danger" data-act="delCat" data-id="${c.id}">Delete</button>
           </div>
         </div>
-      `).join("");
+      `).join("") || `<div class="empty">No custom categories yet. Add ones that match your travel style.</div>`;
 
     return `
-      <h2>🎨 Categories</h2>
-      <div class="row">
+      <div class="grid2">
         <label>Category name * <input id="catName" placeholder="e.g., Repairs"/></label>
         <label>Colour <input id="catColour" type="color" value="#46b3ff"/></label>
       </div>
-      <div class="right">
+      <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:10px">
         <button class="primary" id="catAdd">Add category</button>
       </div>
-
-      <div class="hr"></div>
-      <h2>Your categories</h2>
-      <div class="list">${list || `<p class="muted">No custom categories yet.</p>`}</div>
-      <p class="muted small">Deleting a category won’t delete expenses — they’ll show as “Uncategorised”.</p>
+      <div class="list">${list}</div>
+      <div class="muted" style="font-size:12px; margin-top:10px">
+        Deleting a category won’t delete expenses — they’ll show as “Uncategorised”.
+      </div>
     `;
   }
 
   function summaryPanel(trip){
     const totals = calcTripTotals(trip);
-
     const byCat = new Map();
     byCat.set("fuel", totals.totalFuelCost);
     for (const e of (trip.expenses ?? [])){
@@ -590,57 +796,36 @@
     }).join("");
 
     const budget = Number(trip.budget || 0);
-    let budgetBlock = `<p class="muted">No budget set.</p>`;
-    if (budget > 0){
-      const pct = Math.min(150, (totals.spend / budget) * 100);
-      const over = totals.spend > budget;
-      const colour = over ? "var(--bad)" : (pct >= 80 ? "var(--warn)" : "var(--good)");
-      budgetBlock = `
-        <div class="stat" style="grid-column: 1 / -1">
-          <div class="k">Budget</div>
-          <div class="v">${fmtMoney(Math.max(0, budget - totals.spend))} left of ${fmtMoney(budget)} (${Math.min(999, (totals.spend / budget)*100).toFixed(0)}% used)</div>
-          <div style="height:10px; border:1px solid var(--line); border-radius:999px; overflow:hidden; margin-top:10px; background:rgba(0,0,0,.18)">
-            <div style="height:100%; width:${pct}%; background:${colour}"></div>
-          </div>
-        </div>
-      `;
-    }
+    const budgetNote = budget>0
+      ? `<div class="muted" style="font-size:12px; margin-top:10px">
+          Budget: ${fmtMoney(budget)} • Remaining: ${fmtMoney(Math.max(0, budget - totals.spend))}
+         </div>`
+      : `<div class="muted" style="font-size:12px; margin-top:10px">No budget set for this trip.</div>`;
 
     return `
-      <h2>📊 Summary</h2>
       <div class="stats">
         <div class="stat"><div class="k">Trip</div><div class="v">${esc(trip.name)}</div></div>
         <div class="stat"><div class="k">Distance</div><div class="v">${fmtNum(totals.distance,0)} ${APP.distUnit}</div></div>
         <div class="stat"><div class="k">Fuel cost</div><div class="v">${fmtMoney(totals.totalFuelCost)}</div></div>
         <div class="stat"><div class="k">Other expenses</div><div class="v">${fmtMoney(totals.totalExpense)}</div></div>
-        ${budgetBlock}
       </div>
-
-      <div class="hr"></div>
-
-      <h2>Spend by category</h2>
-      <div style="overflow:auto">
-        <table>
-          <thead>
-            <tr>
-              <th>Category</th>
-              <th style="text-align:right">Amount</th>
-              <th style="text-align:right">Share</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${spendTable || `<tr><td colspan="3" class="muted">No spend yet.</td></tr>`}
-          </tbody>
-        </table>
-      </div>
+      ${budgetNote}
+      <div style="margin-top:12px"></div>
+      <table>
+        <thead>
+          <tr><th>Category</th><th style="text-align:right">Amount</th><th style="text-align:right">Share</th></tr>
+        </thead>
+        <tbody>
+          ${spendTable || `<tr><td colspan="3" class="muted">No spend yet.</td></tr>`}
+        </tbody>
+      </table>
     `;
   }
 
   function settingsPanel(){
     const s = state.settings || {};
     return `
-      <h2>⚙️ Settings</h2>
-      <div class="row">
+      <div class="grid2">
         <label>Currency symbol <input id="setCurrency" value="${esc(s.currency || "$")}" /></label>
         <label>Distance unit
           <select id="setUnit">
@@ -649,34 +834,32 @@
           </select>
         </label>
         <label>Efficiency target (L/100km) <input id="setTarget" type="number" step="0.1" value="${esc(String(s.effTarget ?? 10))}"/></label>
-        <label>Vehicle rego (optional) <input id="setRego" value="${esc(s.vehRego||"")}" placeholder="e.g., 123 ABC"/></label>
-        <label>Vehicle fuel type (optional) <input id="setFuelType" value="${esc(s.vehFuelType||"")}" placeholder="e.g., Diesel"/></label>
+        <label>Notes (optional) <input id="setNote" value="${esc(s.note||"")}" placeholder="Anything you want to remember"/></label>
       </div>
-
-      <div class="hr"></div>
-
-      <div class="item">
-        <div class="meta">
-          <b>Friends mode</b>
-          <span class="muted">Import/Export supports RoadLog/TripLog. Portable export is provided for long-term compatibility.</span>
-        </div>
+      <div class="empty" style="margin-top:12px">
+        <b>Privacy-first.</b> Everything lives in localStorage on this browser. Use Export for backups or moving devices.
       </div>
     `;
   }
 
-  function bindTabs(){
-    $$("#tabs .tab").forEach(b => b.addEventListener("click", () => {
-      activeTab = b.dataset.tab;
-      $$("#tabs .tab").forEach(x => x.classList.toggle("active", x.dataset.tab === activeTab));
-      renderPanel();
-    }));
+  function renderPanel(){
+    const trip = getActiveTrip();
+    if (!trip){
+      emptyMain();
+      return;
+    }
+    if (activeTab === "fuel") panel.innerHTML = fuelPanel(trip);
+    if (activeTab === "expenses") panel.innerHTML = expensePanel(trip);
+    if (activeTab === "categories") panel.innerHTML = categoriesPanel();
+    if (activeTab === "summary") panel.innerHTML = summaryPanel(trip);
+    if (activeTab === "settings") panel.innerHTML = settingsPanel();
+    bindPanelHandlers();
   }
 
   function bindPanelHandlers(){
     const trip = getActiveTrip();
     if (!trip) return;
 
-    // Fuel auto-calc
     if ($("#fuelLitres") && $("#fuelPPL") && $("#fuelTotal")){
       const recalc = () => {
         const l = Number($("#fuelLitres").value || 0);
@@ -709,13 +892,11 @@
         notes: $("#fuelNotes").value.trim()
       });
 
-      saveState();
-      toast("Fuel saved");
-      render();
+      saveState(); toast("Fuel saved"); render();
     });
 
     $("#fuelClear") && $("#fuelClear").addEventListener("click", () => {
-      ["fuelStation","fuelOdo","fuelLitres","fuelPPL","fuelTotal","fuelNotes"].forEach(id => { const el = $("#"+id); if (el) el.value=""; });
+      ["fuelStation","fuelOdo","fuelLitres","fuelPPL","fuelTotal","fuelNotes"].forEach(id => { const el=$("#"+id); if (el) el.value=""; });
       $("#fuelDate").value = today();
     });
 
@@ -735,13 +916,12 @@
         amount: amt,
         notes: $("#expNotes").value.trim()
       });
-      saveState();
-      toast("Expense saved");
-      render();
+
+      saveState(); toast("Expense saved"); render();
     });
 
     $("#expClear") && $("#expClear").addEventListener("click", () => {
-      ["expDesc","expAmt","expNotes"].forEach(id => { const el = $("#"+id); if (el) el.value=""; });
+      ["expDesc","expAmt","expNotes"].forEach(id => { const el=$("#"+id); if (el) el.value=""; });
       $("#expDate").value = today();
     });
 
@@ -751,233 +931,116 @@
       if (!name){ alert("Category name is required."); return; }
       const id = "cat_" + safeFile(name) + "_" + Math.random().toString(16).slice(2,6);
       state.categories.push({ id, name, colour });
-      saveState();
-      toast("Category added");
-      renderPanel();
+      saveState(); toast("Category added"); render();
     });
 
-    // Deletes
     $$("[data-act]").forEach(btn => btn.addEventListener("click", () => {
-      const act = btn.dataset.act;
-      const id = btn.dataset.id;
-
-      if (act === "delFuel"){
+      const act = btn.dataset.act, id = btn.dataset.id;
+      if (act==="delFuel"){
         if (!confirm("Delete this fuel stop?")) return;
-        trip.fuelStops = (trip.fuelStops || []).filter(x => x.id !== id);
+        trip.fuelStops = (trip.fuelStops||[]).filter(x=>x.id!==id);
         saveState(); toast("Fuel deleted"); render();
       }
-      if (act === "delExp"){
+      if (act==="delExp"){
         if (!confirm("Delete this expense?")) return;
-        trip.expenses = (trip.expenses || []).filter(x => x.id !== id);
+        trip.expenses = (trip.expenses||[]).filter(x=>x.id!==id);
         saveState(); toast("Expense deleted"); render();
       }
-      if (act === "delCat"){
+      if (act==="delCat"){
         if (!confirm("Delete this category? Existing expenses will become Uncategorised.")) return;
-        state.categories = state.categories.filter(c => c.id !== id);
+        state.categories = state.categories.filter(c=>c.id!==id);
         for (const t of state.trips){
-          for (const e of (t.expenses || [])){
-            if (!state.categories.some(c=>c.id===e.catId)) e.catId = "uncat";
+          for (const e of (t.expenses||[])){
+            if (!state.categories.some(c=>c.id===e.catId)) e.catId="uncat";
           }
         }
-        saveState(); toast("Category deleted"); renderPanel();
+        saveState(); toast("Category deleted"); render();
       }
     }));
 
-    // Settings
-    $("#setCurrency") && $("#setCurrency").addEventListener("input", (e) => {
+    $("#setCurrency") && $("#setCurrency").addEventListener("input", (e)=>{
       state.settings.currency = e.target.value || "$";
-      applySettings(); saveState(); toast("Saved"); renderPanel(); setStats();
+      applySettings(); saveState(); toast("Saved"); render();
     });
-    $("#setUnit") && $("#setUnit").addEventListener("change", (e) => {
+    $("#setUnit") && $("#setUnit").addEventListener("change", (e)=>{
       state.settings.distUnit = e.target.value;
-      applySettings(); saveState(); toast("Saved"); renderPanel(); setStats();
+      applySettings(); saveState(); toast("Saved"); render();
     });
-    $("#setTarget") && $("#setTarget").addEventListener("input", (e) => {
-      state.settings.effTarget = Number(e.target.value || 10);
-      saveState(); toast("Saved"); renderPanel();
+    $("#setTarget") && $("#setTarget").addEventListener("input", (e)=>{
+      state.settings.effTarget = Number(e.target.value||10);
+      saveState(); toast("Saved"); render();
     });
-    $("#setRego") && $("#setRego").addEventListener("input", (e) => {
-      state.settings.vehRego = e.target.value || "";
-      saveState();
-    });
-    $("#setFuelType") && $("#setFuelType").addEventListener("input", (e) => {
-      state.settings.vehFuelType = e.target.value || "";
+    $("#setNote") && $("#setNote").addEventListener("input", (e)=>{
+      state.settings.note = e.target.value||"";
       saveState();
     });
   }
 
-  // ===== Import/Export Compatibility Layer =====
-
-  // Portable v1 (neutral)
-  // {
-  //   format: "portable-trip-ledger",
-  //   version: 1,
-  //   settings: { currency, distUnit, effTarget, ...optional },
-  //   categories: [{ id, name, color }],
-  //   trips: [{ id, name, startDate, startOdo, fuel:[...], expenses:[...] }]
-  // }
+  // ===== Friends format import/export (same as previous build) =====
   function toPortableFromNative(native){
     const cats = (native.categories||[]).map(c => ({ id:c.id, name:c.name, color:c.colour || c.color || "#a9b2d6" }));
     const trips = (native.trips||[]).map(t => ({
-      id: t.id,
-      name: t.name,
-      startDate: t.startDate || "",
-      startOdo: Number(t.odoStart||0),
-      fuel: (t.fuelStops||[]).map(f => ({
-        id:f.id, date:f.date||"", location:f.station||"", odo:Number(f.odo||0), litres:Number(f.litres||0),
-        cost:Number(f.totalCost||0), ppl:(f.pricePerL===null||f.pricePerL===undefined)?null:Number(f.pricePerL), notes:f.notes||""
-      })),
-      expenses: (t.expenses||[]).map(e => ({
-        id:e.id, date:e.date||"", categoryId:e.catId||"uncat", desc:e.desc||"", amount:Number(e.amount||0), notes:e.notes||""
-      }))
+      id: t.id, name:t.name, startDate:t.startDate||"", startOdo:Number(t.odoStart||0),
+      fuel: (t.fuelStops||[]).map(f => ({ id:f.id, date:f.date||"", location:f.station||"", odo:Number(f.odo||0), litres:Number(f.litres||0), cost:Number(f.totalCost||0), ppl:(f.pricePerL==null?null:Number(f.pricePerL)), notes:f.notes||"" })),
+      expenses: (t.expenses||[]).map(e => ({ id:e.id, date:e.date||"", categoryId:e.catId||"uncat", desc:e.desc||"", amount:Number(e.amount||0), notes:e.notes||"" }))
     }));
-    return {
-      format:"portable-trip-ledger",
-      version:1,
-      exportedAt:new Date().toISOString(),
-      settings:{...native.settings},
-      categories: cats,
-      trips
-    };
+    return { format:"portable-trip-ledger", version:1, exportedAt:new Date().toISOString(), settings:{...native.settings}, categories:cats, trips };
   }
 
   function nativeFromPortable(port){
     const categories = (port.categories||[]).map(c => ({ id:c.id, name:c.name, colour:c.color || "#a9b2d6" }));
-    // ensure required categories
     if (!categories.some(c=>c.id==="fuel")) categories.unshift({ id:"fuel", name:"Fuel", colour:"#46b3ff", locked:true });
     if (!categories.some(c=>c.id==="uncat")) categories.unshift({ id:"uncat", name:"Uncategorised", colour:"#a9b2d6", locked:true });
 
     const trips = (port.trips||[]).map(t => ({
-      id: t.id || uid(),
-      name: t.name || "Imported trip",
-      startDate: t.startDate || "",
-      endDate: t.endDate || "",
-      odoStart: Number(t.startOdo || 0),
-      budget: Number(t.budget || 0),
-      notes: t.notes || "",
-      fuelStops: (t.fuel||[]).map(f => ({
-        id: f.id || uid(),
-        date: f.date || "",
-        station: f.location || "",
-        odo: Number(f.odo || 0),
-        litres: Number(f.litres || 0),
-        pricePerL: (f.ppl===null||f.ppl===undefined) ? null : Number(f.ppl),
-        totalCost: Number(f.cost || 0),
-        notes: f.notes || ""
-      })),
-      expenses: (t.expenses||[]).map(e => ({
-        id: e.id || uid(),
-        date: e.date || "",
-        catId: e.categoryId || "uncat",
-        desc: e.desc || "",
-        amount: Number(e.amount || 0),
-        notes: e.notes || ""
-      }))
+      id: t.id || uid(), name: t.name || "Imported trip",
+      startDate: t.startDate || "", endDate: t.endDate || "",
+      odoStart: Number(t.startOdo || 0), budget: Number(t.budget || 0), notes: t.notes || "",
+      fuelStops: (t.fuel||[]).map(f => ({ id:f.id||uid(), date:f.date||"", station:f.location||"", odo:Number(f.odo||0), litres:Number(f.litres||0), pricePerL:(f.ppl==null?null:Number(f.ppl)), totalCost:Number(f.cost||0), notes:f.notes||"" })),
+      expenses: (t.expenses||[]).map(e => ({ id:e.id||uid(), date:e.date||"", catId:e.categoryId||"uncat", desc:e.desc||"", amount:Number(e.amount||0), notes:e.notes||"" }))
     }));
 
     return {
-      schema: APP.schema,
-      app: APP.app,
+      schema: APP.schema, app: APP.app,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       settings: { ...(port.settings||{}) },
-      categories,
-      trips,
+      categories, trips,
       activeTripId: trips[0]?.id || null,
       lastBackupAt: port.exportedAt || null
     };
   }
 
   function toRoadLogFromNative(native){
-    // RoadLog format: { _meta, settings, state:{trips,currentTripId,categories} }
-    const cats = (native.categories||[])
-      .filter(c => c.id !== "fuel") // RoadLog already counts fuel separately; keep categories for expenses
-      .map(c => ({ id:c.id, name:c.name, color:c.colour || "#a9b2d6" }));
-
+    const cats = (native.categories||[]).filter(c=>c.id!=="fuel").map(c=>({ id:c.id, name:c.name, color:c.colour || "#a9b2d6" }));
     const trips = (native.trips||[]).map(t => ({
-      id: t.id,
-      name: t.name,
-      startDate: t.startDate || "",
-      startOdo: Number(t.odoStart||0),
-      fuel: (t.fuelStops||[]).map(f => ({
-        id: f.id,
-        date: f.date || "",
-        location: f.station || "",
-        odo: Number(f.odo||0),
-        litres: Number(f.litres||0),
-        cost: Number(f.totalCost||0),
-        ppl: (f.pricePerL===null||f.pricePerL===undefined) ? null : Number(f.pricePerL),
-        notes: f.notes || ""
-      })),
-      expenses: (t.expenses||[]).map(e => ({
-        id: e.id,
-        date: e.date || "",
-        categoryId: e.catId || "uncat",
-        desc: e.desc || "",
-        amount: Number(e.amount||0),
-        notes: e.notes || ""
-      }))
+      id:t.id, name:t.name, startDate:t.startDate||"", startOdo:Number(t.odoStart||0),
+      fuel:(t.fuelStops||[]).map(f=>({ id:f.id, date:f.date||"", location:f.station||"", odo:Number(f.odo||0), litres:Number(f.litres||0), cost:Number(f.totalCost||0), ppl:(f.pricePerL==null?null:Number(f.pricePerL)), notes:f.notes||"" })),
+      expenses:(t.expenses||[]).map(e=>({ id:e.id, date:e.date||"", categoryId:e.catId||"uncat", desc:e.desc||"", amount:Number(e.amount||0), notes:e.notes||"" }))
     }));
-
-    const totalFuelStops = trips.reduce((n,t)=> n + (t.fuel?.length||0), 0);
-    const totalExpenses = trips.reduce((n,t)=> n + (t.expenses?.length||0), 0);
-    const totalKm = (() => {
-      let km=0;
-      for (const t of native.trips||[]){
-        const totals = calcTripTotals(t);
-        km += totals.distance || 0;
-      }
-      return km;
-    })();
+    const totalFuelStops = trips.reduce((n,t)=> n+(t.fuel?.length||0),0);
+    const totalExpenses = trips.reduce((n,t)=> n+(t.expenses?.length||0),0);
+    let totalKm=0; for (const t of native.trips||[]) totalKm += (calcTripTotals(t).distance||0);
 
     return {
-      _meta: {
-        app: "RoadLog",
-        version: "2.x-compatible",
-        exported: new Date().toISOString(),
-        tripCount: trips.length,
-        totalFuelStops,
-        totalExpenses,
-        totalKm,
-        description: "Exported from JourneyLedger AU (RoadLog-compatible)"
-      },
-      settings: {
-        ...((native.settings)||{}),
-        effTarget: Number(native.settings?.effTarget ?? 10),
-        distUnit: native.settings?.distUnit || "km",
-        currency: native.settings?.currency || "$"
-      },
-      state: {
-        trips,
-        currentTripId: native.activeTripId || (trips[0]?.id || null),
-        categories: cats
-      }
+      _meta:{ app:"RoadLog", version:"2.x-compatible", exported:new Date().toISOString(), tripCount:trips.length, totalFuelStops, totalExpenses, totalKm },
+      settings:{ ...(native.settings||{}), effTarget:Number(native.settings?.effTarget ?? 10), distUnit:native.settings?.distUnit||"km", currency:native.settings?.currency||"$" },
+      state:{ trips, currentTripId:native.activeTripId || (trips[0]?.id||null), categories:cats }
     };
   }
 
-  // Detect + normalise to native
   function normaliseToNative(obj){
-    // Native wrapper { exportedAt, schema, state }
     if (obj && obj.state && obj.state.schema && Array.isArray(obj.state.trips)) return obj.state;
-
-    // Raw native { schema, trips }
     if (obj && obj.schema && Array.isArray(obj.trips)) return obj;
+    if (obj && obj.format==="portable-trip-ledger" && obj.version===1 && Array.isArray(obj.trips)) return nativeFromPortable(obj);
 
-    // Portable
-    if (obj && obj.format === "portable-trip-ledger" && obj.version === 1 && Array.isArray(obj.trips)) {
-      return nativeFromPortable(obj);
-    }
-
-    // RoadLog/TripLog (your actual file shape)
-    // { _meta, settings, state:{ trips[], currentTripId, categories[] } }
-    if (obj && obj._meta && typeof obj._meta.app === "string" && obj.state && Array.isArray(obj.state.trips)) {
+    if (obj && obj._meta && typeof obj._meta.app==="string" && obj.state && Array.isArray(obj.state.trips)) {
       const cats = Array.isArray(obj.state.categories) ? obj.state.categories : [];
       const catIdSet = new Set(cats.map(c=>c.id));
-      // Build categories for native (ensure fuel/uncat)
       const categories = [
         { id:"fuel", name:"Fuel", colour:"#46b3ff", locked:true },
         { id:"uncat", name:"Uncategorised", colour:"#a9b2d6", locked:true },
-        ...cats.map(c => ({ id:c.id, name:c.name, colour:c.color || "#a9b2d6" }))
+        ...cats.map(c=>({ id:c.id, name:c.name, colour:c.color || "#a9b2d6" }))
       ];
 
       const trips = obj.state.trips.map(rt => ({
@@ -994,7 +1057,7 @@
           station: f.location || "",
           odo: Number(f.odo || 0),
           litres: Number(f.litres || 0),
-          pricePerL: (f.ppl===null||f.ppl===undefined) ? null : Number(f.ppl),
+          pricePerL: (f.ppl==null) ? null : Number(f.ppl),
           totalCost: Number(f.cost || 0),
           notes: f.notes || ""
         })),
@@ -1008,31 +1071,11 @@
         }))
       }));
 
-      const settings = {
-        ...state.settings, // keep existing where possible
-        currency: obj.settings?.currency ?? obj.settings?.currencySymbol ?? obj.settings?.currency ?? "$",
-        distUnit: obj.settings?.distUnit ?? obj.settings?.distanceUnit ?? "km",
-        effTarget: Number(obj.settings?.effTarget ?? 10),
-        vehMake: obj.settings?.vehMake ?? "",
-        vehModel: obj.settings?.vehModel ?? "",
-        vehYear: obj.settings?.vehYear ?? "",
-        vehRego: obj.settings?.vehRego ?? "",
-        vehFuelType: obj.settings?.vehFuelType ?? "",
-        towMake: obj.settings?.towMake ?? "",
-        towModel: obj.settings?.towModel ?? "",
-        towYear: obj.settings?.towYear ?? "",
-        towLength: obj.settings?.towLength ?? "",
-        towATM: obj.settings?.towATM ?? "",
-        towTBW: obj.settings?.towTBW ?? "",
-        towRego: obj.settings?.towRego ?? ""
-      };
-
       return {
-        schema: APP.schema,
-        app: APP.app,
+        schema: APP.schema, app: APP.app,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        settings,
+        settings: { ...state.settings, ...(obj.settings||{}) },
         categories,
         trips,
         activeTripId: obj.state.currentTripId || trips[0]?.id || null,
@@ -1043,85 +1086,74 @@
     return null;
   }
 
-  // ===== Import/Export wiring =====
-  $("#importBtn").addEventListener("click", () => $("#importDialog").showModal());
-  $("#importDlgClose").addEventListener("click", () => $("#importDialog").close());
+  // ===== Top actions =====
+  $("#newTripBtn").addEventListener("click", ()=>openTripDialog(null));
+  tripSelect.addEventListener("change", ()=>{
+    state.activeTripId = tripSelect.value;
+    saveState(); render();
+  });
 
-  $("#importDoBtn").addEventListener("click", async () => {
+  $("#importBtn").addEventListener("click", ()=>$("#importDialog").showModal());
+  $("#importDlgClose").addEventListener("click", ()=>$("#importDialog").close());
+  $("#importDoBtn").addEventListener("click", async ()=>{
     const file = $("#importFile").files && $("#importFile").files[0];
     if (!file){ alert("Choose a backup JSON file."); return; }
-    const txt = await file.text();
-    let parsed;
-    try { parsed = JSON.parse(txt); } catch { alert("Invalid JSON."); return; }
+    let parsed; try{ parsed = JSON.parse(await file.text()); } catch { alert("Invalid JSON."); return; }
 
     const incoming = normaliseToNative(parsed);
     if (!incoming){ alert("Backup not recognised."); return; }
 
     const mode = $("#importMode").value;
-    if (mode === "replace"){
+    if (mode==="replace"){
       state = incoming;
     } else {
-      // Merge trips by id
       const existingTripIds = new Set((state.trips||[]).map(t=>t.id));
-      for (const t of (incoming.trips||[])){
-        if (!existingTripIds.has(t.id)) state.trips.push(t);
-      }
-      // Merge categories by id
+      for (const t of (incoming.trips||[])) if (!existingTripIds.has(t.id)) state.trips.push(t);
+
       const existingCatIds = new Set((state.categories||[]).map(c=>c.id));
-      for (const c of (incoming.categories||[])){
-        if (!existingCatIds.has(c.id)) state.categories.push(c);
-      }
-      // Merge settings: keep current but fill blanks
+      for (const c of (incoming.categories||[])) if (!existingCatIds.has(c.id)) state.categories.push(c);
+
       state.settings = { ...(incoming.settings||{}), ...(state.settings||{}) };
       if (!state.activeTripId && state.trips.length) state.activeTripId = state.trips[0].id;
     }
-
-    applySettings();
-    ensureMinimums();
-    saveState();
-
+    applySettings(); ensureMinimums(); saveState();
     $("#importDialog").close();
     toast("Imported");
     render();
   });
 
-  $("#exportBtn").addEventListener("click", () => {
-    $("#exportName").value = "";
+  $("#exportBtn").addEventListener("click", ()=>{
+    $("#exportName").value="";
     $("#exportDialog").showModal();
   });
-  $("#exportDlgClose").addEventListener("click", () => $("#exportDialog").close());
-
-  $("#exportDoBtn").addEventListener("click", () => {
+  $("#exportDlgClose").addEventListener("click", ()=>$("#exportDialog").close());
+  $("#exportDoBtn").addEventListener("click", ()=>{
     const fmt = $("#exportFormat").value;
     const custom = $("#exportName").value.trim();
     const base = custom ? safeFile(custom) : `journeyledger-${fmt}-${today()}`;
-
     let payload;
-    if (fmt === "native"){
-      payload = { exportedAt: new Date().toISOString(), schema: state.schema, state };
-    } else if (fmt === "roadlog"){
-      payload = toRoadLogFromNative(state);
-    } else {
-      payload = toPortableFromNative(state);
-    }
+    if (fmt==="native") payload = { exportedAt:new Date().toISOString(), schema: state.schema, state };
+    else if (fmt==="roadlog") payload = toRoadLogFromNative(state);
+    else payload = toPortableFromNative(state);
 
     state.lastBackupAt = new Date().toISOString();
     saveState();
-
-    downloadText(JSON.stringify(payload, null, 2), `${base}.json`, "application/json");
+    downloadText(JSON.stringify(payload,null,2), `${base}.json`, "application/json");
     $("#exportDialog").close();
     toast("Exported");
   });
 
-  // ===== Trips wiring =====
-  $("#newTripBtn").addEventListener("click", () => openTripDialog(null));
-  tripSelect.addEventListener("change", () => {
-    state.activeTripId = tripSelect.value;
-    saveState();
-    render();
+  // ===== Tabs =====
+  $$(".tab", tabs).forEach(el=>{
+    el.addEventListener("click", ()=>{
+      activeTab = el.dataset.tab;
+      $$(".tab", tabs).forEach(x=>x.classList.toggle("active", x.dataset.tab===activeTab));
+      setHeaderForTab();
+      renderPanel();
+    });
   });
 
-  // ===== Trip dialog logic =====
+  // ===== Trip dialog =====
   const tripDialog = $("#tripDialog");
   let editingTripId = null;
 
@@ -1137,13 +1169,12 @@
     $("#tripBudget").value = (t?.budget ?? "");
     $("#tripNotes").value = t?.notes || "";
     $("#tripDeleteBtn").style.display = t ? "" : "none";
-
     tripDialog.showModal();
   }
 
-  $("#tripDlgClose").addEventListener("click", () => tripDialog.close());
+  $("#tripDlgClose").addEventListener("click", ()=>tripDialog.close());
 
-  $("#tripSaveBtn").addEventListener("click", () => {
+  $("#tripSaveBtn").addEventListener("click", ()=>{
     const name = $("#tripName").value.trim();
     if (!name){ alert("Trip name is required."); return; }
 
@@ -1157,52 +1188,30 @@
       t.budget = Number($("#tripBudget").value || 0);
       t.notes = $("#tripNotes").value.trim();
     } else {
-      const t = {
-        id: uid(),
-        name,
-        startDate: $("#tripStart").value || today(),
-        endDate: $("#tripEnd").value,
-        odoStart: Number($("#tripOdoStart").value || 0),
-        budget: Number($("#tripBudget").value || 0),
-        notes: $("#tripNotes").value.trim(),
-        fuelStops: [],
-        expenses: []
-      };
+      const t = { id:uid(), name, startDate:$("#tripStart").value||today(), endDate:$("#tripEnd").value, odoStart:Number($("#tripOdoStart").value||0), budget:Number($("#tripBudget").value||0), notes:$("#tripNotes").value.trim(), fuelStops:[], expenses:[] };
       state.trips.push(t);
       state.activeTripId = t.id;
     }
-
     saveState();
     tripDialog.close();
     toast("Trip saved");
     render();
   });
 
-  $("#tripDeleteBtn").addEventListener("click", () => {
+  $("#tripDeleteBtn").addEventListener("click", ()=>{
     const t = state.trips.find(x=>x.id===editingTripId);
     if (!t) return;
     if (!confirm(`Delete "${t.name}"? This cannot be undone.`)) return;
 
     state.trips = state.trips.filter(x=>x.id!==t.id);
     state.activeTripId = state.trips[0]?.id || null;
-
     saveState();
     tripDialog.close();
     toast("Trip deleted");
     render();
   });
 
-  // ===== Tabs =====
-  function bindTabs(){
-    $$("#tabs .tab").forEach(b => b.addEventListener("click", () => {
-      activeTab = b.dataset.tab;
-      $$("#tabs .tab").forEach(x => x.classList.toggle("active", x.dataset.tab === activeTab));
-      renderPanel();
-    }));
-  }
-
   // ===== Init =====
-  bindTabs();
   render();
 
 })();
