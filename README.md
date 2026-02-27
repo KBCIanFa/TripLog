@@ -1,6 +1,6 @@
-# TripLog
+# LogMyJourney AU
 
-# 🚗 Trip Log
+# 🚗 LogMyJourney AU
 
 A free, private, browser-based road trip journal. Track fuel stops, expenses, and budgets — no account, no cloud, no bullshit.
 
