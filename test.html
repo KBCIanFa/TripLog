@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>JourneyLedger AU — Offline Trip Costs</title>
+  <title>JourneyLedger AU — Friend Format Edition</title>
   <meta name="theme-color" content="#0b1020" />
   <style>
     :root{
-      --bg:#0b1020; --panel:#111a33; --text:#e8ecff; --muted:#a9b2d6;
+      --bg:#0b1020; --text:#e8ecff; --muted:#a9b2d6;
       --acc:#46b3ff; --good:#26d07c; --warn:#ffb020; --bad:#ff4d4d; --line:#253055;
       --radius:16px;
       --shadow: 0 10px 30px rgba(0,0,0,.35);
@@ -76,7 +76,7 @@
     .footer{margin-top:14px; text-align:center; color:var(--muted); font-size:12px}
     dialog{
       border:1px solid var(--line); border-radius:18px; background:linear-gradient(180deg, rgba(20,30,60,.95), rgba(10,15,35,.95));
-      color:var(--text); box-shadow:var(--shadow); max-width:720px; width:calc(100% - 24px);
+      color:var(--text); box-shadow:var(--shadow); max-width:760px; width:calc(100% - 24px);
     }
     dialog::backdrop{background:rgba(0,0,0,.55)}
     .dlgHead{display:flex; justify-content:space-between; align-items:center; gap:10px}
@@ -102,7 +102,7 @@
   <div class="topbar">
     <div class="brand">
       <b>JourneyLedger AU</b>
-      <span>Offline trip costs • Your data stays on your device • v0.1.1 (single-file)</span>
+      <span>Single-file • Local-only • Friend format import/export • v0.2</span>
     </div>
     <div class="actions">
       <select id="tripSelect" title="Active trip"></select>
@@ -135,7 +135,7 @@
 
       <div class="hr"></div>
       <div class="small muted">
-        Tip: In Chrome you can use <span class="kbd">⋮</span> → <b>Install app</b> / <b>Add to Home Screen</b>.
+        Tip: Chrome <span class="kbd">⋮</span> → <b>Install app</b> / <b>Add to Home Screen</b>.
       </div>
     </div>
 
@@ -143,7 +143,7 @@
   </div>
 
   <div class="footer">
-    Built for Australian road trippers • No account • No cloud • No tracking
+    No account • No cloud • No tracking • Exports stay on your device
   </div>
 </div>
 
@@ -178,7 +178,9 @@
     <button id="importDlgClose">✕</button>
   </div>
   <div class="hr"></div>
-  <p class="muted small">Choose a JSON backup exported by this app.</p>
+  <p class="muted small">
+    Supports: <b>JourneyLedger</b> exports, <b>RoadLog/TripLog</b> exports, and <b>Portable</b> exports.
+  </p>
   <div class="row">
     <label>Mode
       <select id="importMode">
@@ -196,12 +198,38 @@
   </div>
 </dialog>
 
+<!-- Export dialog -->
+<dialog id="exportDialog">
+  <div class="dlgHead">
+    <h3>Export backup</h3>
+    <button id="exportDlgClose">✕</button>
+  </div>
+  <div class="hr"></div>
+  <div class="row">
+    <label>Format
+      <select id="exportFormat">
+        <option value="native">JourneyLedger (native)</option>
+        <option value="roadlog">RoadLog/TripLog compatible</option>
+        <option value="portable">Portable (friend standard)</option>
+      </select>
+    </label>
+    <label>Filename (optional)
+      <input id="exportName" placeholder="Leave blank for auto name" />
+    </label>
+  </div>
+  <div class="hr"></div>
+  <div class="right">
+    <button id="exportDoBtn" class="primary">Export</button>
+  </div>
+</dialog>
+
 <script>
 (function(){
   "use strict";
 
-  const STORAGE_KEY = "journeyledger_state_v1";
-  const APP = { schema: 1, currency: "$", distanceUnit: "km" };
+  // ===== Core =====
+  const STORAGE_KEY = "journeyledger_state_v2";
+  const APP = { schema: 2, app: "JourneyLedger", currency: "$", distUnit: "km" };
 
   const $ = (sel, root=document) => root.querySelector(sel);
   const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
@@ -220,20 +248,51 @@
     toastEl._t = setTimeout(()=>toastEl.classList.remove("show"), 1400);
   }
 
+  function safeFile(name){
+    return String(name||"export").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
+  }
+  function downloadText(text, filename, mime){
+    const blob = new Blob([text], {type:mime});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  // ===== Native State Model (JourneyLedger) =====
+  function defaultCategories(){
+    return [
+      { id:"fuel", name:"Fuel", colour:"#46b3ff", locked:true },
+      { id:"uncat", name:"Uncategorised", colour:"#a9b2d6", locked:true },
+      { id:"cat_food", name:"Food & Drink", colour:"#C75B00" },
+      { id:"cat_acc",  name:"Accommodation", colour:"#1A5276" },
+      { id:"cat_toll", name:"Tolls & Fees", colour:"#991A1A" },
+      { id:"cat_act",  name:"Activities", colour:"#1A6B38" },
+      { id:"cat_misc", name:"Miscellaneous", colour:"#5B2C8A" },
+      { id:"cat_maint",name:"Maintenance", colour:"#ff4d4d" },
+      { id:"cat_camp", name:"Camping Fees", colour:"#7b5cff" },
+    ];
+  }
+
   function emptyState(){
     return {
       schema: APP.schema,
-      settings: { currency:"$", distanceUnit:"km", effTarget: 10 },
-      categories: [
-        { id:"fuel", name:"Fuel", colour:"#46b3ff", locked:true },
-        { id:uid(), name:"Food & Drink", colour:"#ffb020" },
-        { id:uid(), name:"Accommodation", colour:"#26d07c" },
-        { id:uid(), name:"Tolls & Fees", colour:"#a9b2d6" },
-        { id:uid(), name:"Maintenance", colour:"#ff4d4d" },
-        { id:uid(), name:"Camping Fees", colour:"#7b5cff" },
-        { id:uid(), name:"Activities", colour:"#ffd166" },
-        { id:uid(), name:"Misc", colour:"#9aa5ff" }
-      ],
+      app: APP.app,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      settings: {
+        currency: "$",
+        distUnit: "km",
+        effTarget: 10,
+        // vehicle/tow are optional metadata, kept for compatibility
+        vehMake:"", vehModel:"", vehYear:"", vehRego:"", vehFuelType:"",
+        towMake:"", towModel:"", towYear:"", towLength:"", towATM:"", towTBW:"", towRego:""
+      },
+      categories: defaultCategories(),
       trips: [],
       activeTripId: null,
       lastBackupAt: null
@@ -245,7 +304,7 @@
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return emptyState();
       const parsed = JSON.parse(raw);
-      if (!parsed || !parsed.schema) return emptyState();
+      if (!parsed || !parsed.schema || !Array.isArray(parsed.trips)) return emptyState();
       return parsed;
     }catch{
       return emptyState();
@@ -253,6 +312,7 @@
   }
 
   function saveState(){
+    state.updatedAt = new Date().toISOString();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   }
 
@@ -260,30 +320,60 @@
   applySettings();
   ensureMinimums();
 
-  const panel = $("#panel");
-  const tripSelect = $("#tripSelect");
-  const tabsRoot = $("#tabs");
-  let activeTab = "fuel";
-
   function applySettings(){
     APP.currency = state.settings?.currency || "$";
-    APP.distanceUnit = state.settings?.distanceUnit || "km";
+    APP.distUnit = state.settings?.distUnit || "km";
   }
 
   function ensureMinimums(){
-    // Ensure Uncategorised exists
-    if (!state.categories.some(c=>c.id==="uncat")){
-      state.categories.push({ id:"uncat", name:"Uncategorised", colour:"#a9b2d6", locked:true });
-    }
-    // Ensure active trip if trips exist
-    if (!state.activeTripId && state.trips.length){
-      state.activeTripId = state.trips[0].id;
-    }
+    if (!Array.isArray(state.categories)) state.categories = defaultCategories();
+    if (!state.categories.some(c=>c.id==="fuel")) state.categories.unshift({ id:"fuel", name:"Fuel", colour:"#46b3ff", locked:true });
+    if (!state.categories.some(c=>c.id==="uncat")) state.categories.unshift({ id:"uncat", name:"Uncategorised", colour:"#a9b2d6", locked:true });
+    if (!state.activeTripId && state.trips.length) state.activeTripId = state.trips[0].id;
   }
 
   function getActiveTrip(){
     return state.trips.find(t => t.id === state.activeTripId) || null;
   }
+
+  function sortByDate(a,b){
+    return String(a?.date||"").localeCompare(String(b?.date||""));
+  }
+
+  function calcTripTotals(trip){
+    const fuelStops = (trip.fuelStops ?? []).slice().sort(sortByDate);
+    const expenses = (trip.expenses ?? []).slice().sort(sortByDate);
+
+    let totalFuelLitres = 0;
+    let totalFuelCost = 0;
+    for (const f of fuelStops){
+      totalFuelLitres += Number(f.litres || 0);
+      totalFuelCost += Number(f.totalCost || 0);
+    }
+    let totalExpense = 0;
+    for (const e of expenses) totalExpense += Number(e.amount || 0);
+
+    const startOdo = Number(trip.odoStart || 0);
+    const endOdo = fuelStops.length ? Number(fuelStops[fuelStops.length - 1].odo || startOdo) : startOdo;
+    const distance = Math.max(0, endOdo - startOdo);
+    const eff = distance > 0 ? (totalFuelLitres / distance) * 100 : null;
+    const spend = totalFuelCost + totalExpense;
+
+    return { distance, totalFuelLitres, eff, spend, totalFuelCost, totalExpense, fuelStops, expenses };
+  }
+
+  function effPill(eff){
+    if (eff === null || eff === undefined || Number.isNaN(eff)) return `<span class="pill">—</span>`;
+    const tgt = Number(state.settings?.effTarget ?? 10);
+    const klass = eff <= tgt ? "good" : (eff <= tgt*1.2 ? "warn" : "bad");
+    return `<span class="pill ${klass}">${fmtNum(eff,1)} L/100km</span>`;
+  }
+
+  // ===== UI =====
+  const panel = $("#panel");
+  const tripSelect = $("#tripSelect");
+  const tabsRoot = $("#tabs");
+  let activeTab = "fuel";
 
   function renderTripSelect(){
     tripSelect.innerHTML = "";
@@ -305,30 +395,6 @@
     }
   }
 
-  function calcTripTotals(trip){
-    const fuelStops = (trip.fuelStops ?? []).slice().sort((a,b)=> (a.date||"").localeCompare(b.date||""));
-    const expenses = trip.expenses ?? [];
-
-    let totalFuelLitres = 0;
-    let totalFuelCost = 0;
-    for (const f of fuelStops){
-      totalFuelLitres += Number(f.litres || 0);
-      totalFuelCost += Number(f.totalCost || 0);
-    }
-
-    let totalExpense = 0;
-    for (const e of expenses) totalExpense += Number(e.amount || 0);
-
-    const startOdo = Number(trip.odoStart || 0);
-    const endOdo = fuelStops.length ? Number(fuelStops[fuelStops.length - 1].odo || startOdo) : startOdo;
-    const distance = Math.max(0, endOdo - startOdo);
-
-    const eff = distance > 0 ? (totalFuelLitres / distance) * 100 : null;
-    const spend = totalFuelCost + totalExpense;
-
-    return { distance, totalFuelLitres, eff, spend, totalFuelCost, totalExpense, fuelStops };
-  }
-
   function setStats(){
     const trip = getActiveTrip();
     if (!trip){
@@ -339,17 +405,10 @@
       return;
     }
     const t = calcTripTotals(trip);
-    $("#statDistance").textContent = `${fmtNum(t.distance, 0)} ${APP.distanceUnit}`;
+    $("#statDistance").textContent = `${fmtNum(t.distance, 0)} ${APP.distUnit}`;
     $("#statFuel").textContent = `${fmtNum(t.totalFuelLitres, 1)} L`;
     $("#statEff").textContent = t.eff === null ? "—" : `${fmtNum(t.eff, 1)} L/100km`;
     $("#statSpend").textContent = fmtMoney(t.spend);
-  }
-
-  function effPill(eff){
-    if (eff === null || eff === undefined || Number.isNaN(eff)) return `<span class="pill">—</span>`;
-    const tgt = Number(state.settings?.effTarget ?? 10);
-    const klass = eff <= tgt ? "good" : (eff <= tgt*1.2 ? "warn" : "bad");
-    return `<span class="pill ${klass}">${fmtNum(eff,1)} L/100km</span>`;
   }
 
   function render(){
@@ -370,7 +429,7 @@
           <button class="primary" id="startTrip">+ New Trip</button>
         </div>
         <div class="hr"></div>
-        <p class="muted small">Export backups if you want to move devices or protect against browser clears.</p>
+        <p class="muted small">This build can import RoadLog/TripLog exports as well as its own exports.</p>
       `;
       $("#startTrip").addEventListener("click", () => openTripDialog(null));
       return;
@@ -415,8 +474,8 @@
       <h2>⛽ Log Fuel Stop</h2>
       <div class="row">
         <label>Date <input id="fuelDate" type="date" value="${today()}"/></label>
-        <label>Station / Location <input id="fuelStation" placeholder="e.g., Caltex Roma"/></label>
-        <label>Odometer (km) * <input id="fuelOdo" type="number" step="0.1" /></label>
+        <label>Location / Station <input id="fuelStation" placeholder="e.g., Caltex Roma"/></label>
+        <label>Odometer (${APP.distUnit}) * <input id="fuelOdo" type="number" step="0.1" /></label>
         <label>Litres * <input id="fuelLitres" type="number" step="0.01" /></label>
         <label>Price per litre (${APP.currency}) <input id="fuelPPL" type="number" step="0.001" /></label>
         <label>Total cost (${APP.currency}) <input id="fuelTotal" type="number" step="0.01" /></label>
@@ -434,7 +493,7 @@
   }
 
   function expensePanel(trip){
-    const items = (trip.expenses ?? []).slice().sort((a,b)=> (a.date||"").localeCompare(b.date||""));
+    const items = (trip.expenses ?? []).slice().sort(sortByDate);
     const catById = Object.fromEntries(state.categories.map(c=>[c.id,c]));
     const list = items.map(e => `
       <div class="item">
@@ -511,7 +570,6 @@
   function summaryPanel(trip){
     const totals = calcTripTotals(trip);
 
-    // Spend by category (including fuel bucket)
     const byCat = new Map();
     byCat.set("fuel", totals.totalFuelCost);
     for (const e of (trip.expenses ?? [])){
@@ -531,7 +589,6 @@
       </tr>`;
     }).join("");
 
-    // Budget
     const budget = Number(trip.budget || 0);
     let budgetBlock = `<p class="muted">No budget set.</p>`;
     if (budget > 0){
@@ -553,7 +610,7 @@
       <h2>📊 Summary</h2>
       <div class="stats">
         <div class="stat"><div class="k">Trip</div><div class="v">${esc(trip.name)}</div></div>
-        <div class="stat"><div class="k">Distance</div><div class="v">${fmtNum(totals.distance,0)} ${APP.distanceUnit}</div></div>
+        <div class="stat"><div class="k">Distance</div><div class="v">${fmtNum(totals.distance,0)} ${APP.distUnit}</div></div>
         <div class="stat"><div class="k">Fuel cost</div><div class="v">${fmtMoney(totals.totalFuelCost)}</div></div>
         <div class="stat"><div class="k">Other expenses</div><div class="v">${fmtMoney(totals.totalExpense)}</div></div>
         ${budgetBlock}
@@ -576,38 +633,32 @@
           </tbody>
         </table>
       </div>
-
-      <div class="hr"></div>
-
-      <div class="right">
-        <button id="csvFuel">Export Fuel CSV</button>
-        <button id="csvExp">Export Expenses CSV</button>
-        <button id="csvTrips">Export Trips CSV</button>
-      </div>
     `;
   }
 
   function settingsPanel(){
-    const s = state.settings;
+    const s = state.settings || {};
     return `
       <h2>⚙️ Settings</h2>
       <div class="row">
         <label>Currency symbol <input id="setCurrency" value="${esc(s.currency || "$")}" /></label>
         <label>Distance unit
           <select id="setUnit">
-            <option value="km" ${s.distanceUnit==="km"?"selected":""}>Kilometres (km)</option>
-            <option value="mi" ${s.distanceUnit==="mi"?"selected":""}>Miles (mi)</option>
+            <option value="km" ${s.distUnit==="km"?"selected":""}>Kilometres (km)</option>
+            <option value="mi" ${s.distUnit==="mi"?"selected":""}>Miles (mi)</option>
           </select>
         </label>
         <label>Efficiency target (L/100km) <input id="setTarget" type="number" step="0.1" value="${esc(String(s.effTarget ?? 10))}"/></label>
+        <label>Vehicle rego (optional) <input id="setRego" value="${esc(s.vehRego||"")}" placeholder="e.g., 123 ABC"/></label>
+        <label>Vehicle fuel type (optional) <input id="setFuelType" value="${esc(s.vehFuelType||"")}" placeholder="e.g., Diesel"/></label>
       </div>
 
       <div class="hr"></div>
 
       <div class="item">
         <div class="meta">
-          <b>Data safety</b>
-          <span class="muted">Everything is stored locally in your browser. Export backups if you want to move devices or protect against clearing browser data.</span>
+          <b>Friends mode</b>
+          <span class="muted">Import/Export supports RoadLog/TripLog. Portable export is provided for long-term compatibility.</span>
         </div>
       </div>
     `;
@@ -698,7 +749,8 @@
       const name = $("#catName").value.trim();
       const colour = $("#catColour").value;
       if (!name){ alert("Category name is required."); return; }
-      state.categories.push({ id: uid(), name, colour });
+      const id = "cat_" + safeFile(name) + "_" + Math.random().toString(16).slice(2,6);
+      state.categories.push({ id, name, colour });
       saveState();
       toast("Category added");
       renderPanel();
@@ -731,47 +783,267 @@
       }
     }));
 
-    // Summary CSV exports
-    $("#csvFuel") && $("#csvFuel").addEventListener("click", () => downloadText(csvFuel(trip), `${safeFile(trip.name)}-fuel.csv`, "text/csv"));
-    $("#csvExp") && $("#csvExp").addEventListener("click", () => downloadText(csvExpenses(trip), `${safeFile(trip.name)}-expenses.csv`, "text/csv"));
-    $("#csvTrips") && $("#csvTrips").addEventListener("click", () => downloadText(csvTrips(state.trips), `journeyledger-trips.csv`, "text/csv"));
-
     // Settings
     $("#setCurrency") && $("#setCurrency").addEventListener("input", (e) => {
       state.settings.currency = e.target.value || "$";
-      applySettings(); saveState(); setStats(); toast("Saved");
-      // update visible currency labels by rerendering tab
-      renderPanel();
+      applySettings(); saveState(); toast("Saved"); renderPanel(); setStats();
     });
     $("#setUnit") && $("#setUnit").addEventListener("change", (e) => {
-      state.settings.distanceUnit = e.target.value;
-      applySettings(); saveState(); setStats(); toast("Saved");
-      renderPanel();
+      state.settings.distUnit = e.target.value;
+      applySettings(); saveState(); toast("Saved"); renderPanel(); setStats();
     });
     $("#setTarget") && $("#setTarget").addEventListener("input", (e) => {
       state.settings.effTarget = Number(e.target.value || 10);
-      saveState(); toast("Saved");
-      renderPanel();
+      saveState(); toast("Saved"); renderPanel();
+    });
+    $("#setRego") && $("#setRego").addEventListener("input", (e) => {
+      state.settings.vehRego = e.target.value || "";
+      saveState();
+    });
+    $("#setFuelType") && $("#setFuelType").addEventListener("input", (e) => {
+      state.settings.vehFuelType = e.target.value || "";
+      saveState();
     });
   }
 
-  // Export / Import / Trips
-  $("#newTripBtn").addEventListener("click", () => openTripDialog(null));
+  // ===== Import/Export Compatibility Layer =====
 
-  tripSelect.addEventListener("change", () => {
-    state.activeTripId = tripSelect.value;
-    saveState();
-    render();
-  });
+  // Portable v1 (neutral)
+  // {
+  //   format: "portable-trip-ledger",
+  //   version: 1,
+  //   settings: { currency, distUnit, effTarget, ...optional },
+  //   categories: [{ id, name, color }],
+  //   trips: [{ id, name, startDate, startOdo, fuel:[...], expenses:[...] }]
+  // }
+  function toPortableFromNative(native){
+    const cats = (native.categories||[]).map(c => ({ id:c.id, name:c.name, color:c.colour || c.color || "#a9b2d6" }));
+    const trips = (native.trips||[]).map(t => ({
+      id: t.id,
+      name: t.name,
+      startDate: t.startDate || "",
+      startOdo: Number(t.odoStart||0),
+      fuel: (t.fuelStops||[]).map(f => ({
+        id:f.id, date:f.date||"", location:f.station||"", odo:Number(f.odo||0), litres:Number(f.litres||0),
+        cost:Number(f.totalCost||0), ppl:(f.pricePerL===null||f.pricePerL===undefined)?null:Number(f.pricePerL), notes:f.notes||""
+      })),
+      expenses: (t.expenses||[]).map(e => ({
+        id:e.id, date:e.date||"", categoryId:e.catId||"uncat", desc:e.desc||"", amount:Number(e.amount||0), notes:e.notes||""
+      }))
+    }));
+    return {
+      format:"portable-trip-ledger",
+      version:1,
+      exportedAt:new Date().toISOString(),
+      settings:{...native.settings},
+      categories: cats,
+      trips
+    };
+  }
 
-  $("#exportBtn").addEventListener("click", () => {
-    const payload = { exportedAt: new Date().toISOString(), schema: state.schema, state };
-    state.lastBackupAt = payload.exportedAt;
-    saveState();
-    downloadText(JSON.stringify(payload, null, 2), `journeyledger-backup-${today()}.json`, "application/json");
-    toast("Exported");
-  });
+  function nativeFromPortable(port){
+    const categories = (port.categories||[]).map(c => ({ id:c.id, name:c.name, colour:c.color || "#a9b2d6" }));
+    // ensure required categories
+    if (!categories.some(c=>c.id==="fuel")) categories.unshift({ id:"fuel", name:"Fuel", colour:"#46b3ff", locked:true });
+    if (!categories.some(c=>c.id==="uncat")) categories.unshift({ id:"uncat", name:"Uncategorised", colour:"#a9b2d6", locked:true });
 
+    const trips = (port.trips||[]).map(t => ({
+      id: t.id || uid(),
+      name: t.name || "Imported trip",
+      startDate: t.startDate || "",
+      endDate: t.endDate || "",
+      odoStart: Number(t.startOdo || 0),
+      budget: Number(t.budget || 0),
+      notes: t.notes || "",
+      fuelStops: (t.fuel||[]).map(f => ({
+        id: f.id || uid(),
+        date: f.date || "",
+        station: f.location || "",
+        odo: Number(f.odo || 0),
+        litres: Number(f.litres || 0),
+        pricePerL: (f.ppl===null||f.ppl===undefined) ? null : Number(f.ppl),
+        totalCost: Number(f.cost || 0),
+        notes: f.notes || ""
+      })),
+      expenses: (t.expenses||[]).map(e => ({
+        id: e.id || uid(),
+        date: e.date || "",
+        catId: e.categoryId || "uncat",
+        desc: e.desc || "",
+        amount: Number(e.amount || 0),
+        notes: e.notes || ""
+      }))
+    }));
+
+    return {
+      schema: APP.schema,
+      app: APP.app,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      settings: { ...(port.settings||{}) },
+      categories,
+      trips,
+      activeTripId: trips[0]?.id || null,
+      lastBackupAt: port.exportedAt || null
+    };
+  }
+
+  function toRoadLogFromNative(native){
+    // RoadLog format: { _meta, settings, state:{trips,currentTripId,categories} }
+    const cats = (native.categories||[])
+      .filter(c => c.id !== "fuel") // RoadLog already counts fuel separately; keep categories for expenses
+      .map(c => ({ id:c.id, name:c.name, color:c.colour || "#a9b2d6" }));
+
+    const trips = (native.trips||[]).map(t => ({
+      id: t.id,
+      name: t.name,
+      startDate: t.startDate || "",
+      startOdo: Number(t.odoStart||0),
+      fuel: (t.fuelStops||[]).map(f => ({
+        id: f.id,
+        date: f.date || "",
+        location: f.station || "",
+        odo: Number(f.odo||0),
+        litres: Number(f.litres||0),
+        cost: Number(f.totalCost||0),
+        ppl: (f.pricePerL===null||f.pricePerL===undefined) ? null : Number(f.pricePerL),
+        notes: f.notes || ""
+      })),
+      expenses: (t.expenses||[]).map(e => ({
+        id: e.id,
+        date: e.date || "",
+        categoryId: e.catId || "uncat",
+        desc: e.desc || "",
+        amount: Number(e.amount||0),
+        notes: e.notes || ""
+      }))
+    }));
+
+    const totalFuelStops = trips.reduce((n,t)=> n + (t.fuel?.length||0), 0);
+    const totalExpenses = trips.reduce((n,t)=> n + (t.expenses?.length||0), 0);
+    const totalKm = (() => {
+      let km=0;
+      for (const t of native.trips||[]){
+        const totals = calcTripTotals(t);
+        km += totals.distance || 0;
+      }
+      return km;
+    })();
+
+    return {
+      _meta: {
+        app: "RoadLog",
+        version: "2.x-compatible",
+        exported: new Date().toISOString(),
+        tripCount: trips.length,
+        totalFuelStops,
+        totalExpenses,
+        totalKm,
+        description: "Exported from JourneyLedger AU (RoadLog-compatible)"
+      },
+      settings: {
+        ...((native.settings)||{}),
+        effTarget: Number(native.settings?.effTarget ?? 10),
+        distUnit: native.settings?.distUnit || "km",
+        currency: native.settings?.currency || "$"
+      },
+      state: {
+        trips,
+        currentTripId: native.activeTripId || (trips[0]?.id || null),
+        categories: cats
+      }
+    };
+  }
+
+  // Detect + normalise to native
+  function normaliseToNative(obj){
+    // Native wrapper { exportedAt, schema, state }
+    if (obj && obj.state && obj.state.schema && Array.isArray(obj.state.trips)) return obj.state;
+
+    // Raw native { schema, trips }
+    if (obj && obj.schema && Array.isArray(obj.trips)) return obj;
+
+    // Portable
+    if (obj && obj.format === "portable-trip-ledger" && obj.version === 1 && Array.isArray(obj.trips)) {
+      return nativeFromPortable(obj);
+    }
+
+    // RoadLog/TripLog (your actual file shape)
+    // { _meta, settings, state:{ trips[], currentTripId, categories[] } }
+    if (obj && obj._meta && typeof obj._meta.app === "string" && obj.state && Array.isArray(obj.state.trips)) {
+      const cats = Array.isArray(obj.state.categories) ? obj.state.categories : [];
+      const catIdSet = new Set(cats.map(c=>c.id));
+      // Build categories for native (ensure fuel/uncat)
+      const categories = [
+        { id:"fuel", name:"Fuel", colour:"#46b3ff", locked:true },
+        { id:"uncat", name:"Uncategorised", colour:"#a9b2d6", locked:true },
+        ...cats.map(c => ({ id:c.id, name:c.name, colour:c.color || "#a9b2d6" }))
+      ];
+
+      const trips = obj.state.trips.map(rt => ({
+        id: rt.id || uid(),
+        name: rt.name || "Imported trip",
+        startDate: rt.startDate || "",
+        endDate: rt.endDate || "",
+        odoStart: Number(rt.startOdo || 0),
+        budget: Number(rt.budget || 0),
+        notes: rt.notes || "",
+        fuelStops: (rt.fuel || []).map(f => ({
+          id: f.id || uid(),
+          date: f.date || "",
+          station: f.location || "",
+          odo: Number(f.odo || 0),
+          litres: Number(f.litres || 0),
+          pricePerL: (f.ppl===null||f.ppl===undefined) ? null : Number(f.ppl),
+          totalCost: Number(f.cost || 0),
+          notes: f.notes || ""
+        })),
+        expenses: (rt.expenses || []).map(e => ({
+          id: e.id || uid(),
+          date: e.date || "",
+          catId: (e.categoryId && (catIdSet.has(e.categoryId) || e.categoryId==="uncat")) ? e.categoryId : "uncat",
+          desc: e.desc || "",
+          amount: Number(e.amount || 0),
+          notes: e.notes || ""
+        }))
+      }));
+
+      const settings = {
+        ...state.settings, // keep existing where possible
+        currency: obj.settings?.currency ?? obj.settings?.currencySymbol ?? obj.settings?.currency ?? "$",
+        distUnit: obj.settings?.distUnit ?? obj.settings?.distanceUnit ?? "km",
+        effTarget: Number(obj.settings?.effTarget ?? 10),
+        vehMake: obj.settings?.vehMake ?? "",
+        vehModel: obj.settings?.vehModel ?? "",
+        vehYear: obj.settings?.vehYear ?? "",
+        vehRego: obj.settings?.vehRego ?? "",
+        vehFuelType: obj.settings?.vehFuelType ?? "",
+        towMake: obj.settings?.towMake ?? "",
+        towModel: obj.settings?.towModel ?? "",
+        towYear: obj.settings?.towYear ?? "",
+        towLength: obj.settings?.towLength ?? "",
+        towATM: obj.settings?.towATM ?? "",
+        towTBW: obj.settings?.towTBW ?? "",
+        towRego: obj.settings?.towRego ?? ""
+      };
+
+      return {
+        schema: APP.schema,
+        app: APP.app,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        settings,
+        categories,
+        trips,
+        activeTripId: obj.state.currentTripId || trips[0]?.id || null,
+        lastBackupAt: obj._meta?.exported || null
+      };
+    }
+
+    return null;
+  }
+
+  // ===== Import/Export wiring =====
   $("#importBtn").addEventListener("click", () => $("#importDialog").showModal());
   $("#importDlgClose").addEventListener("click", () => $("#importDialog").close());
 
@@ -781,33 +1053,75 @@
     const txt = await file.text();
     let parsed;
     try { parsed = JSON.parse(txt); } catch { alert("Invalid JSON."); return; }
-    const incoming = parsed.state || parsed;
-    if (!incoming || !incoming.schema){ alert("Backup not recognised."); return; }
+
+    const incoming = normaliseToNative(parsed);
+    if (!incoming){ alert("Backup not recognised."); return; }
 
     const mode = $("#importMode").value;
     if (mode === "replace"){
       state = incoming;
     } else {
-      const existingIds = new Set(state.trips.map(t=>t.id));
-      for (const t of (incoming.trips || [])){
-        if (!existingIds.has(t.id)) state.trips.push(t);
+      // Merge trips by id
+      const existingTripIds = new Set((state.trips||[]).map(t=>t.id));
+      for (const t of (incoming.trips||[])){
+        if (!existingTripIds.has(t.id)) state.trips.push(t);
       }
-      const existingNames = new Set(state.categories.map(c=>c.name.toLowerCase()));
-      for (const c of (incoming.categories || [])){
-        if (!existingNames.has(c.name.toLowerCase())) state.categories.push(c);
+      // Merge categories by id
+      const existingCatIds = new Set((state.categories||[]).map(c=>c.id));
+      for (const c of (incoming.categories||[])){
+        if (!existingCatIds.has(c.id)) state.categories.push(c);
       }
-      state.settings = { ...incoming.settings, ...state.settings };
+      // Merge settings: keep current but fill blanks
+      state.settings = { ...(incoming.settings||{}), ...(state.settings||{}) };
+      if (!state.activeTripId && state.trips.length) state.activeTripId = state.trips[0].id;
     }
 
     applySettings();
     ensureMinimums();
     saveState();
+
     $("#importDialog").close();
     toast("Imported");
     render();
   });
 
-  // Trip dialog logic
+  $("#exportBtn").addEventListener("click", () => {
+    $("#exportName").value = "";
+    $("#exportDialog").showModal();
+  });
+  $("#exportDlgClose").addEventListener("click", () => $("#exportDialog").close());
+
+  $("#exportDoBtn").addEventListener("click", () => {
+    const fmt = $("#exportFormat").value;
+    const custom = $("#exportName").value.trim();
+    const base = custom ? safeFile(custom) : `journeyledger-${fmt}-${today()}`;
+
+    let payload;
+    if (fmt === "native"){
+      payload = { exportedAt: new Date().toISOString(), schema: state.schema, state };
+    } else if (fmt === "roadlog"){
+      payload = toRoadLogFromNative(state);
+    } else {
+      payload = toPortableFromNative(state);
+    }
+
+    state.lastBackupAt = new Date().toISOString();
+    saveState();
+
+    downloadText(JSON.stringify(payload, null, 2), `${base}.json`, "application/json");
+    $("#exportDialog").close();
+    toast("Exported");
+  });
+
+  // ===== Trips wiring =====
+  $("#newTripBtn").addEventListener("click", () => openTripDialog(null));
+  tripSelect.addEventListener("change", () => {
+    state.activeTripId = tripSelect.value;
+    saveState();
+    render();
+  });
+
+  // ===== Trip dialog logic =====
   const tripDialog = $("#tripDialog");
   let editingTripId = null;
 
@@ -878,51 +1192,16 @@
     render();
   });
 
-  // CSV + download helpers
-  function csvEscape(v){
-    const s = String(v ?? "");
-    return /[",\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
-  }
-  function csvFuel(trip){
-    const rows = [["date","station","odometer_km","litres","price_per_l","total_cost","notes"]];
-    for (const f of (trip.fuelStops || [])){
-      rows.push([f.date, f.station, f.odo, f.litres, f.pricePerL, f.totalCost, f.notes]);
-    }
-    return rows.map(r=>r.map(csvEscape).join(",")).join("\n");
-  }
-  function csvExpenses(trip){
-    const catById = Object.fromEntries(state.categories.map(c=>[c.id,c]));
-    const rows = [["date","category","description","amount","notes"]];
-    for (const e of (trip.expenses || [])){
-      rows.push([e.date, (catById[e.catId]?.name ?? "Uncategorised"), e.desc, e.amount, e.notes]);
-    }
-    return rows.map(r=>r.map(csvEscape).join(",")).join("\n");
-  }
-  function csvTrips(trips){
-    const rows = [["trip_name","start_date","end_date","distance_km","fuel_litres","fuel_cost","expense_cost","total_spend"]];
-    for (const t of trips){
-      const tot = calcTripTotals(t);
-      rows.push([t.name, t.startDate, t.endDate, tot.distance, tot.totalFuelLitres, tot.totalFuelCost, tot.totalExpense, tot.spend]);
-    }
-    return rows.map(r=>r.map(csvEscape).join(",")).join("\n");
+  // ===== Tabs =====
+  function bindTabs(){
+    $$("#tabs .tab").forEach(b => b.addEventListener("click", () => {
+      activeTab = b.dataset.tab;
+      $$("#tabs .tab").forEach(x => x.classList.toggle("active", x.dataset.tab === activeTab));
+      renderPanel();
+    }));
   }
 
-  function safeFile(name){
-    return String(name||"trip").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"");
-  }
-  function downloadText(text, filename, mime){
-    const blob = new Blob([text], {type:mime});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
-
-  // Initialise
+  // ===== Init =====
   bindTabs();
   render();
 
