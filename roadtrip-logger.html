@@ -279,6 +279,7 @@ textarea { resize: vertical; min-height: 80px; }
   border-radius:999px; border:1.5px solid; white-space:nowrap;
 }
 .badge-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.eff-range { background:#EEF6FF; color:#1D4ED8; border:1px solid #BFDBFE; }
 .eff-pill  { display:inline-flex; align-items:center; font-size:.75rem; font-weight:700; padding:2px 8px; border-radius:4px; }
 .eff-good  { background:var(--accent-grn-bg); color:var(--accent-green); }
 .eff-mid   { background:#FDF0E3; color:var(--brand); }
@@ -1451,7 +1452,7 @@ function toggleHistory(section) {
 
 </div><!-- /.app -->
 
-<footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">LogMyJourney AU by Ian Fraser &copy; 2026 &nbsp;·&nbsp; <span id="appVersion">v1.5</span></footer>
+<footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">LogMyJourney AU by Ian Fraser &copy; 2026 &nbsp;·&nbsp; <span id="appVersion">v1.6</span></footer>
 
 <!-- Modal: New Trip -->
 <div class="modal-overlay" id="newTripModal" role="dialog" aria-modal="true" aria-labelledby="tripModalTitle">
@@ -1880,8 +1881,12 @@ function renderFuelLog() {
   cnt.textContent=sorted.length+' stop'+(sorted.length!==1?'s':'');
   el.innerHTML=sorted.map(e=>{
     const prev=t.fuel.filter(p=>p.odo<e.odo).sort((a,b)=>b.odo-a.odo)[0];
-    let effHtml='';
-    if(prev){const dist=e.odo-prev.odo; if(dist>0){const l100=e.litres/dist*100; const cls=l100<=9?'eff-good':l100<=12?'eff-mid':'eff-poor'; effHtml=`<span class="eff-pill ${cls}">${l100.toFixed(1)} L/100km</span>`;}}
+    let effHtml='', rangeHtml='';
+    if(prev){const dist=e.odo-prev.odo; if(dist>0){const l100=e.litres/dist*100; const cls=l100<=9?'eff-good':l100<=12?'eff-mid':'eff-poor'; effHtml=`<span class="eff-pill ${cls}">${l100.toFixed(1)} L/100km</span>`;
+      const settingsRaw=localStorage.getItem('triplog_settings');
+      const tankSize=settingsRaw?parseFloat(JSON.parse(settingsRaw).vehTankSize||''):NaN;
+      if(!isNaN(tankSize)&&tankSize>0){const rangeKm=Math.round(tankSize/l100*100); rangeHtml=`<span class="eff-pill eff-range" title="Estimated range on a full tank at this efficiency">🛣️ ~${rangeKm.toLocaleString()} km</span>`;}
+    }}
     return `<div class="log-entry" role="listitem">
       <div class="entry-icon fuel" aria-hidden="true">⛽</div>
       <div class="entry-body">
@@ -1892,6 +1897,7 @@ function renderFuelLog() {
           ${e.ppl?`<span class="meta-sep" aria-hidden="true">·</span><span>$${e.ppl.toFixed(3)}/L</span>`:''}
           <span class="meta-sep" aria-hidden="true">·</span><span>Odo: ${e.odo.toLocaleString()} km</span>
           ${effHtml?`<span class="meta-sep" aria-hidden="true">·</span>${effHtml}`:''}
+          ${rangeHtml?`<span class="meta-sep" aria-hidden="true">·</span>${rangeHtml}`:''}
           ${e.notes?`<span class="meta-sep" aria-hidden="true">·</span><span>${esc(e.notes)}</span>`:''}
         </div>
       </div>
@@ -2204,7 +2210,7 @@ function exportJSON() {
   const backup = {
     _meta: {
       app:       'LogMyJourney AU',
-      version:   '1.5',
+      version:   '1.6',
       exported:  new Date().toISOString(),
       tripCount: state.trips.length
     },
