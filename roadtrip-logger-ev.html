@@ -279,6 +279,7 @@ textarea { resize: vertical; min-height: 80px; }
   border-radius:999px; border:1.5px solid; white-space:nowrap;
 }
 .badge-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.eff-range { background:#EEF6FF; color:#1D4ED8; border:1px solid #BFDBFE; }
 .eff-pill  { display:inline-flex; align-items:center; font-size:.75rem; font-weight:700; padding:2px 8px; border-radius:4px; }
 .eff-good  { background:var(--accent-grn-bg); color:var(--accent-green); }
 .eff-mid   { background:#FDF0E3; color:var(--brand); }
@@ -1717,7 +1718,7 @@ function toggleHistory(section) {
 
 </div><!-- /.app -->
 
-<footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">LogMyJourney AU by Ian Fraser &copy; 2026 &nbsp;·&nbsp; <span id="appVersion">v2.3</span></footer>
+<footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">LogMyJourney AU by Ian Fraser &copy; 2026 &nbsp;·&nbsp; <span id="appVersion">v2.7</span></footer>
 
 <!-- Modal: New Trip -->
 <div class="modal-overlay" id="newTripModal" role="dialog" aria-modal="true" aria-labelledby="tripModalTitle">
@@ -1906,6 +1907,22 @@ let state = JSON.parse(localStorage.getItem('triplog_v2') || 'null') || {
     {id:'cat_misc',name:'Miscellaneous',  color:'#5B2C8A'},
   ]
 };
+
+/* ── Date helpers ────────────────────────────────────────────────────────── */
+const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fmtDate(iso) {
+  if (!iso) return '';
+  const [y,m,d] = iso.split('-');
+  return d + ' ' + MONTH_SHORT[parseInt(m,10)-1] + ' ' + y;
+}
+function localToday() {
+  // Returns YYYY-MM-DD in the LOCAL timezone (not UTC)
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return y + '-' + m + '-' + day;
+}
 function save()  { localStorage.setItem('triplog_v2', JSON.stringify(state)); }
 function trip()  { return state.trips.find(t => t.id === state.currentTripId) || null; }
 function esc(s)  { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; }
@@ -2037,7 +2054,7 @@ function empty(icon, title, text) {
 
 /* ── Init ───────────────────────────────────────────────────────────────────── */
 window.addEventListener('DOMContentLoaded', () => {
-  const today = new Date().toISOString().split('T')[0];
+  const today = localToday();
   document.getElementById('fuelDate').value     = today;
   document.getElementById('expDate').value      = today;
   document.getElementById('newTripStart').value = today;
@@ -2119,7 +2136,7 @@ function openModal(id) {
     document.getElementById('tripModalTitle').textContent  = 'Start a New Trip';
     document.getElementById('tripModalSaveBtn').textContent = 'Create Trip';
     document.getElementById('newTripName').value   = '';
-    document.getElementById('newTripStart').value  = new Date().toISOString().split('T')[0];
+    document.getElementById('newTripStart').value  = localToday();
     document.getElementById('newTripEnd').value    = '';
     document.getElementById('newTripOdo').value    = '';
     document.getElementById('newTripBudget').value = '';
@@ -2299,22 +2316,28 @@ function renderAll() { renderFuelLog(); renderExpenseLog(); renderCategories(); 
 function renderFuelLog() {
   const t=trip(), el=document.getElementById('fuelLog'), cnt=document.getElementById('fuelCount');
   if (!t||!t.fuel.length) { cnt.textContent='0 stops'; el.innerHTML=empty('⛽','No fuel stops yet','Log your first fill-up above.'); return; }
-  const sorted=[...t.fuel].sort((a,b)=>b.date.localeCompare(a.date));
+  const sorted=[...t.fuel].sort((a,b)=>{ const d=a.date.localeCompare(b.date); return d!==0?d:(a.odo||0)-(b.odo||0); });
   cnt.textContent=sorted.length+' stop'+(sorted.length!==1?'s':'');
   el.innerHTML=sorted.map(e=>{
     const prev=t.fuel.filter(p=>p.odo<e.odo).sort((a,b)=>b.odo-a.odo)[0];
-    let effHtml='';
-    if(prev){const dist=e.odo-prev.odo; if(dist>0){const l100=e.litres/dist*100; const cls=l100<=9?'eff-good':l100<=12?'eff-mid':'eff-poor'; effHtml=`<span class="eff-pill ${cls}">${l100.toFixed(1)} L/100km</span>`;}}
+    let effHtml='', rangeHtml='';
+    if(prev){const dist=e.odo-prev.odo; if(dist>0){const l100=e.litres/dist*100; const cls=l100<=9?'eff-good':l100<=12?'eff-mid':'eff-poor'; effHtml=`<span class="eff-pill ${cls}">${l100.toFixed(1)} L/100km</span>`;
+      const settingsRaw=localStorage.getItem('triplog_settings');
+      const tankSize=settingsRaw?parseFloat(JSON.parse(settingsRaw).vehTankSize||''):NaN;
+      if(!isNaN(tankSize)&&tankSize>0){const rangeKm=Math.round(tankSize/l100*100); rangeHtml=`<span class="eff-pill eff-range" title="Estimated range on a full tank at this efficiency">🛣️ ~${rangeKm.toLocaleString()} km</span>`;}
+    }}
     return `<div class="log-entry" role="listitem">
       <div class="entry-icon fuel" aria-hidden="true">⛽</div>
       <div class="entry-body">
         <div class="entry-title">${esc(e.location)}</div>
         <div class="entry-meta">
-          <span>${e.date}</span><span class="meta-sep" aria-hidden="true">·</span>
+          <span>${fmtDate(e.date)}</span><span class="meta-sep" aria-hidden="true">·</span>
           <span>${e.litres} L</span>
           ${e.ppl?`<span class="meta-sep" aria-hidden="true">·</span><span>$${e.ppl.toFixed(3)}/L</span>`:''}
           <span class="meta-sep" aria-hidden="true">·</span><span>Odo: ${e.odo.toLocaleString()} km</span>
+          ${prev?`<span class="meta-sep" aria-hidden="true">·</span><span class="eff-pill" style="background:var(--cream-dark,#F5F1EB);color:var(--ink-muted)">📍 ${(e.odo-prev.odo).toLocaleString()} km leg</span>`:''}
           ${effHtml?`<span class="meta-sep" aria-hidden="true">·</span>${effHtml}`:''}
+          ${rangeHtml?`<span class="meta-sep" aria-hidden="true">·</span>${rangeHtml}`:''}
           ${e.notes?`<span class="meta-sep" aria-hidden="true">·</span><span>${esc(e.notes)}</span>`:''}
         </div>
       </div>
@@ -2330,7 +2353,7 @@ function renderFuelLog() {
 function renderExpenseLog() {
   const t=trip(), el=document.getElementById('expenseLog'), cnt=document.getElementById('expCount');
   if (!t||!t.expenses.length) { cnt.textContent='0 items'; el.innerHTML=empty('💳','No expenses yet','Log your first expense above.'); return; }
-  const sorted=[...t.expenses].sort((a,b)=>b.date.localeCompare(a.date));
+  const sorted=[...t.expenses].sort((a,b)=>{ const d=a.date.localeCompare(b.date); return d!==0?d:a.id.localeCompare(b.id); });
   cnt.textContent=sorted.length+' item'+(sorted.length!==1?'s':'');
   el.innerHTML=sorted.map(e=>{
     const cat=getCat(e.categoryId);
@@ -2339,7 +2362,7 @@ function renderExpenseLog() {
       <div class="entry-body">
         <div class="entry-title">${esc(e.desc)}</div>
         <div class="entry-meta">
-          <span>${e.date}</span><span class="meta-sep" aria-hidden="true">·</span>
+          <span>${fmtDate(e.date)}</span><span class="meta-sep" aria-hidden="true">·</span>
           <span class="badge" style="color:${cat.color};border-color:${cat.color};background:${cat.color}18"><span class="badge-dot" style="background:${cat.color}" aria-hidden="true"></span>${esc(cat.name)}</span>
           ${e.notes?`<span class="meta-sep" aria-hidden="true">·</span><span>${esc(e.notes)}</span>`:''}
         </div>
@@ -2695,7 +2718,7 @@ function exportJSON() {
   const backup = {
     _meta: {
       app:       'LogMyJourney AU',
-      version:   '2.3',
+      version:   '2.7',
       exported:  new Date().toISOString(),
       tripCount: state.trips.length
     },
@@ -3177,7 +3200,7 @@ function addChargeEntry() {
   const costVal = parseFloat(document.getElementById('chgCost').value);
   const entry = {
     id: 'c_'+Date.now(),
-    date:     document.getElementById('chgDate').value || new Date().toISOString().split('T')[0],
+    date:     document.getElementById('chgDate').value || localToday(),
     location: document.getElementById('chgLocation').value.trim(),
     odo:      odo,
     kwh:      kwh,
@@ -3210,7 +3233,8 @@ function renderChargeLog() {
     log.innerHTML = '<p style="color:var(--ink-muted);font-size:.9rem;padding:16px 0">No charging sessions logged yet.</p>';
     return;
   }
-  log.innerHTML = charges.map((c, i) => {
+  const sorted_c = [...charges].sort((a,b)=>{ const d=a.date.localeCompare(b.date); return d!==0?d:(a.odo||0)-(b.odo||0); });
+  log.innerHTML = sorted_c.map((c, i) => {
     // Efficiency: km/kWh from previous session
     let effBadge = '';
     if (i > 0) {
