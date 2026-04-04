@@ -1452,7 +1452,7 @@ function toggleHistory(section) {
 
 </div><!-- /.app -->
 
-<footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">LogMyJourney AU by Ian Fraser &copy; 2026 &nbsp;·&nbsp; <span id="appVersion">v1.6</span></footer>
+<footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">LogMyJourney AU by Ian Fraser &copy; 2026 &nbsp;·&nbsp; <span id="appVersion">v1.7</span></footer>
 
 <!-- Modal: New Trip -->
 <div class="modal-overlay" id="newTripModal" role="dialog" aria-modal="true" aria-labelledby="tripModalTitle">
@@ -1611,6 +1611,22 @@ let state = JSON.parse(localStorage.getItem('triplog_v2') || 'null') || {
     {id:'cat_misc',name:'Miscellaneous',  color:'#5B2C8A'},
   ]
 };
+
+/* ── Date helpers ────────────────────────────────────────────────────────── */
+const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fmtDate(iso) {
+  if (!iso) return '';
+  const [y,m,d] = iso.split('-');
+  return d + ' ' + MONTH_SHORT[parseInt(m,10)-1] + ' ' + y;
+}
+function localToday() {
+  // Returns YYYY-MM-DD in the LOCAL timezone (not UTC)
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return y + '-' + m + '-' + day;
+}
 function save()  { localStorage.setItem('triplog_v2', JSON.stringify(state)); }
 function trip()  { return state.trips.find(t => t.id === state.currentTripId) || null; }
 function esc(s)  { return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') : ''; }
@@ -1657,7 +1673,7 @@ function empty(icon, title, text) {
 
 /* ── Init ───────────────────────────────────────────────────────────────────── */
 window.addEventListener('DOMContentLoaded', () => {
-  const today = new Date().toISOString().split('T')[0];
+  const today = localToday();
   document.getElementById('fuelDate').value     = today;
   document.getElementById('expDate').value      = today;
   document.getElementById('newTripStart').value = today;
@@ -1732,7 +1748,7 @@ function openModal(id) {
     document.getElementById('tripModalTitle').textContent  = 'Start a New Trip';
     document.getElementById('tripModalSaveBtn').textContent = 'Create Trip';
     document.getElementById('newTripName').value   = '';
-    document.getElementById('newTripStart').value  = new Date().toISOString().split('T')[0];
+    document.getElementById('newTripStart').value  = localToday();
     document.getElementById('newTripEnd').value    = '';
     document.getElementById('newTripOdo').value    = '';
     document.getElementById('newTripBudget').value = '';
@@ -1892,10 +1908,11 @@ function renderFuelLog() {
       <div class="entry-body">
         <div class="entry-title">${esc(e.location)}</div>
         <div class="entry-meta">
-          <span>${e.date}</span><span class="meta-sep" aria-hidden="true">·</span>
+          <span>${fmtDate(e.date)}</span><span class="meta-sep" aria-hidden="true">·</span>
           <span>${e.litres} L</span>
           ${e.ppl?`<span class="meta-sep" aria-hidden="true">·</span><span>$${e.ppl.toFixed(3)}/L</span>`:''}
           <span class="meta-sep" aria-hidden="true">·</span><span>Odo: ${e.odo.toLocaleString()} km</span>
+          ${prev?`<span class="meta-sep" aria-hidden="true">·</span><span class="eff-pill" style="background:var(--cream-dark,#F5F1EB);color:var(--ink-muted)">📍 ${(e.odo-prev.odo).toLocaleString()} km leg</span>`:''}
           ${effHtml?`<span class="meta-sep" aria-hidden="true">·</span>${effHtml}`:''}
           ${rangeHtml?`<span class="meta-sep" aria-hidden="true">·</span>${rangeHtml}`:''}
           ${e.notes?`<span class="meta-sep" aria-hidden="true">·</span><span>${esc(e.notes)}</span>`:''}
@@ -1922,7 +1939,7 @@ function renderExpenseLog() {
       <div class="entry-body">
         <div class="entry-title">${esc(e.desc)}</div>
         <div class="entry-meta">
-          <span>${e.date}</span><span class="meta-sep" aria-hidden="true">·</span>
+          <span>${fmtDate(e.date)}</span><span class="meta-sep" aria-hidden="true">·</span>
           <span class="badge" style="color:${cat.color};border-color:${cat.color};background:${cat.color}18"><span class="badge-dot" style="background:${cat.color}" aria-hidden="true"></span>${esc(cat.name)}</span>
           ${e.notes?`<span class="meta-sep" aria-hidden="true">·</span><span>${esc(e.notes)}</span>`:''}
         </div>
@@ -2210,7 +2227,7 @@ function exportJSON() {
   const backup = {
     _meta: {
       app:       'LogMyJourney AU',
-      version:   '1.6',
+      version:   '1.7',
       exported:  new Date().toISOString(),
       tripCount: state.trips.length
     },
