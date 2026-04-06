@@ -978,7 +978,7 @@ function toggleHistory(section) {
         </div>
         <div class="form-group">
           <label for="vehFuelType">Fuel Type</label>
-          <select id="vehFuelType" onchange="saveSettings()">
+          <select id="vehFuelType" onchange="saveSettings(); updateAdBlueUI()">
             <option value="unleaded">Unleaded (91)</option>
             <option value="premium">Premium Unleaded (95)</option>
             <option value="e10">E10 (94)</option>
@@ -992,7 +992,7 @@ function toggleHistory(section) {
           <label for="vehTankSize">Fuel Tank Capacity (L)</label>
           <input type="number" id="vehTankSize" placeholder="e.g. 87" min="1" step="0.5" oninput="saveSettings()">
         </div>
-        <div class="form-group" style="grid-column:1/-1">
+        <div id="adblueSettingRow" class="form-group" style="grid-column:1/-1">
           <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:600">
             <input type="checkbox" id="vehAdBlue" onchange="saveSettings(); updateAdBlueUI()" style="width:18px;height:18px;accent-color:var(--brand);cursor:pointer">
             Vehicle uses AdBlue (DEF)
@@ -1492,7 +1492,7 @@ function toggleHistory(section) {
 
 </div><!-- /.app -->
 
-<footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">LogMyJourney AU by Ian Fraser &copy; 2026 &nbsp;·&nbsp; <span id="appVersion">v2.1</span></footer>
+<footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">LogMyJourney AU by Ian Fraser &copy; 2026 &nbsp;·&nbsp; <span id="appVersion">v2.2</span></footer>
 
 <!-- Modal: New Trip -->
 <div class="modal-overlay" id="newTripModal" role="dialog" aria-modal="true" aria-labelledby="tripModalTitle">
@@ -2242,10 +2242,23 @@ function saveSettings() {
 }
 
 function updateAdBlueUI() {
-  const s = JSON.parse(localStorage.getItem('triplog_settings')||'{}');
-  const show = !!s.vehAdBlue;
-  const sec = document.getElementById('adblueSection');
-  if (sec) sec.style.display = show ? '' : 'none';
+  const fuelEl = document.getElementById('vehFuelType');
+  const isDiesel = fuelEl ? fuelEl.value === 'diesel' : false;
+
+  // Show/hide the settings row itself — only visible for diesel
+  const settingRow = document.getElementById('adblueSettingRow');
+  if (settingRow) settingRow.style.display = isDiesel ? '' : 'none';
+
+  // If not diesel, uncheck and hide fuel-tab section regardless of saved pref
+  const abCheck = document.getElementById('vehAdBlue');
+  const fuelSec = document.getElementById('adblueSection');
+  if (!isDiesel) {
+    if (abCheck) abCheck.checked = false;
+    if (fuelSec) fuelSec.style.display = 'none';
+  } else {
+    // Diesel — show fuel-tab section only if checkbox is ticked
+    if (fuelSec) fuelSec.style.display = (abCheck && abCheck.checked) ? '' : 'none';
+  }
 }
 
 function updateSetupUI() {
@@ -2317,7 +2330,7 @@ function exportJSON() {
   const backup = {
     _meta: {
       app:       'LogMyJourney AU',
-      version:   '2.1',
+      version:   '2.2',
       exported:  new Date().toISOString(),
       tripCount: state.trips.length
     },
