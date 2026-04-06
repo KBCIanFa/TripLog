@@ -1345,6 +1345,18 @@ function toggleHistory(section) {
           <div class="help-a">Each fuel entry shows the efficiency for that segment — the distance since your last fill-up divided into the litres used. <span style="color:#1A6B38;font-weight:600">Green</span> = under 9 L/100km, <span style="color:#C75B00;font-weight:600">amber</span> = 9–12, <span style="color:#991A1A;font-weight:600">red</span> = over 12. You can set your own target in <strong>Settings</strong>.</div>
         </div>
         <div class="help-item">
+          <div class="help-q">What is the 📍 km leg figure?</div>
+          <div class="help-a">Each fuel entry (except the first) shows the distance driven since the previous fill-up. This tells you exactly how far you got on each tank-load and helps you plan stops on long runs.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">What is the 🛣️ range estimate?</div>
+          <div class="help-a">When you have entered your <strong>Tank Capacity</strong> in Settings, each fuel entry shows an estimated range — how far a full tank would take you at that stop's efficiency. It updates at every fill-up as efficiency changes.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">What is AdBlue and how do I log it?</div>
+          <div class="help-a">AdBlue (also called DEF) is a diesel exhaust fluid used by most modern diesel vehicles. To enable AdBlue logging, go to <strong>Settings → Vehicle Details</strong> and tick <strong>Vehicle uses AdBlue (DEF)</strong>. An AdBlue section then appears on the Fuel tab — enter litres added and price per litre and the cost is calculated automatically. Each fuel entry that includes AdBlue shows a <strong>💧 blue pill</strong> in the history list.</div>
+        </div>
+        <div class="help-item">
           <div class="help-q">Can I hide the fuel list?</div>
           <div class="help-a">Yes — tap the <strong>Hide / Show</strong> button next to the Fuel History heading to collapse or expand the list. Useful on a small screen when you just want to log a stop quickly.</div>
         </div>
@@ -1410,7 +1422,7 @@ function toggleHistory(section) {
       <div class="help-section">
         <div class="help-item">
           <div class="help-q">What can I export?</div>
-          <div class="help-a">Four options are available in Settings: <strong>Full Backup (JSON)</strong> — a complete backup of all trips, expenses, and settings; <strong>Fuel Log (CSV)</strong> — the current trip's fuel stops for spreadsheet analysis; <strong>Expenses (CSV)</strong> — the current trip's expenses with category totals; <strong>Trip Summary (CSV)</strong> — one row per trip across all trips.</div>
+          <div class="help-a">Four options are available in Settings: <strong>Full Backup (JSON)</strong> — a complete backup of all trips, fuel stops, expenses, vehicle profile and settings; <strong>Fuel Log (CSV)</strong> — the current trip's fuel stops for spreadsheet analysis; <strong>Expenses (CSV)</strong> — the current trip's expenses with category totals; <strong>Trip Summary (CSV)</strong> — one row per trip across all trips.</div>
         </div>
         <div class="help-item">
           <div class="help-q">How do I back up my data?</div>
@@ -1418,11 +1430,11 @@ function toggleHistory(section) {
         </div>
         <div class="help-item">
           <div class="help-q">How do I restore or move to a new device?</div>
-          <div class="help-a">On the new device, open LogMyJourney AU, go to <strong>Settings → Import</strong>, select <strong>Replace</strong> mode, then drop in your backup <code>.json</code> file and tap <strong>Confirm Import</strong>. All your trips, expenses, and settings will be restored.</div>
+          <div class="help-a">On the new device, open LogMyJourney AU, go to <strong>Settings → Import</strong>, select <strong>Replace</strong> mode, then drop in your backup <code>.json</code> file and tap <strong>Confirm Import</strong>. All your trips, expenses, vehicle profile, and settings will be restored automatically.</div>
         </div>
         <div class="help-item">
           <div class="help-q">What is the difference between Merge and Replace?</div>
-          <div class="help-a"><strong>Merge</strong> adds trips from the backup file alongside your existing data — useful for combining trips from two devices. Duplicate trip IDs are skipped automatically. <strong>Replace</strong> wipes all current data first and loads the backup fresh. Always export a backup before using Replace.</div>
+          <div class="help-a"><strong>Merge</strong> adds trips from the backup file alongside your existing data — useful for combining trips from two devices. Your vehicle profile is also restored if the current device has none set. Duplicate trip IDs are skipped automatically. <strong>Replace</strong> wipes all current data first and loads the backup fresh — including your vehicle profile. Always export a backup before using Replace.</div>
         </div>
       </div>
     </div>
@@ -1480,7 +1492,7 @@ function toggleHistory(section) {
 
 </div><!-- /.app -->
 
-<footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">LogMyJourney AU by Ian Fraser &copy; 2026 &nbsp;·&nbsp; <span id="appVersion">v2.0</span></footer>
+<footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">LogMyJourney AU by Ian Fraser &copy; 2026 &nbsp;·&nbsp; <span id="appVersion">v2.1</span></footer>
 
 <!-- Modal: New Trip -->
 <div class="modal-overlay" id="newTripModal" role="dialog" aria-modal="true" aria-labelledby="tripModalTitle">
@@ -2305,7 +2317,7 @@ function exportJSON() {
   const backup = {
     _meta: {
       app:       'LogMyJourney AU',
-      version:   '2.0',
+      version:   '2.1',
       exported:  new Date().toISOString(),
       tripCount: state.trips.length
     },
