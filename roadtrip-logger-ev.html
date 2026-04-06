@@ -982,6 +982,27 @@ function toggleHistory(section) {
           <input type="number" id="fuelCost" placeholder="Auto-calculated or enter manually" step="0.01">
         </div>
       </div>
+      <!-- AdBlue fields — shown only when vehAdBlue is checked -->
+      <div id="adblueSection" style="display:none;margin-top:4px">
+        <div class="section-divider" style="margin:12px 0 14px;border-top:1px dashed var(--rule);padding-top:14px">
+          <span style="font-size:.78rem;font-weight:600;color:#1D4ED8;font-family:var(--font-mono);letter-spacing:.06em;text-transform:uppercase">💧 AdBlue (DEF)</span>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="adBlueLitres">AdBlue Litres</label>
+            <input type="number" id="adBlueLitres" placeholder="e.g. 5.0" min="0" step="0.1">
+          </div>
+          <div class="form-group">
+            <label for="adBluePPL">Price per litre ($)</label>
+            <input type="number" id="adBluePPL" placeholder="e.g. 2.50" min="0" step="0.01">
+            <span class="field-hint">AdBlue cost is calculated automatically</span>
+          </div>
+          <div class="form-group">
+            <label for="adBlueCost">AdBlue total cost ($)</label>
+            <input type="number" id="adBlueCost" placeholder="Auto-calculated or enter manually" step="0.01">
+          </div>
+        </div>
+      </div>
       <div class="form-group" style="margin-top:16px">
         <label for="fuelNotes">Notes</label>
         <textarea id="fuelNotes" placeholder="Any notes about this stop…"></textarea>
@@ -1223,7 +1244,7 @@ function toggleHistory(section) {
         </div>
         <div class="form-group">
           <label for="vehFuelType">Fuel Type</label>
-          <select id="vehFuelType" onchange="saveSettings()">
+          <select id="vehFuelType" onchange="saveSettings(); updateAdBlueUI()">
             <option value="unleaded">Unleaded (91)</option>
             <option value="premium">Premium Unleaded (95)</option>
             <option value="e10">E10 (94)</option>
@@ -1236,6 +1257,13 @@ function toggleHistory(section) {
         <div class="form-group">
           <label for="vehTankSize">Fuel Tank Capacity (L)</label>
           <input type="number" id="vehTankSize" placeholder="e.g. 87" min="1" step="0.5" oninput="saveSettings()">
+        </div>
+        <div id="adblueSettingRow" class="form-group" style="grid-column:1/-1">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:600">
+            <input type="checkbox" id="vehAdBlue" onchange="saveSettings(); updateAdBlueUI()" style="width:18px;height:18px;accent-color:var(--brand);cursor:pointer">
+            Vehicle uses AdBlue (DEF)
+          </label>
+          <span class="field-hint">Shows AdBlue fields on the Fuel tab — applies to diesel ICE and PHEV trips</span>
         </div>
         <div class="form-group">
           <label for="vehEngine">Engine / Notes</label>
@@ -1757,7 +1785,7 @@ function toggleHistory(section) {
 
 </div><!-- /.app -->
 
-<footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">LogMyJourney AU by Ian Fraser &copy; 2026 &nbsp;·&nbsp; <span id="appVersion">v2.8</span></footer>
+<footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">LogMyJourney AU by Ian Fraser &copy; 2026 &nbsp;·&nbsp; <span id="appVersion">v3.0</span></footer>
 
 <!-- Modal: New Trip -->
 <div class="modal-overlay" id="newTripModal" role="dialog" aria-modal="true" aria-labelledby="tripModalTitle">
@@ -1860,6 +1888,23 @@ function toggleHistory(section) {
     <div class="form-group" style="margin-top:12px">
       <label for="editFuelNotes">Notes</label>
       <textarea id="editFuelNotes" rows="2" style="resize:vertical"></textarea>
+    </div>
+    <div id="editAdblueSection" style="display:none;padding-top:12px;border-top:1px dashed var(--rule);margin-top:4px">
+      <div style="font-size:.78rem;font-weight:600;color:#1D4ED8;font-family:var(--font-mono);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px">💧 AdBlue (DEF)</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="editAdBlueLitres">AdBlue Litres</label>
+          <input type="number" id="editAdBlueLitres" placeholder="e.g. 5.0" min="0" step="0.1">
+        </div>
+        <div class="form-group">
+          <label for="editAdBluePPL">Price per litre ($)</label>
+          <input type="number" id="editAdBluePPL" placeholder="e.g. 2.50" min="0" step="0.01">
+        </div>
+        <div class="form-group">
+          <label for="editAdBlueCost">Total cost ($)</label>
+          <input type="number" id="editAdBlueCost" placeholder="Auto-calculated or enter" step="0.01">
+        </div>
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('editFuelModal')">Cancel</button>
@@ -1982,10 +2027,10 @@ function empty(icon, title, text) {
     notes: 'ICE demo trip — delete and start your own!',
     charges: [],
     fuel: [
-      { id:'f1', date:'2026-01-10', location:'Ampol Laverton North',    odo:52000, litres:72.0, ppl:2.18, cost:156.96, notes:'Full tank before leaving Melbourne' },
-      { id:'f2', date:'2026-01-11', location:'BP Horsham',              odo:52680, litres:65.4, ppl:2.22, cost:145.19, notes:'' },
-      { id:'f3', date:'2026-01-12', location:'United Bordertown',       odo:53320, litres:68.2, ppl:2.35, cost:160.27, notes:'Pricey at the border' },
-      { id:'f4', date:'2026-01-13', location:'Caltex Tailem Bend',      odo:53940, litres:60.8, ppl:2.19, cost:133.15, notes:'Almost there' },
+      { id:'f1', date:'2026-01-10', location:'Ampol Laverton North',    odo:52000, litres:72.0, ppl:2.18, cost:156.96, notes:'Full tank before leaving Melbourne', adblue:null },
+      { id:'f2', date:'2026-01-11', location:'BP Horsham',              odo:52680, litres:65.4, ppl:2.22, cost:145.19, notes:'', adblue:{ litres:8.0, ppl:2.90, cost:23.20 } },
+      { id:'f3', date:'2026-01-12', location:'United Bordertown',       odo:53320, litres:68.2, ppl:2.35, cost:160.27, notes:'Pricey at the border', adblue:{ litres:7.0, ppl:2.75, cost:19.25 } },
+      { id:'f4', date:'2026-01-13', location:'Caltex Tailem Bend',      odo:53940, litres:60.8, ppl:2.19, cost:133.15, notes:'Almost there', adblue:{ litres:5.5, ppl:2.80, cost:15.40 } },
     ],
     expenses: [
       { id:'e1', date:'2026-01-10', categoryId:'cat_acc',  desc:'Horsham Motor Inn',            amount:128.00, notes:'One night' },
@@ -2084,10 +2129,29 @@ function empty(icon, title, text) {
     state.categories.push({id:'cat_toll', name:'Tolls & Fees', color:'#1A5276'});
 
   // ── Seed (per-ID guard) ───────────────────────────────────────────────────────
+  // Patch existing ICE demo if adblue field missing
+  const existingIce = state.trips.find(t => t.id === 'trip_demo');
+  if (existingIce) {
+    const adblueDefaults = { f1: null, f2: { litres:8.0, ppl:2.90, cost:23.20 }, f3: { litres:7.0, ppl:2.75, cost:19.25 }, f4: { litres:5.5, ppl:2.80, cost:15.40 } };
+    let patched = false;
+    existingIce.fuel.forEach(f => {
+      if (f.adblue === undefined) { f.adblue = adblueDefaults[f.id] || null; patched = true; }
+    });
+    if (patched) save();
+  }
+
   if (!ids.has('trip_demo'))      { state.trips.push(iceTrip);  }
   if (!ids.has('trip_phev_demo')) { state.trips.push(phevTrip); }
   if (!ids.has('trip_ev_demo'))   { state.trips.push(evTrip);   }
   if (!state.currentTripId)       { state.currentTripId = 'trip_demo'; }
+
+  // Seed AdBlue setting if vehicle settings are demo defaults
+  const evExistingS = JSON.parse(localStorage.getItem('triplog_settings') || '{}');
+  if (!evExistingS.vehAdBlue) {
+    evExistingS.vehAdBlue = true;
+    localStorage.setItem('triplog_settings', JSON.stringify(evExistingS));
+  }
+
   save();
 })();
 
@@ -2307,18 +2371,22 @@ function addFuelEntry() {
   const lit = parseFloat(document.getElementById('fuelLitres').value);
   if (!odo || !lit) { showToast('Odometer and litres are required.'); return; }
   checkOdoWarning(t, odo);
+  const abLit  = parseFloat(document.getElementById('adBlueLitres').value)||0;
+  const abPPL  = parseFloat(document.getElementById('adBluePPL').value)||0;
+  const abCost = parseFloat(document.getElementById('adBlueCost').value)||(abLit&&abPPL?parseFloat((abLit*abPPL).toFixed(2)):0);
   t.fuel.push({ id:'f_'+Date.now(),
     date: document.getElementById('fuelDate').value,
     location: document.getElementById('fuelLocation').value.trim()||'Unknown station',
     odo, litres:lit,
     cost: parseFloat(document.getElementById('fuelCost').value)||0,
     ppl:  parseFloat(document.getElementById('fuelPPL').value)||0,
-    notes: document.getElementById('fuelNotes').value.trim()
+    notes: document.getElementById('fuelNotes').value.trim(),
+    adblue: abLit>0 ? { litres:abLit, ppl:abPPL||null, cost:abCost } : null
   });
   save(); clearFuelForm(); renderAll(); showToast('Fuel stop logged.');
 }
 function deleteFuelEntry(id) { const t=trip(); if(!t)return; t.fuel=t.fuel.filter(e=>e.id!==id); save(); renderAll(); showToast('Fuel entry removed.'); }
-function clearFuelForm() { ['fuelLocation','fuelOdo','fuelLitres','fuelPPL','fuelCost','fuelNotes'].forEach(id=>document.getElementById(id).value=''); }
+function clearFuelForm() { ['fuelLocation','fuelOdo','fuelLitres','fuelPPL','fuelCost','fuelNotes','adBlueLitres','adBluePPL','adBlueCost'].forEach(id=>document.getElementById(id).value=''); }
 
 /* ── Expenses ───────────────────────────────────────────────────────────────── */
 function addExpenseEntry() {
@@ -2377,6 +2445,7 @@ function renderFuelLog() {
           ${prev?`<span class="meta-sep" aria-hidden="true">·</span><span class="eff-pill" style="background:var(--cream-dark,#F5F1EB);color:var(--ink-muted)">📍 ${(e.odo-prev.odo).toLocaleString()} km leg</span>`:''}
           ${effHtml?`<span class="meta-sep" aria-hidden="true">·</span>${effHtml}`:''}
           ${rangeHtml?`<span class="meta-sep" aria-hidden="true">·</span>${rangeHtml}`:''}
+          ${e.adblue?`<span class="meta-sep" aria-hidden="true">·</span><span class="eff-pill" style="background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE">💧 ${e.adblue.litres}L AdBlue${e.adblue.cost?' · $'+e.adblue.cost.toFixed(2):''}</span>`:''}
           ${e.notes?`<span class="meta-sep" aria-hidden="true">·</span><span>${esc(e.notes)}</span>`:''}
         </div>
       </div>
@@ -2661,7 +2730,7 @@ const SETUP_LABELS = {solo:'Car Only',caravan:'Car & Caravan',camper:'Motorhome 
 const TOW_SETUPS   = ['caravan','trailer'];
 
 const SETTING_FIELDS = ['vehMake','vehModel','vehYear','vehRego','vehColour','vehFuelType',
-  'vehTankSize','vehEngine','effTarget','distUnit','currency',
+  'vehTankSize','vehEngine','vehAdBlue','effTarget','distUnit','currency',
   'emergContact','emergPhone','insuranceProvider','insurancePolicy',
   'towMake','towModel','towYear','towLength','towATM','towTBW','towRego','towNotes'];
 
@@ -2675,7 +2744,10 @@ function loadSettings() {
   const radio = document.querySelector('input[name="setupType"][value="'+setupVal+'"]');
   if (radio) radio.checked = true;
   else document.getElementById('setup-solo').checked = true;
+  const abCheck = document.getElementById('vehAdBlue');
+  if (abCheck) abCheck.checked = !!s.vehAdBlue;
   updateSetupUI();
+  updateAdBlueUI();
   updateVehiclePreview();
 }
 
@@ -2684,8 +2756,31 @@ function saveSettings() {
   SETTING_FIELDS.forEach(id => { const el=document.getElementById(id); if(el) s[id]=el.value; });
   const r = document.querySelector('input[name="setupType"]:checked');
   if (r) s.setupType = r.value;
+  const abChk = document.getElementById('vehAdBlue');
+  if (abChk) s.vehAdBlue = abChk.checked;
   localStorage.setItem('triplog_settings', JSON.stringify(s));
   updateVehiclePreview();
+  updateAdBlueUI();
+}
+
+function updateAdBlueUI() {
+  const fuelEl = document.getElementById('vehFuelType');
+  const isDiesel = fuelEl ? fuelEl.value === 'diesel' : false;
+
+  // Show/hide the settings row itself — only visible for diesel
+  const settingRow = document.getElementById('adblueSettingRow');
+  if (settingRow) settingRow.style.display = isDiesel ? '' : 'none';
+
+  // If not diesel, uncheck and hide fuel-tab section regardless of saved pref
+  const abCheck = document.getElementById('vehAdBlue');
+  const fuelSec = document.getElementById('adblueSection');
+  if (!isDiesel) {
+    if (abCheck) abCheck.checked = false;
+    if (fuelSec) fuelSec.style.display = 'none';
+  } else {
+    // Diesel — show fuel-tab section only if checkbox is ticked
+    if (fuelSec) fuelSec.style.display = (abCheck && abCheck.checked) ? '' : 'none';
+  }
 }
 
 function updateSetupUI() {
@@ -2757,7 +2852,7 @@ function exportJSON() {
   const backup = {
     _meta: {
       app:       'LogMyJourney AU',
-      version:   '2.8',
+      version:   '3.0',
       exported:  new Date().toISOString(),
       tripCount: state.trips.length
     },
@@ -3083,6 +3178,13 @@ function editFuelEntry(id) {
   document.getElementById('editFuelPPL').value      = e.ppl      || '';
   document.getElementById('editFuelCost').value     = e.cost     || '';
   document.getElementById('editFuelNotes').value    = e.notes    || '';
+  // AdBlue
+  const editAb = document.getElementById('editAdblueSection');
+  const evS = JSON.parse(localStorage.getItem('triplog_settings')||'{}');
+  if (editAb) editAb.style.display = evS.vehAdBlue ? '' : 'none';
+  document.getElementById('editAdBlueLitres').value = e.adblue?.litres || '';
+  document.getElementById('editAdBluePPL').value    = e.adblue?.ppl    || '';
+  document.getElementById('editAdBlueCost').value   = e.adblue?.cost   || '';
   // Auto-calc on PPL/litres change
   ['editFuelLitres','editFuelPPL'].forEach(fid =>
     document.getElementById(fid).oninput = () => {
@@ -3107,6 +3209,10 @@ function saveEditFuel() {
   if (othersMax > 0 && odo < othersMax) showToast(`⚠️ Odometer ${odo.toLocaleString()} km is lower than another stop (${othersMax.toLocaleString()} km). Please check.`);
   e.date     = document.getElementById('editFuelDate').value;
   e.location = document.getElementById('editFuelLocation').value.trim() || 'Unknown station';
+  const eAbLit  = parseFloat(document.getElementById('editAdBlueLitres').value)||0;
+  const eAbPPL  = parseFloat(document.getElementById('editAdBluePPL').value)||0;
+  const eAbCost = parseFloat(document.getElementById('editAdBlueCost').value)||(eAbLit&&eAbPPL?parseFloat((eAbLit*eAbPPL).toFixed(2)):0);
+  e.adblue = eAbLit>0 ? { litres:eAbLit, ppl:eAbPPL||null, cost:eAbCost } : null;
   e.odo      = odo;
   e.litres   = lit;
   e.ppl      = parseFloat(document.getElementById('editFuelPPL').value)  || 0;
