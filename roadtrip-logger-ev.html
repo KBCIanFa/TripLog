@@ -1583,6 +1583,14 @@ function toggleHistory(section) {
           <div class="help-a">Each fuel entry shows the efficiency for that segment — the distance since your last fill-up divided into the litres used. <span style="color:#1A6B38;font-weight:600">Green</span> = under 9 L/100km, <span style="color:#C75B00;font-weight:600">amber</span> = 9–12, <span style="color:#991A1A;font-weight:600">red</span> = over 12. You can set your own target in <strong>Settings</strong>.</div>
         </div>
         <div class="help-item">
+          <div class="help-q">What is the 📍 km leg figure?</div>
+          <div class="help-a">Each fuel or charge entry (except the first) shows the distance driven since the previous stop. This tells you exactly how far you got on each fill-up or charge and helps you plan stops on long runs.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">What is the 🛣️ range estimate?</div>
+          <div class="help-a">When you have entered your <strong>Tank Capacity</strong> in Settings, each ICE fuel entry shows an estimated range — how far a full tank would take you at that stop's efficiency. It recalculates at every fill-up as efficiency changes with load and conditions.</div>
+        </div>
+        <div class="help-item">
           <div class="help-q">Can I hide the fuel list?</div>
           <div class="help-a">Yes — tap the <strong>Hide / Show</strong> button next to the Fuel History heading to collapse or expand the list. Useful on a small screen when you just want to log a stop quickly.</div>
         </div>
@@ -1642,13 +1650,44 @@ function toggleHistory(section) {
       </div>
     </div>
 
+    <!-- EV & PHEV -->
+    <div class="card">
+      <div class="card-title"><span class="icon" aria-hidden="true">⚡</span> EV, PHEV &amp; Vehicle Mode</div>
+      <div class="help-section">
+        <div class="help-item">
+          <div class="help-q">How do I switch between ICE, PHEV and EV mode?</div>
+          <div class="help-a">Use the <strong>⛽ / 🔋 / ⚡</strong> toggle in the header. ICE mode shows petrol/diesel trips; EV mode shows charging trips; PHEV mode shows all trips with both fuel and charging. Each trip remembers its own type — the mode switch filters which trips are visible in the dropdown.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">How do I log a charging session?</div>
+          <div class="help-a">Switch to EV or PHEV mode, then tap the <strong>⚡ Charging</strong> tab. Enter the odometer, kWh added, and price per kWh (cost is auto-calculated). You can also record SOC before and after, and the charger type (DC Ultra, DC Fast, AC). The km/kWh efficiency badge appears once you have two sessions logged.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">What is a PHEV trip?</div>
+          <div class="help-a">A PHEV trip has both fuel stops and charging sessions logged. It appears in both ICE and EV mode in the trip filter. The Summary tab shows a combined spend banner with fuel cost, charging cost, and expenses separately.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">What does the Trends tab show?</div>
+          <div class="help-a">The <strong>📈 Trends</strong> tab shows lifetime analytics across all your trips — efficiency per trip (L/100km for ICE, km/kWh for EV), spend per trip, cost per km, and distance per trip as horizontal bar charts. Lifetime totals at the top show your cumulative km, litres, kWh, and spend across every trip ever logged.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">How do I filter trips by vehicle type?</div>
+          <div class="help-a">The <strong>Active Trip</strong> dropdown only shows trips matching the current vehicle mode. Switch between ⛽ ICE / 🔋 PHEV / ⚡ EV using the header toggle. PHEV trips appear in both ICE and EV modes. Empty trips appear in all modes.</div>
+        </div>
+        <div class="help-item">
+          <div class="help-q">What fuel types are supported?</div>
+          <div class="help-a">Unleaded (91), Premium Unleaded (95), E10 (94), Diesel, and LPG. Select the fuel type when logging a stop — it is saved per entry and shown in the fuel history. You can also set a default in <strong>Settings → Vehicle Details</strong>.</div>
+        </div>
+      </div>
+    </div>
+
     <!-- Export & Import -->
     <div class="card">
       <div class="card-title"><span class="icon" aria-hidden="true">💾</span> Export &amp; Import</div>
       <div class="help-section">
         <div class="help-item">
           <div class="help-q">What can I export?</div>
-          <div class="help-a">Four options are available in Settings: <strong>Full Backup (JSON)</strong> — a complete backup of all trips, expenses, and settings; <strong>Fuel Log (CSV)</strong> — the current trip's fuel stops for spreadsheet analysis; <strong>Expenses (CSV)</strong> — the current trip's expenses with category totals; <strong>Trip Summary (CSV)</strong> — one row per trip across all trips.</div>
+          <div class="help-a">Four options are available in Settings: <strong>Full Backup (JSON)</strong> — a complete backup of all trips, charging sessions, expenses, vehicle profile, and vehicle mode (ICE/PHEV/EV); <strong>Fuel Log (CSV)</strong> — the current trip's fuel stops; <strong>Expenses (CSV)</strong> — the current trip's expenses with category totals; <strong>Trip Summary (CSV)</strong> — one row per trip across all trips.</div>
         </div>
         <div class="help-item">
           <div class="help-q">How do I back up my data?</div>
@@ -1656,7 +1695,7 @@ function toggleHistory(section) {
         </div>
         <div class="help-item">
           <div class="help-q">How do I restore or move to a new device?</div>
-          <div class="help-a">On the new device, open LogMyJourney AU, go to <strong>Settings → Import</strong>, select <strong>Replace</strong> mode, then drop in your backup <code>.json</code> file and tap <strong>Confirm Import</strong>. All your trips, expenses, and settings will be restored.</div>
+          <div class="help-a">On the new device, open LogMyJourney AU, go to <strong>Settings → Import</strong>, select <strong>Replace</strong> mode, then drop in your backup <code>.json</code> file and tap <strong>Confirm Import</strong>. All your trips, charging sessions, expenses, vehicle profile, and vehicle mode (ICE/PHEV/EV) are restored automatically.</div>
         </div>
         <div class="help-item">
           <div class="help-q">What is the difference between Merge and Replace?</div>
@@ -1718,7 +1757,7 @@ function toggleHistory(section) {
 
 </div><!-- /.app -->
 
-<footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">LogMyJourney AU by Ian Fraser &copy; 2026 &nbsp;·&nbsp; <span id="appVersion">v2.7</span></footer>
+<footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">LogMyJourney AU by Ian Fraser &copy; 2026 &nbsp;·&nbsp; <span id="appVersion">v2.8</span></footer>
 
 <!-- Modal: New Trip -->
 <div class="modal-overlay" id="newTripModal" role="dialog" aria-modal="true" aria-labelledby="tripModalTitle">
@@ -2718,7 +2757,7 @@ function exportJSON() {
   const backup = {
     _meta: {
       app:       'LogMyJourney AU',
-      version:   '2.7',
+      version:   '2.8',
       exported:  new Date().toISOString(),
       tripCount: state.trips.length
     },
