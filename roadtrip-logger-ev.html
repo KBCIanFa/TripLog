@@ -868,7 +868,8 @@ function toggleHistory(section) {
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end">
       <a href="https://www.paypal.com/ncp/payment/YGXFAYQ4PY5X6"
          class="bmc-btn"
-         aria-label="Support this app via PayPal">
+         aria-label="Support this app via PayPal"
+         style="font-size:.72rem;padding:5px 10px 5px 8px;opacity:.65;border-color:var(--border)">
         <svg class="bmc-icon" viewBox="0 0 101 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path fill="#003087" d="M12.237 2.67H4.532C3.99 2.67 3.53 3.07 3.448 3.607L.342 23.14a.926.926 0 0 0 .914 1.07h3.658c.542 0 1.002-.4 1.084-.937l.837-5.31c.08-.537.542-.937 1.083-.937h2.394c4.979 0 7.852-2.41 8.602-7.186.339-2.088.014-3.729-.97-4.879-1.08-1.268-2.993-1.94-5.707-1.94zm.873 7.083c-.413 2.71-2.484 2.71-4.487 2.71h-1.14l.8-5.061a.652.652 0 0 1 .644-.55h.522c1.364 0 2.65 0 3.314.777.397.465.518 1.154.347 2.124z"/>
           <path fill="#003087" d="M35.438 9.67h-3.674a.655.655 0 0 0-.644.55l-.166 1.052-.263-.382c-.815-1.183-2.633-1.578-4.448-1.578-4.16 0-7.716 3.151-8.406 7.572-.36 2.205.151 4.311 1.4 5.782 1.147 1.352 2.786 1.914 4.736 1.914 3.354 0 5.215-2.155 5.215-2.155l-.168 1.044a.926.926 0 0 0 .914 1.07h3.31c.542 0 1.002-.4 1.083-.937l1.987-12.584a.926.926 0 0 0-.876-1.348zm-5.12 7.327c-.362 2.147-2.072 3.588-4.244 3.588-1.09 0-1.963-.35-2.522-1.013-.555-.659-.764-1.598-.588-2.644.34-2.128 2.075-3.615 4.213-3.615 1.068 0 1.935.353 2.506 1.02.574.673.797 1.617.635 2.664z"/>
@@ -909,8 +910,8 @@ function toggleHistory(section) {
     <div class="stats-strip">
       <div class="stat-card c-amber" role="region" aria-labelledby="lbl-dist">
         <div class="stat-label" id="lbl-dist">Distance</div>
-        <div class="stat-value" id="statDistance" aria-live="polite">0</div>
-        <div class="stat-unit">kilometres total</div>
+        <div class="stat-value" id="statDistance" aria-live="polite">—</div>
+        <div class="stat-unit" id="statDistUnit">Log your first stop</div>
       </div>
       <div class="stat-card c-blue" role="region" aria-labelledby="lbl-fuel">
         <div class="stat-label" id="lbl-fuel">Fuel Used</div>
@@ -930,7 +931,7 @@ function toggleHistory(section) {
       <div class="stat-card c-green" role="region" aria-labelledby="lbl-budget" id="statBudgetCard" style="display:none">
         <div class="stat-label" id="lbl-budget">Budget Left</div>
         <div class="stat-value" id="statBudget" aria-live="polite">—</div>
-        <div class="stat-unit" id="statBudgetUnit">of $0 budget</div>
+        <div class="stat-unit" id="statBudgetUnit">set a budget to track spend</div>
       </div>
     </div>
   </section>
@@ -942,7 +943,7 @@ function toggleHistory(section) {
     <button role="tab" id="tab-expenses-btn"   aria-selected="false" aria-controls="panel-expenses"   onclick="switchTab('expenses',this)"   tabindex="-1"><span aria-hidden="true">💳</span> Expenses</button>
     <button role="tab" id="tab-categories-btn" aria-selected="false" aria-controls="panel-categories" onclick="switchTab('categories',this)" tabindex="-1"><span aria-hidden="true">🏷</span> Categories</button>
     <button role="tab" id="tab-summary-btn"    aria-selected="false" aria-controls="panel-summary"    onclick="switchTab('summary',this)"    tabindex="-1"><span aria-hidden="true">📊</span> Summary</button>
-    <button role="tab" id="tab-settings-btn"   aria-selected="false" aria-controls="panel-settings"   onclick="switchTab('settings',this)"   tabindex="-1"><span aria-hidden="true">⚙️</span> Settings</button>
+    <button role="tab" id="tab-settings-btn"   aria-selected="false" aria-controls="panel-settings"   onclick="switchTab('settings',this)"   tabindex="-1"><span aria-hidden="true">⚙</span> Settings</button>
     <button role="tab" id="tab-help-btn"      aria-selected="false" aria-controls="panel-help"      onclick="switchTab('help',this)"      tabindex="-1"><span aria-hidden="true">❓</span> Help</button>
   </div>
 
@@ -957,8 +958,8 @@ function toggleHistory(section) {
       </div>
       <div class="form-grid">
         <div class="form-group">
-          <label for="fuelDate">Date <span aria-hidden="true">*</span></label>
-          <input type="date" id="fuelDate" required aria-required="true">
+          <label for="fuelDate">Date</label>
+          <input type="date" id="fuelDate">
         </div>
         <div class="form-group">
           <label for="fuelLocation">Station / Location</label>
@@ -1130,8 +1131,8 @@ function toggleHistory(section) {
           <input type="date" id="expDate" required aria-required="true">
         </div>
         <div class="form-group">
-          <label for="expCategory">Category <span aria-hidden="true">*</span></label>
-          <select id="expCategory" required aria-required="true"></select>
+          <label for="expCategory">Category</label>
+          <select id="expCategory"></select>
         </div>
         <div class="form-group" style="grid-column:1/-1">
           <label for="expDesc">Description <span aria-hidden="true">*</span></label>
@@ -1172,6 +1173,10 @@ function toggleHistory(section) {
 
   <!-- ── CATEGORIES ────────────────────────────────────────────────────────── -->
   <div role="tabpanel" id="panel-categories" aria-labelledby="tab-categories-btn">
+    <div class="info-banner" role="note" style="margin-bottom:16px">
+      <span class="info-icon" aria-hidden="true">ℹ</span>
+      <span>Categories let you group expenses like Accommodation, Food, and Tolls. The defaults cover most trips — you can add your own here or leave this tab alone for now.</span>
+    </div>
     <div class="card">
       <div class="card-title"><span class="icon" aria-hidden="true">🏷</span> Add Category</div>
       <div class="form-grid">
@@ -1283,7 +1288,7 @@ function toggleHistory(section) {
 
     <!-- Trip Configuration -->
     <div class="card">
-      <div class="card-title"><span class="icon" aria-hidden="true">🗺️</span> Trip Configuration</div>
+      <div class="card-title"><span class="icon" aria-hidden="true">🚘</span> Trip Configuration</div>
 
       <div class="settings-section-title" id="setupTypeLabel">Setup Type</div>
       <div class="settings-grid" role="radiogroup" aria-labelledby="setupTypeLabel">
@@ -1448,7 +1453,7 @@ function toggleHistory(section) {
       </div>
 
       <div class="info-banner" role="note">
-        <span class="info-icon" aria-hidden="true">ℹ️</span>
+        <span class="info-icon" aria-hidden="true">ℹ</span>
         <span>Settings are saved automatically as you type and apply to all trips in this browser.</span>
       </div>
 
@@ -1535,8 +1540,8 @@ function toggleHistory(section) {
       </div>
 
       <div class="info-banner" role="note" style="margin-top:16px">
-        <span class="info-icon" aria-hidden="true">ℹ️</span>
-        <span><strong>Merge</strong> adds imported trips alongside your existing ones. <strong>Replace</strong> clears all current data first — use with caution. Always export a backup before replacing.</span>
+        <span class="info-icon" aria-hidden="true">ℹ</span>
+        <span><strong>Merge</strong> safely adds trips from the backup without touching your existing data. <strong>Replace</strong> clears everything and loads the backup fresh — always download a backup first.</span>
       </div>
 
     </div>
@@ -1561,35 +1566,56 @@ function toggleHistory(section) {
 
     <!-- Trips -->
     <div class="card">
-      <div class="card-title"><span class="icon" aria-hidden="true">🗺️</span> Managing Trips</div>
+      <div class="card-title"><span class="icon" aria-hidden="true">🚘</span> Managing Trips</div>
       <div class="help-section">
         <div class="help-item">
-          <div class="help-q">How do I create a trip?</div>
-          <div class="help-a">Tap <strong>New Trip</strong> in the header. Enter a name (required), start date, and your current odometer reading. The trip becomes active immediately.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h335242" onclick="toggleHelp(this)">
+            <span>How do I create a trip?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h335242" role="region">Tap <strong>New Trip</strong> in the header. Enter a name (required), start date, and your current odometer reading. The trip becomes active immediately.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">How do I switch between trips?</div>
-          <div class="help-a">Use the <strong>Active Trip</strong> dropdown below the header. All tabs — Fuel, Expenses, Summary — update instantly to show the selected trip's data.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h157705" onclick="toggleHelp(this)">
+            <span>How do I switch between trips?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h157705" role="region">Use the <strong>Active Trip</strong> dropdown below the header. All tabs — Fuel, Expenses, Summary — update instantly to show the selected trip's data.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">How do I edit a trip?</div>
-          <div class="help-a">Select the trip from the dropdown, then tap the <strong>✏️ Edit</strong> button in the trip bar. The same dialog used to create trips opens, pre-filled with the current values. You can change the name, start date, end date, start odometer, and budget. Tap <strong>Save Changes</strong> to apply. Your existing fuel stops and expenses are not affected.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h134621" onclick="toggleHelp(this)">
+            <span>How do I edit a trip?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h134621" role="region">Select the trip from the dropdown, then tap the <strong>✏️ Edit</strong> button in the trip bar. The same dialog used to create trips opens, pre-filled with the current values. You can change the name, start date, end date, start odometer, and budget. Tap <strong>Save Changes</strong> to apply. Your existing fuel stops and expenses are not affected.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">How do I delete a trip?</div>
-          <div class="help-a">Select the trip from the dropdown, then tap <strong>Delete Trip</strong>. A confirmation dialog will appear — tap <strong>Yes, Delete Trip</strong> to confirm. This permanently removes all fuel stops and expenses for that trip and cannot be undone.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h331221" onclick="toggleHelp(this)">
+            <span>How do I delete a trip?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h331221" role="region">Select the trip from the dropdown, then tap <strong>Delete Trip</strong>. A confirmation dialog will appear — tap <strong>Yes, Delete Trip</strong> to confirm. This permanently removes all fuel stops and expenses for that trip and cannot be undone.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">Can I have multiple trips at once?</div>
-          <div class="help-a">Yes — create as many trips as you like. Each is completely independent. Great for separating annual road trips, interstate runs, or tracking different vehicles.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h892109" onclick="toggleHelp(this)">
+            <span>Can I have multiple trips at once?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h892109" role="region">Yes — create as many trips as you like. Each is completely independent. Great for separating annual road trips, interstate runs, or tracking different vehicles.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">Can I set a budget for a trip?</div>
-          <div class="help-a">Yes — enter an optional <strong>Trip Budget ($)</strong> when creating a trip. Once set, a budget tracker appears at the top of the Trip Overview in the Summary tab. It shows a progress bar, the amount spent so far, the percentage used, and how much remains. The bar turns amber above 80% and red if you go over budget.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h750304" onclick="toggleHelp(this)">
+            <span>Can I set a budget for a trip?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h750304" role="region">Yes — enter an optional <strong>Trip Budget ($)</strong> when creating a trip. Once set, a budget tracker appears at the top of the Trip Overview in the Summary tab. It shows a progress bar, the amount spent so far, the percentage used, and how much remains. The bar turns amber above 80% and red if you go over budget.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">Can I set an end date for a trip?</div>
-          <div class="help-a">Yes — the <strong>End date</strong> field in the New Trip dialog is optional. Once set, it appears in the Trip Overview table in the Summary tab alongside the start date.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h839389" onclick="toggleHelp(this)">
+            <span>Can I set an end date for a trip?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h839389" role="region">Yes — the <strong>End date</strong> field in the New Trip dialog is optional. Once set, it appears in the Trip Overview table in the Summary tab alongside the start date.</div>
         </div>
       </div>
     </div>
@@ -1599,28 +1625,46 @@ function toggleHistory(section) {
       <div class="card-title"><span class="icon" aria-hidden="true">⛽</span> Logging Fuel</div>
       <div class="help-section">
         <div class="help-item">
-          <div class="help-q">What fields are required?</div>
-          <div class="help-a"><strong>Odometer</strong> and <strong>Litres</strong> are required. All other fields — date, station, price per litre, cost, notes — are optional but help produce better reports.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h514663" onclick="toggleHelp(this)">
+            <span>What fields are required?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h514663" role="region"><strong>Odometer</strong> and <strong>Litres</strong> are required. All other fields — date, station, price per litre, cost, notes — are optional but help produce better reports.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">How is fuel cost calculated?</div>
-          <div class="help-a">If you enter <strong>Litres</strong> and <strong>Price per Litre</strong>, the <strong>Total Cost</strong> field is calculated automatically. You can also type the total cost directly if you know it.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h619830" onclick="toggleHelp(this)">
+            <span>How is fuel cost calculated?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h619830" role="region">If you enter <strong>Litres</strong> and <strong>Price per Litre</strong>, the <strong>Total Cost</strong> field is calculated automatically. You can also type the total cost directly if you know it.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">What does the L/100km badge mean?</div>
-          <div class="help-a">Each fuel entry shows the efficiency for that segment — the distance since your last fill-up divided into the litres used. <span style="color:#1A6B38;font-weight:600">Green</span> = under 9 L/100km, <span style="color:#C75B00;font-weight:600">amber</span> = 9–12, <span style="color:#991A1A;font-weight:600">red</span> = over 12. You can set your own target in <strong>Settings</strong>.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h343476" onclick="toggleHelp(this)">
+            <span>What does the L/100km badge mean?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h343476" role="region">Each fuel entry shows the efficiency for that segment — the distance since your last fill-up divided into the litres used. <span style="color:#1A6B38;font-weight:600">Green</span> = under 9 L/100km, <span style="color:#C75B00;font-weight:600">amber</span> = 9–12, <span style="color:#991A1A;font-weight:600">red</span> = over 12. You can set your own target in <strong>Settings</strong>.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">What is the 📍 km leg figure?</div>
-          <div class="help-a">Each fuel or charge entry (except the first) shows the distance driven since the previous stop. This tells you exactly how far you got on each fill-up or charge and helps you plan stops on long runs.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h381329" onclick="toggleHelp(this)">
+            <span>What is the 📍 km leg figure?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h381329" role="region">Each fuel or charge entry (except the first) shows the distance driven since the previous stop. This tells you exactly how far you got on each fill-up or charge and helps you plan stops on long runs.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">What is the 🛣️ range estimate?</div>
-          <div class="help-a">When you have entered your <strong>Tank Capacity</strong> in Settings, each ICE fuel entry shows an estimated range — how far a full tank would take you at that stop's efficiency. It recalculates at every fill-up as efficiency changes with load and conditions.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h262298" onclick="toggleHelp(this)">
+            <span>What is the 🛣️ range estimate?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h262298" role="region">When you have entered your <strong>Tank Capacity</strong> in Settings, each ICE fuel entry shows an estimated range — how far a full tank would take you at that stop's efficiency. It recalculates at every fill-up as efficiency changes with load and conditions.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">Can I hide the fuel list?</div>
-          <div class="help-a">Yes — tap the <strong>Hide / Show</strong> button next to the Fuel History heading to collapse or expand the list. Useful on a small screen when you just want to log a stop quickly.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h379859" onclick="toggleHelp(this)">
+            <span>Can I hide the fuel list?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h379859" role="region">Yes — tap the <strong>Hide / Show</strong> button next to the Fuel History heading to collapse or expand the list. Useful on a small screen when you just want to log a stop quickly.</div>
         </div>
       </div>
     </div>
@@ -1630,16 +1674,25 @@ function toggleHistory(section) {
       <div class="card-title"><span class="icon" aria-hidden="true">💳</span> Logging Expenses</div>
       <div class="help-section">
         <div class="help-item">
-          <div class="help-q">What fields are required?</div>
-          <div class="help-a"><strong>Description</strong> and <strong>Amount</strong> are required. Category and date default to your last-used values so logging is fast on the road.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h514663" onclick="toggleHelp(this)">
+            <span>What fields are required?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h514663" role="region"><strong>Description</strong> and <strong>Amount</strong> are required. Category and date default to your last-used values so logging is fast on the road.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">What categories are available?</div>
-          <div class="help-a">The default categories are Food &amp; Drink, Accommodation, Tolls &amp; Fees, Activities, Miscellaneous, Camping Fees, and Maintenance. You can add your own in the <strong>Categories</strong> tab.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h579300" onclick="toggleHelp(this)">
+            <span>What categories are available?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h579300" role="region">The default categories are Food &amp; Drink, Accommodation, Tolls &amp; Fees, Activities, Miscellaneous, Camping Fees, and Maintenance. You can add your own in the <strong>Categories</strong> tab.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">Can I hide the expense list?</div>
-          <div class="help-a">Yes — tap the <strong>Hide / Show</strong> button next to Expense History to collapse or expand the list, just like with fuel history.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h254247" onclick="toggleHelp(this)">
+            <span>Can I hide the expense list?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h254247" role="region">Yes — tap the <strong>Hide / Show</strong> button next to Expense History to collapse or expand the list, just like with fuel history.</div>
         </div>
       </div>
     </div>
@@ -1649,12 +1702,18 @@ function toggleHistory(section) {
       <div class="card-title"><span class="icon" aria-hidden="true">🏷</span> Categories</div>
       <div class="help-section">
         <div class="help-item">
-          <div class="help-q">How do I add a custom category?</div>
-          <div class="help-a">Go to the <strong>Categories</strong> tab, type a name, pick a colour from the swatches, then tap <strong>Add Category</strong>. It will appear immediately in the expense category dropdown.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h542595" onclick="toggleHelp(this)">
+            <span>How do I add a custom category?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h542595" role="region">Go to the <strong>Categories</strong> tab, type a name, pick a colour from the swatches, then tap <strong>Add Category</strong>. It will appear immediately in the expense category dropdown.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">What happens if I delete a category that has expenses?</div>
-          <div class="help-a">The expenses are not deleted — they remain in your trip but their category will show as <em>Uncategorised</em>. You can't currently re-categorise existing entries, so it's best to create categories before you start logging.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h755962" onclick="toggleHelp(this)">
+            <span>What happens if I delete a category that has expenses?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h755962" role="region">The expenses are not deleted — they remain in your trip but show as <em>Uncategorised</em>. You can re-categorise them at any time by tapping the <strong>✏️</strong> edit button on any expense entry and changing the category.</div>
         </div>
       </div>
     </div>
@@ -1664,16 +1723,25 @@ function toggleHistory(section) {
       <div class="card-title"><span class="icon" aria-hidden="true">📊</span> Summary Tab</div>
       <div class="help-section">
         <div class="help-item">
-          <div class="help-q">What does the Summary tab show?</div>
-          <div class="help-a">Three sections: a <strong>Fuel Efficiency Chart</strong> showing L/100km for each segment between fill-ups; a <strong>Spend by Category</strong> table that includes fuel as the first row so you can see your true total travel cost; and a <strong>Trip Overview</strong> with key totals and — if you set a budget — a live budget tracker showing how much you have spent and how much remains.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h381367" onclick="toggleHelp(this)">
+            <span>What does the Summary tab show?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h381367" role="region">Three sections: a <strong>Fuel Efficiency Chart</strong> showing L/100km for each segment between fill-ups; a <strong>Spend by Category</strong> table that includes fuel as the first row so you can see your true total travel cost; and a <strong>Trip Overview</strong> with key totals and — if you set a budget — a live budget tracker showing how much you have spent and how much remains.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">Why is fuel shown in the expense table?</div>
-          <div class="help-a">Fuel is typically the largest cost on a road trip. Including it in the breakdown lets you see what percentage of your total spend went to fuel versus accommodation, food, and activities.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h635851" onclick="toggleHelp(this)">
+            <span>Why is fuel shown in the expense table?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h635851" role="region">Fuel is typically the largest cost on a road trip. Including it in the breakdown lets you see what percentage of your total spend went to fuel versus accommodation, food, and activities.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">The efficiency chart says I need 2 fuel stops — why?</div>
-          <div class="help-a">Efficiency is calculated from the distance between consecutive fill-ups. With only one stop there is no segment to measure. Log a second fuel stop and the chart will appear.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h787487" onclick="toggleHelp(this)">
+            <span>The efficiency chart says I need 2 fuel stops — why?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h787487" role="region">Efficiency is calculated from the distance between consecutive fill-ups. With only one stop there is no segment to measure. Log a second fuel stop and the chart will appear.</div>
         </div>
       </div>
     </div>
@@ -1683,28 +1751,46 @@ function toggleHistory(section) {
       <div class="card-title"><span class="icon" aria-hidden="true">⚡</span> EV, PHEV &amp; Vehicle Mode</div>
       <div class="help-section">
         <div class="help-item">
-          <div class="help-q">How do I switch between ICE, PHEV and EV mode?</div>
-          <div class="help-a">Use the <strong>⛽ / 🔋 / ⚡</strong> toggle in the header. ICE mode shows petrol/diesel trips; EV mode shows charging trips; PHEV mode shows all trips with both fuel and charging. Each trip remembers its own type — the mode switch filters which trips are visible in the dropdown.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h567801" onclick="toggleHelp(this)">
+            <span>How do I switch between ICE, PHEV and EV mode?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h567801" role="region">Use the <strong>⛽ / 🔋 / ⚡</strong> toggle in the header. ICE mode shows petrol/diesel trips; EV mode shows charging trips; PHEV mode shows all trips with both fuel and charging. Each trip remembers its own type — the mode switch filters which trips are visible in the dropdown.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">How do I log a charging session?</div>
-          <div class="help-a">Switch to EV or PHEV mode, then tap the <strong>⚡ Charging</strong> tab. Enter the odometer, kWh added, and price per kWh (cost is auto-calculated). You can also record SOC before and after, and the charger type (DC Ultra, DC Fast, AC). The km/kWh efficiency badge appears once you have two sessions logged.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h781442" onclick="toggleHelp(this)">
+            <span>How do I log a charging session?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h781442" role="region">Switch to EV or PHEV mode, then tap the <strong>⚡ Charging</strong> tab. Enter the odometer, kWh added, and price per kWh (cost is auto-calculated). You can also record SOC before and after, and the charger type (DC Ultra, DC Fast, AC). The km/kWh efficiency badge appears once you have two sessions logged.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">What is a PHEV trip?</div>
-          <div class="help-a">A PHEV trip has both fuel stops and charging sessions logged. It appears in both ICE and EV mode in the trip filter. The Summary tab shows a combined spend banner with fuel cost, charging cost, and expenses separately.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h518680" onclick="toggleHelp(this)">
+            <span>What is a PHEV trip?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h518680" role="region">A PHEV trip has both fuel stops and charging sessions logged. It appears in both ICE and EV mode in the trip filter. The Summary tab shows a combined spend banner with fuel cost, charging cost, and expenses separately.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">What does the Trends tab show?</div>
-          <div class="help-a">The <strong>📈 Trends</strong> tab shows lifetime analytics across all your trips — efficiency per trip (L/100km for ICE, km/kWh for EV), spend per trip, cost per km, and distance per trip as horizontal bar charts. Lifetime totals at the top show your cumulative km, litres, kWh, and spend across every trip ever logged.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h466216" onclick="toggleHelp(this)">
+            <span>What does the Trends tab show?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h466216" role="region">The <strong>📈 Trends</strong> tab shows lifetime analytics across all your trips — efficiency per trip (L/100km for ICE, km/kWh for EV), spend per trip, cost per km, and distance per trip as horizontal bar charts. Lifetime totals at the top show your cumulative km, litres, kWh, and spend across every trip ever logged.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">How do I filter trips by vehicle type?</div>
-          <div class="help-a">The <strong>Active Trip</strong> dropdown only shows trips matching the current vehicle mode. Switch between ⛽ ICE / 🔋 PHEV / ⚡ EV using the header toggle. PHEV trips appear in both ICE and EV modes. Empty trips appear in all modes.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h632410" onclick="toggleHelp(this)">
+            <span>How do I filter trips by vehicle type?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h632410" role="region">The <strong>Active Trip</strong> dropdown only shows trips matching the current vehicle mode. Switch between ⛽ ICE / 🔋 PHEV / ⚡ EV using the header toggle. PHEV trips appear in both ICE and EV modes. Empty trips appear in all modes.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">What fuel types are supported?</div>
-          <div class="help-a">Unleaded (91), Premium Unleaded (95), E10 (94), Diesel, and LPG. Select the fuel type when logging a stop — it is saved per entry and shown in the fuel history. You can also set a default in <strong>Settings → Vehicle Details</strong>.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h162978" onclick="toggleHelp(this)">
+            <span>What fuel types are supported?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h162978" role="region">Unleaded (91), Premium Unleaded (95), E10 (94), Diesel, and LPG. Select the fuel type when logging a stop — it is saved per entry and shown in the fuel history. You can also set a default in <strong>Settings → Vehicle Details</strong>.</div>
         </div>
       </div>
     </div>
@@ -1714,20 +1800,32 @@ function toggleHistory(section) {
       <div class="card-title"><span class="icon" aria-hidden="true">💾</span> Export &amp; Import</div>
       <div class="help-section">
         <div class="help-item">
-          <div class="help-q">What can I export?</div>
-          <div class="help-a">Four options are available in Settings: <strong>Full Backup (JSON)</strong> — a complete backup of all trips, charging sessions, expenses, vehicle profile, and vehicle mode (ICE/PHEV/EV); <strong>Fuel Log (CSV)</strong> — the current trip's fuel stops; <strong>Expenses (CSV)</strong> — the current trip's expenses with category totals; <strong>Trip Summary (CSV)</strong> — one row per trip across all trips.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h354501" onclick="toggleHelp(this)">
+            <span>What can I export?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h354501" role="region">Four options are available in Settings: <strong>Full Backup (JSON)</strong> — a complete backup of all trips, charging sessions, expenses, vehicle profile, and vehicle mode (ICE/PHEV/EV); <strong>Fuel Log (CSV)</strong> — the current trip's fuel stops; <strong>Expenses (CSV)</strong> — the current trip's expenses with category totals; <strong>Trip Summary (CSV)</strong> — one row per trip across all trips.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">How do I back up my data?</div>
-          <div class="help-a">Go to <strong>Settings → Export</strong> and tap <strong>Download Full Backup</strong>. Save the <code>.json</code> file somewhere safe — your Downloads folder, iCloud Drive, Google Drive, or email it to yourself. Do this regularly, especially before clearing your browser or switching devices.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h131859" onclick="toggleHelp(this)">
+            <span>How do I back up my data?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h131859" role="region">Go to <strong>Settings → Export</strong> and tap <strong>Download Full Backup</strong>. Save the <code>.json</code> file somewhere safe — your Downloads folder, iCloud Drive, Google Drive, or email it to yourself. Do this regularly, especially before clearing your browser or switching devices.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">How do I restore or move to a new device?</div>
-          <div class="help-a">On the new device, open LogMyJourney AU, go to <strong>Settings → Import</strong>, select <strong>Replace</strong> mode, then drop in your backup <code>.json</code> file and tap <strong>Confirm Import</strong>. All your trips, charging sessions, expenses, vehicle profile, and vehicle mode (ICE/PHEV/EV) are restored automatically.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h115208" onclick="toggleHelp(this)">
+            <span>How do I restore or move to a new device?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h115208" role="region">On the new device, open LogMyJourney AU, go to <strong>Settings → Import</strong>, select <strong>Replace</strong> mode, then drop in your backup <code>.json</code> file and tap <strong>Confirm Import</strong>. All your trips, charging sessions, expenses, vehicle profile, and vehicle mode (ICE/PHEV/EV) are restored automatically.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">What is the difference between Merge and Replace?</div>
-          <div class="help-a"><strong>Merge</strong> adds trips from the backup file alongside your existing data — useful for combining trips from two devices. Duplicate trip IDs are skipped automatically. <strong>Replace</strong> wipes all current data first and loads the backup fresh. Always export a backup before using Replace.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h815880" onclick="toggleHelp(this)">
+            <span>What is the difference between Merge and Replace?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h815880" role="region"><strong>Merge</strong> adds trips from the backup file alongside your existing data — useful for combining trips from two devices. Trips already on this device won't be added twice. <strong>Replace</strong> wipes all current data first and loads the backup fresh. Always export a backup before using Replace.</div>
         </div>
       </div>
     </div>
@@ -1737,16 +1835,25 @@ function toggleHistory(section) {
       <div class="card-title"><span class="icon" aria-hidden="true">🔒</span> Data &amp; Privacy</div>
       <div class="help-section">
         <div class="help-item">
-          <div class="help-q">Where is my data stored?</div>
-          <div class="help-a">Entirely in your browser's <strong>localStorage</strong> — on your device, never on a server. LogMyJourney AU has no backend, no account system, and no internet connection is needed to use it once loaded.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h511402" onclick="toggleHelp(this)">
+            <span>Where is my data stored?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h511402" role="region">Entirely in your browser's <strong>localStorage</strong> — on your device, never on a server. LogMyJourney AU has no backend, no account system, and no internet connection is needed to use it once loaded.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">Will I lose my data if I clear my browser?</div>
-          <div class="help-a">Yes. Clearing site data, clearing browser history (with cookies and local storage), or uninstalling the browser will delete your LogMyJourney AU data. <strong>Export a JSON backup regularly</strong> to protect your records.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h215249" onclick="toggleHelp(this)">
+            <span>Will I lose my data if I clear my browser?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h215249" role="region">Yes. Clearing site data, clearing browser history (with cookies and local storage), or uninstalling the browser will delete your LogMyJourney AU data. <strong>Export a JSON backup regularly</strong> to protect your records.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">Does data sync between my phone and computer?</div>
-          <div class="help-a">Not automatically — each browser and device has its own separate storage. To sync, export a backup on one device and import it on the other using Merge or Replace mode.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h215012" onclick="toggleHelp(this)">
+            <span>Does data sync between my phone and computer?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h215012" role="region">Not automatically — each browser and device has its own separate storage. To sync, export a backup on one device and import it on the other using Merge or Replace mode.</div>
         </div>
       </div>
     </div>
@@ -1756,16 +1863,25 @@ function toggleHistory(section) {
       <div class="card-title"><span class="icon" aria-hidden="true">📱</span> Installing on Your Phone</div>
       <div class="help-section">
         <div class="help-item">
-          <div class="help-q">iPhone / iPad (Safari)</div>
-          <div class="help-a">Open LogMyJourney AU in Safari → tap the <strong>Share</strong> button (box with arrow) → tap <strong>Add to Home Screen</strong> → tap <strong>Add</strong>. The app will appear on your home screen and open full-screen without the browser bar.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h390949" onclick="toggleHelp(this)">
+            <span>iPhone / iPad (Safari)</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h390949" role="region">Open LogMyJourney AU in Safari → tap the <strong>Share</strong> button (box with arrow) → tap <strong>Add to Home Screen</strong> → tap <strong>Add</strong>. The app will appear on your home screen and open full-screen without the browser bar.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">Android (Chrome)</div>
-          <div class="help-a">Open LogMyJourney AU in Chrome → tap the <strong>three-dot menu</strong> → tap <strong>Add to Home Screen</strong> or <strong>Install app</strong> → tap <strong>Add</strong>. Works like a native app from your home screen.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h208229" onclick="toggleHelp(this)">
+            <span>Android (Chrome)</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h208229" role="region">Open LogMyJourney AU in Chrome → tap the <strong>three-dot menu</strong> → tap <strong>Add to Home Screen</strong> or <strong>Install app</strong> → tap <strong>Add</strong>. Works like a native app from your home screen.</div>
         </div>
         <div class="help-item">
-          <div class="help-q">Does it work offline?</div>
-          <div class="help-a">Yes — once the page has loaded, LogMyJourney AU works entirely offline. You can log fuel stops and expenses in the middle of the outback with no signal. Your data is saved instantly to your device.</div>
+          <button class="help-toggle" aria-expanded="false" aria-controls="hb-h804671" onclick="toggleHelp(this)">
+            <span>Does it work offline?</span>
+            <span class="help-toggle-arrow" aria-hidden="true">▼</span>
+          </button>
+          <div class="help-body" id="hb-h804671" role="region">Load the app once while online, then you can keep using it offline on that device — no signal needed. Your data is saved instantly to your browser and never sent anywhere.</div>
         </div>
       </div>
     </div>
@@ -1785,7 +1901,7 @@ function toggleHistory(section) {
 
 </div><!-- /.app -->
 
-<footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">LogMyJourney AU by Ian Fraser &copy; 2026 &nbsp;·&nbsp; <span id="appVersion">v3.0</span></footer>
+<footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">LogMyJourney AU by Ian Fraser &copy; 2026 &nbsp;·&nbsp; <span id="appVersion">v3.4</span></footer>
 
 <!-- Modal: New Trip -->
 <div class="modal-overlay" id="newTripModal" role="dialog" aria-modal="true" aria-labelledby="tripModalTitle">
@@ -1971,6 +2087,7 @@ function toggleHistory(section) {
 <div class="toast" id="toast" role="alert" aria-live="assertive"></div>
 
 <script>
+
 /* ── Constants ──────────────────────────────────────────────────────────────── */
 const PALETTE = [
   {hex:'#C75B00',label:'Amber'}, {hex:'#991A1A',label:'Red'},
@@ -2496,7 +2613,7 @@ function renderCategories() {
 
 function renderStats() {
   const t=trip();
-  if(!t){['statDistance','statFuel'].forEach(id=>document.getElementById(id).textContent='0'); document.getElementById('statEff').textContent='—'; document.getElementById('statSpend').textContent='$0'; return;}
+  if(!t){document.getElementById('statDistance').textContent='—'; document.getElementById('statFuel').textContent='—'; document.getElementById('statEff').textContent='—'; document.getElementById('statSpend').textContent='—'; document.getElementById('statBudgetCard').style.display='none'; return;}
   const vtype = t.vehicleType || 'ice';
   const isEv  = vtype === 'ev';
   const isPhev = vtype === 'phev';
@@ -2852,7 +2969,7 @@ function exportJSON() {
   const backup = {
     _meta: {
       app:       'LogMyJourney AU',
-      version:   '3.0',
+      version:   '3.4',
       exported:  new Date().toISOString(),
       tripCount: state.trips.length
     },
@@ -3262,6 +3379,13 @@ function checkOdoWarning(newOdo) {
   if (newOdo && newOdo < maxOdo) {
     showToast(`⚠️ Odometer ${newOdo.toLocaleString()} km is lower than a previous stop (${maxOdo.toLocaleString()} km). Please check.`);
   }
+}
+
+function toggleHelp(btn) {
+  const expanded = btn.getAttribute('aria-expanded') === 'true';
+  btn.setAttribute('aria-expanded', String(!expanded));
+  const body = document.getElementById(btn.getAttribute('aria-controls'));
+  if (body) body.classList.toggle('open', !expanded);
 }
 
 function announce(msg) {
