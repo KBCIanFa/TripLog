@@ -3,6 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#9A4200">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LogMyJourney AU">
 <title>LogMyJourney AU — Petrol &amp; Diesel Edition</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
@@ -1492,7 +1497,7 @@ function toggleHistory(section) {
 
 </div><!-- /.app -->
 
-<footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">LogMyJourney AU by Ian Fraser &copy; 2026 &nbsp;·&nbsp; <span id="appVersion">v2.2</span></footer>
+<footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">LogMyJourney AU by Ian Fraser &copy; 2026 &nbsp;·&nbsp; <span id="appVersion">v2.4</span></footer>
 
 <!-- Modal: New Trip -->
 <div class="modal-overlay" id="newTripModal" role="dialog" aria-modal="true" aria-labelledby="tripModalTitle">
@@ -1565,6 +1570,23 @@ function toggleHistory(section) {
     <div class="form-group" style="margin-top:12px">
       <label for="editFuelNotes">Notes</label>
       <textarea id="editFuelNotes" rows="2" style="resize:vertical"></textarea>
+    </div>
+    <div id="editAdblueSection" style="display:none;padding-top:12px;border-top:1px dashed var(--rule);margin-top:4px">
+      <div style="font-size:.78rem;font-weight:600;color:#1D4ED8;font-family:var(--font-mono);letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px">💧 AdBlue (DEF)</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="editAdBlueLitres">AdBlue Litres</label>
+          <input type="number" id="editAdBlueLitres" placeholder="e.g. 5.0" min="0" step="0.1">
+        </div>
+        <div class="form-group">
+          <label for="editAdBluePPL">Price per litre ($)</label>
+          <input type="number" id="editAdBluePPL" placeholder="e.g. 2.50" min="0" step="0.01">
+        </div>
+        <div class="form-group">
+          <label for="editAdBlueCost">Total cost ($)</label>
+          <input type="number" id="editAdBlueCost" placeholder="Auto-calculated or enter" step="0.01">
+        </div>
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeModal('editFuelModal')">Cancel</button>
@@ -2330,7 +2352,7 @@ function exportJSON() {
   const backup = {
     _meta: {
       app:       'LogMyJourney AU',
-      version:   '2.2',
+      version:   '2.4',
       exported:  new Date().toISOString(),
       tripCount: state.trips.length
     },
@@ -2737,6 +2759,85 @@ function announce(msg) {
   lr.textContent = '';
   setTimeout(() => { lr.textContent = msg; }, 50);
 }
+</script>
+
+<script>
+/* ── PWA: inline manifest + service worker ───────────────────────────────────
+   Single-file architecture: both manifest and SW are created as Blob URLs at
+   runtime so no separate sw.js or manifest.json file is required.
+   Works when served over HTTPS (GitHub Pages). Does NOT work from file://
+   ─────────────────────────────────────────────────────────────────────────── */
+(function pwaInit() {
+
+  // ── Web App Manifest ──────────────────────────────────────────────────────
+  var manifest = {
+    name: "LogMyJourney AU",
+    short_name: "LogMyJourney",
+    description: "Australian road trip fuel and expense tracker. Works offline.",
+    start_url: "./",
+    display: "standalone",
+    orientation: "portrait-primary",
+    background_color: "#FAF7F2",
+    theme_color: "#9A4200",
+    icons: [{
+      src: "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2216%22 fill=%22%239A4200%22/><text y=%22.9em%22 font-size=%2272%22 x=%2212%22>⛽</text></svg>",
+      sizes: "any",
+      type: "image/svg+xml",
+      purpose: "any maskable"
+    }]
+  };
+  var manifestBlob = new Blob([JSON.stringify(manifest)], {type: "application/manifest+json"});
+  var manifestURL  = URL.createObjectURL(manifestBlob);
+  var link = document.createElement("link");
+  link.rel  = "manifest";
+  link.href = manifestURL;
+  document.head.appendChild(link);
+
+  // ── Service Worker ────────────────────────────────────────────────────────
+  if (!("serviceWorker" in navigator)) return;
+
+  var swCode = [
+    "var CACHE = \"lmj-v1\";",
+    "self.addEventListener(\"install\", function(e) {",
+    "  e.waitUntil(self.skipWaiting());",
+    "});",
+    "self.addEventListener(\"activate\", function(e) {",
+    "  e.waitUntil(",
+    "    caches.keys().then(function(keys) {",
+    "      return Promise.all(keys.filter(function(k) { return k !== CACHE; }).map(function(k) { return caches.delete(k); }));",
+    "    }).then(function() { return self.clients.claim(); })",
+    "  );",
+    "});",
+    "self.addEventListener(\"fetch\", function(e) {",
+    "  if (e.request.method !== \"GET\") return;",
+    "  e.respondWith(",
+    "    caches.match(e.request).then(function(cached) {",
+    "      var fresh = fetch(e.request).then(function(resp) {",
+    "        if (resp && resp.status === 200 && resp.type !== \"opaque\") {",
+    "          var clone = resp.clone();",
+    "          caches.open(CACHE).then(function(c) { c.put(e.request, clone); });",
+    "        }",
+    "        return resp;",
+    "      }).catch(function() { return cached; });",
+    "      return cached || fresh;",
+    "    })",
+    "  );",
+    "});"
+  ].join("\n");
+
+  var swBlob = new Blob([swCode], {type: "application/javascript"});
+  var swURL  = URL.createObjectURL(swBlob);
+
+  navigator.serviceWorker.register(swURL, {scope: "./"})
+    .then(function(reg) {
+      console.log("[PWA] SW registered, scope:", reg.scope);
+      // keep URL alive — revoking too early can fail in some browsers
+    })
+    .catch(function(err) {
+      console.warn("[PWA] SW registration failed (likely file:// protocol):", err.message);
+    });
+
+})();
 </script>
 </body>
 </html>
