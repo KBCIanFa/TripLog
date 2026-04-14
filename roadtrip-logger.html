@@ -1593,7 +1593,7 @@ function toggleHistory(section) {
 
 </div><!-- /.app -->
 
-<footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">LogMyJourney AU by Ian Fraser &copy; 2026 &nbsp;·&nbsp; <span id="appVersion">v2.7</span></footer>
+<footer style="text-align:center;padding:16px 20px 24px;font-size:.78rem;color:var(--ink-muted);letter-spacing:.01em;">LogMyJourney AU by Ian Fraser &copy; 2026 &nbsp;·&nbsp; <span id="appVersion">v2.8</span></footer>
 
 <!-- Modal: New Trip -->
 <div class="modal-overlay" id="newTripModal" role="dialog" aria-modal="true" aria-labelledby="tripModalTitle">
@@ -2202,10 +2202,10 @@ function renderSummary() {
     const effRows=[];
     for(let i=1;i<sorted.length;i++){const d=sorted[i].odo-sorted[i-1].odo; if(d>0)effRows.push({date:sorted[i].date,val:sorted[i].litres/d*100});}
     const maxVal=Math.max(...effRows.map(r=>r.val),1);
-    fc.setAttribute('aria-label','Fuel efficiency: '+effRows.map(r=>`${r.date}: ${r.val.toFixed(1)} L/100km`).join(', '));
+    fc.setAttribute('aria-label','Fuel efficiency: '+effRows.map(r=>`${fmtDate(r.date)}: ${r.val.toFixed(1)} L/100km`).join(', '));
     fc.innerHTML=effRows.map(r=>{
       const fill=r.val<=9?'#1A6B38':r.val<=12?'#C75B00':'#991A1A';
-      return `<div class="bar-row"><div class="bar-label">${r.date}</div><div class="bar-track" role="presentation"><div class="bar-fill" style="width:${(r.val/maxVal*100).toFixed(1)}%;background:${fill}" role="presentation"></div></div><div class="bar-value">${r.val.toFixed(1)} L</div></div>`;
+      return `<div class="bar-row"><div class="bar-label">${fmtDate(r.date)}</div><div class="bar-track" role="presentation"><div class="bar-fill" style="width:${(r.val/maxVal*100).toFixed(1)}%;background:${fill}" role="presentation"></div></div><div class="bar-value">${r.val.toFixed(1)} L</div></div>`;
     }).join('');
   }
 
@@ -2285,8 +2285,8 @@ function renderSummary() {
 
   ov.innerHTML=budgetHtml+`<table class="data-table" aria-label="Trip overview"><tbody>
     <tr><td style="color:var(--ink-muted);width:50%">Trip name</td><td><strong>${esc(t.name)}</strong></td></tr>
-    <tr><td style="color:var(--ink-muted)">Start date</td><td>${t.startDate||'—'}</td></tr>
-    ${t.endDate?`<tr><td style="color:var(--ink-muted)">End date</td><td>${t.endDate}</td></tr>`:''}
+    <tr><td style="color:var(--ink-muted)">Start date</td><td>${fmtDate(t.startDate)||'—'}</td></tr>
+    ${t.endDate?`<tr><td style="color:var(--ink-muted)">End date</td><td>${fmtDate(t.endDate)}</td></tr>`:''}
     ${t.notes?`<tr><td style="color:var(--ink-muted)">Notes</td><td style="white-space:pre-wrap">${esc(t.notes)}</td></tr>`:''}
     ${t.budget?`<tr><td style="color:var(--ink-muted)">Budget</td><td>$${t.budget.toFixed(2)}</td></tr>`:''}
     <tr><td style="color:var(--ink-muted)">Distance tracked</td><td>${dist2.toLocaleString()} km</td></tr>
@@ -2452,7 +2452,7 @@ function exportJSON() {
   const backup = {
     _meta: {
       app:       'LogMyJourney AU',
-      version:   '2.7',
+      version:   '2.8',
       exported:  new Date().toISOString(),
       tripCount: state.trips.length
     },
